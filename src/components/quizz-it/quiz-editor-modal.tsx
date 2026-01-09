@@ -1,1763 +1,2554 @@
-'use client';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+"use client";
+
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '../ui/textarea';
-import { 
-  PlusCircle, 
-  Trash2, 
-  Check, 
-  Image as ImageIcon, 
-  CheckSquare, 
-  BrainCircuit, 
-  Eye, 
-  Save, 
-  Settings2, 
-  HelpCircle,
-  FileText,
-  ArrowLeft,
-  GripVertical,
-  Copy,
-  Smartphone,
-  Monitor,
-  Tablet,
-  Link,
-  ListOrdered,
-  PenLine,
-  Circle,
-  Flame,
-  Target,
-  TrendingUp,
-  Crown,
-  Zap,
-  Type,
-  AlignLeft,
-  ArrowUpDown,
-  MessageSquare,
-} from 'lucide-react';
-import { ScrollArea } from '../ui/scroll-area';
-import { cn } from '@/lib/utils';
-import type { Quiz as AppQuiz, Question as AppQuestion, QuestionType } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, X, Replace, Pencil, Eye, FilePlus2, ChevronDown, BookOpenText, Video, FileText, File as FileGenericIcon, Layers3, Sparkles, Award, CheckCircle, Calendar as CalendarIcon, Info, Settings2, Globe as GlobeIcon, Target, Shield, Clock3, Layout, Sparkles as SparklesIcon, BookOpen, Zap, Target as TargetIcon, BarChart, Users, Tag, Hash, Lock, Unlock, Filter, Palette, EyeOff, ArrowRight, Check, Plus, Minus, Grid3x3, List, Eye as EyeIcon, Maximize2, Minimize2, FolderPlus, FolderOpen, Calendar, Timer, TrendingUp, BarChart2, PieChart, Download, Share2, Bell, Star, Edit, Copy, MoreHorizontal, ExternalLink, HelpCircle, AlertCircle, Info as InfoIcon, ChevronRight, ChevronLeft, FlipVertical, FlipHorizontal, SquareStack, PanelLeft, PanelRight, PanelsTopLeft, Layers, Youtube, Upload, ChevronRightCircle, Grid, FlipHorizontal2, Table } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, useCallback, ChangeEvent, useRef } from 'react';
+import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType, CourseStatus, Quiz as AppQuiz, ContentBlock } from '@/types';
 import Image from 'next/image';
-import { Label } from '../ui/label';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
-import { Badge } from '../ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { Switch } from '../ui/switch';
-import { Slider } from '../ui/slider';
-import { 
-  DndContext, 
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from '@dnd-kit/core';
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/auth-context';
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { motion, AnimatePresence } from 'framer-motion';
+import { Switch } from '@/components/ui/switch';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { UploadArea } from '@/components/ui/upload-area';
+import { uploadWithProgress } from '@/lib/upload-with-progress';
+import { CourseAssignmentModal } from '@/components/course-assignment-modal';
+import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
+import { useTitle } from '@/contexts/title-context';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Toggle } from '@/components/ui/toggle';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
-// ============================================================================
-// CONSTANTS & UTILITIES
-// ============================================================================
-
-const VIEWPORT_SIZES = [
-  { id: 'mobile', label: 'Móvil', icon: Smartphone, width: 375, height: 667, scale: 0.85 },
-  { id: 'tablet', label: 'Tablet', icon: Tablet, width: 768, height: 1024, scale: 0.65 },
-  { id: 'desktop', label: 'Escritorio', icon: Monitor, width: 1024, height: 768, scale: 0.8 },
-] as const;
-
-const QUESTION_TYPES = [
-  { value: 'SINGLE_CHOICE', label: 'Opción Única', icon: Circle, color: 'bg-blue-500' },
-  { value: 'MULTIPLE_CHOICE', label: 'Opción Múltiple', icon: CheckSquare, color: 'bg-green-500' },
-  { value: 'TRUE_FALSE', label: 'Verdadero/Falso', icon: BrainCircuit, color: 'bg-purple-500' },
-  { value: 'SHORT_ANSWER', label: 'Respuesta Corta', icon: Type, color: 'bg-orange-500' },
-  { value: 'LONG_ANSWER', label: 'Respuesta Larga', icon: AlignLeft, color: 'bg-red-500' },
-  { value: 'MATCHING', label: 'Emparejamiento', icon: Link, color: 'bg-indigo-500' },
-  { value: 'ORDERING', label: 'Ordenamiento', icon: ListOrdered, color: 'bg-pink-500' },
-] as const;
-
-const DIFFICULTY_LEVELS = [
-  { value: 'easy', label: 'Fácil', color: 'bg-green-500', icon: TrendingUp, points: 10 },
-  { value: 'medium', label: 'Medio', color: 'bg-yellow-500', icon: Target, points: 20 },
-  { value: 'hard', label: 'Difícil', color: 'bg-red-500', icon: Flame, points: 30 },
-  { value: 'expert', label: 'Experto', color: 'bg-purple-500', icon: Crown, points: 50 },
-] as const;
-
-const generateId = () => `id-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-const stripHtml = (html?: string): string => {
-  if (!html) return '';
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || '';
-};
-
-// Helper to get localized difficulty label
-const getDifficultyLabel = (val?: string) => {
-  const diff = DIFFICULTY_LEVELS.find(d => d.value === val);
-  return diff ? diff.label : 'Medio';
-};
-
-// ============================================================================
-// COMPONENT: SortableQuestionItem
-// ============================================================================
-
-interface SortableQuestionItemProps {
-  question: AppQuestion;
-  index: number;
-  isActive: boolean;
-  onSelect: () => void;
-  onDelete: () => void;
-  onDuplicate: () => void;
+// === INTERFACES Y UTILIDADES ===
+interface ApiTemplate {
+  id: string;
+  name: string;
+  description: string;
+  templateBlocks: any[];
+  creator: { name: string | null } | null;
 }
 
-function SortableQuestionItem({ 
-  question, 
-  index, 
-  isActive, 
+interface PrismaCertificateTemplate {
+  id: string;
+  name: string;
+}
+
+interface InteractiveComponentData {
+  type: 'accordion' | 'flipCards' | 'tabs' | 'text';
+  items: InteractiveItem[];
+  settings?: {
+    allowMultipleOpen?: boolean;
+    flipDirection?: 'horizontal' | 'vertical';
+    tabPosition?: 'top' | 'left' | 'right' | 'bottom';
+  };
+}
+
+interface InteractiveItem {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  imagePreview?: string;
+}
+
+const generateUniqueId = (prefix: string): string => {
+  if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
+    return `${prefix}-${window.crypto.randomUUID()}`;
+  }
+  const timestamp = Date.now();
+  const randomPart = Math.random().toString(36).substring(2, 9);
+  return `${prefix}-${timestamp}-${randomPart}`;
+};
+
+// === COMPONENTES REUTILIZABLES ===
+
+const StatusBadge = ({ status }: { status: CourseStatus }) => {
+  const statusConfig = {
+    DRAFT: { label: 'Borrador', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+    PUBLISHED: { label: 'Publicado', color: 'bg-green-100 text-green-800 border-green-200' },
+    ARCHIVED: { label: 'Archivado', color: 'bg-gray-100 text-gray-800 border-gray-200' }
+  };
+
+  const config = statusConfig[status] || statusConfig.DRAFT;
+
+  return (
+    <Badge variant="outline" className={`font-medium ${config.color}`}>
+      {config.label}
+    </Badge>
+  );
+};
+
+// === COMPONENTE PARA MENÚ DE CONTENIDO CON SUBMENÚ DE TEXTO ===
+const ContentTypeMenu = ({ 
   onSelect, 
-  onDelete, 
-  onDuplicate 
-}: SortableQuestionItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: question.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  const difficulty = DIFFICULTY_LEVELS.find(d => d.value === question.difficulty) || DIFFICULTY_LEVELS[1];
-  const questionType = QUESTION_TYPES.find(t => t.value === question.type) || QUESTION_TYPES[0];
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "relative group mb-2 transition-all duration-200",
-        isActive && "ring-2 ring-primary ring-offset-2 z-10"
-      )}
-    >
-      <div
-        onClick={onSelect}
-        className={cn(
-          "relative p-3 rounded-lg border transition-all duration-200 cursor-pointer overflow-hidden",
-          "hover:shadow-md",
-          isActive 
-            ? "border-primary bg-gradient-to-r from-primary/5 to-primary/10" 
-            : "border-border bg-card hover:border-primary/30"
-        )}
-      >
-        {/* Drag handle */}
-        <div
-          {...attributes}
-          {...listeners}
-          className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-20"
-        >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
-        </div>
-
-        <div className="ml-6">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-col gap-1 mb-1">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px]">
-                    {index + 1}
-                  </div>
-                  <span className="text-sm font-medium truncate block max-w-full">
-                    {stripHtml(question.text) || `Pregunta ${index + 1}`}
-                  </span>
-                </div>
-                
-                <div className="flex flex-wrap items-center gap-1">
-                  <Badge 
-                    variant="outline" 
-                    className={cn(
-                      "text-[10px] px-1.5 py-0 h-5",
-                      difficulty.value === 'easy' && "border-green-500/30 text-green-600",
-                      difficulty.value === 'medium' && "border-yellow-500/30 text-yellow-600",
-                      difficulty.value === 'hard' && "border-red-500/30 text-red-600",
-                      difficulty.value === 'expert' && "border-purple-500/30 text-purple-600"
-                    )}
-                  >
-                    <div className={`w-1 h-1 rounded-full mr-1 shrink-0 ${difficulty.color}`} />
-                    {difficulty.label}
-                  </Badge>
-                  
-                  <Badge 
-                    variant="outline" 
-                    className="text-[10px] px-1.5 py-0 h-5"
-                  >
-                    <div className={`w-1 h-1 rounded-full mr-1 shrink-0 ${questionType.color}`} />
-                    {questionType.label}
-                  </Badge>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
-                <span className="truncate">{question.options?.length || 0} opciones</span>
-                <span>•</span>
-                <span className="font-semibold text-primary">{question.basePoints || 10} pts</span>
-                {question.imageUrl && (
-                  <>
-                    <span>•</span>
-                    <ImageIcon className="h-3 w-3" />
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Quick actions */}
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 bg-background/80 backdrop-blur-sm rounded-md shadow-sm border border-border/50">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 rounded-sm hover:bg-muted"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDuplicate();
-                      }}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Duplicar</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 rounded-sm hover:bg-destructive/10 hover:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete();
-                      }}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Eliminar</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// COMPONENT: QuestionList
-// ============================================================================
-
-interface QuestionListProps {
-  questions: AppQuestion[];
-  activeIndex: number;
-  onSelect: (index: number) => void;
-  onDelete: (index: number) => void;
-  onAdd: () => void;
-  onReorder: (fromIndex: number, toIndex: number) => void;
-  onDuplicate: (index: number) => void;
-}
-
-function QuestionList({
-  questions,
-  activeIndex,
-  onSelect,
-  onDelete,
-  onAdd,
-  onReorder,
-  onDuplicate,
-}: QuestionListProps) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), // Prevent accidental drags
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const oldIndex = questions.findIndex((q) => q.id === active.id);
-      const newIndex = questions.findIndex((q) => q.id === over.id);
-      onReorder(oldIndex, newIndex);
-    }
-  };
-
-  return (
-    <div className="h-full flex flex-col border-r border-border bg-muted/10">
-      {/* Header */}
-      <div className="shrink-0 p-4 border-b border-border bg-background">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Estructura</h2>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={onAdd}
-            className="gap-1 h-8"
-          >
-            <PlusCircle className="h-3.5 w-3.5" />
-            Nueva
-          </Button>
-        </div>
-        
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 mt-3">
-          <div className="text-center p-2 rounded-lg bg-background border shadow-sm">
-            <div className="text-lg font-bold text-primary leading-none">{questions.length}</div>
-            <div className="text-[10px] text-muted-foreground mt-1">Total</div>
-          </div>
-          <div className="text-center p-2 rounded-lg bg-background border shadow-sm">
-            <div className="text-lg font-bold text-emerald-500 leading-none">
-              {questions.filter(q => q.difficulty === 'easy').length}
-            </div>
-            <div className="text-[10px] text-muted-foreground mt-1">Fáciles</div>
-          </div>
-          <div className="text-center p-2 rounded-lg bg-background border shadow-sm">
-            <div className="text-lg font-bold text-red-500 leading-none">
-              {questions.filter(q => q.difficulty === 'hard' || q.difficulty === 'expert').length}
-            </div>
-            <div className="text-[10px] text-muted-foreground mt-1">Difíciles</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Questions */}
-      <ScrollArea className="flex-1 bg-background/50">
-        <div className="p-4">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={questions.map(q => q.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {questions.map((question, index) => (
-                <SortableQuestionItem
-                  key={question.id}
-                  question={question}
-                  index={index}
-                  isActive={index === activeIndex}
-                  onSelect={() => onSelect(index)}
-                  onDelete={() => onDelete(index)}
-                  onDuplicate={() => onDuplicate(index)}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
-
-          {questions.length === 0 && (
-            <div className="text-center py-12 px-4">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                <HelpCircle className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="font-semibold mb-2">Sin preguntas</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Tu quiz necesita contenido para brillar.
-              </p>
-              <Button variant="outline" onClick={onAdd} className="w-full">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Añadir primera pregunta
-              </Button>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
-    </div>
-  );
-}
-
-// ============================================================================
-// COMPONENT: OptionRenderer
-// ============================================================================
-
-interface OptionRendererProps {
-  option: any;
-  index: number;
-  questionType: QuestionType;
-  isEditing: boolean;
-  onStartEdit: () => void;
-  onTextChange: (text: string) => void;
-  onDelete: () => void;
-  onToggleCorrect: () => void;
-  isCorrect: boolean;
-  showCorrectIndicator?: boolean;
-}
-
-function OptionRenderer({
-  option,
-  index,
-  questionType,
-  isEditing,
-  onStartEdit,
-  onTextChange,
-  onDelete,
-  onToggleCorrect,
-  isCorrect,
-  showCorrectIndicator = true,
-}: OptionRendererProps) {
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (isEditing && textAreaRef.current) {
-      textAreaRef.current.style.height = 'auto';
-      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
-      textAreaRef.current.focus();
-    }
-  }, [isEditing]);
-
-  const getOptionPrefix = () => {
-    switch (questionType) {
-      case 'SINGLE_CHOICE':
-      case 'MULTIPLE_CHOICE':
-        return String.fromCharCode(65 + index);
-      case 'ORDERING':
-        return `${index + 1}.`;
-      case 'MATCHING':
-        return `A${index + 1}`;
-      default:
-        return `${index + 1}.`;
-    }
-  };
-
-  return (
-    <div
-      className={cn(
-        "relative group p-4 rounded-lg border transition-all duration-200",
-        "hover:shadow-sm",
-        isCorrect && showCorrectIndicator
-          ? "border-emerald-500 bg-emerald-500/5" 
-          : "border-border bg-card"
-      )}
-    >
-      {/* Option prefix */}
-      <div className="absolute -left-3 top-1/2 -translate-y-1/2 z-10">
-        <div className={cn(
-          "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border shadow-sm",
-          isCorrect && showCorrectIndicator
-            ? "bg-emerald-500 text-white border-emerald-600" 
-            : "bg-background text-muted-foreground border-border"
-        )}>
-          {getOptionPrefix()}
-        </div>
-      </div>
-
-      {/* Option content */}
-      <div className="ml-4 w-full">
-        {isEditing ? (
-          <textarea
-            ref={textAreaRef}
-            value={option.text}
-            onChange={(e) => onTextChange(e.target.value)}
-            onBlur={() => {}}
-            className="w-full bg-transparent border-none outline-none resize-none min-h-[1.5em] overflow-hidden"
-            rows={1}
-            style={{ minHeight: '24px' }}
-          />
-        ) : (
-          <div
-            onClick={onStartEdit}
-            className="cursor-text hover:bg-muted/50 transition-colors rounded p-1 -m-1 break-words whitespace-pre-wrap"
-          >
-            <p className={cn("text-base", !option.text && "text-muted-foreground italic")}>
-              {option.text || 'Haz clic para editar esta opción'}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Option actions */}
-      <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur rounded-md shadow-sm border border-border/50 p-0.5">
-        {showCorrectIndicator && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn("h-7 w-7", isCorrect && "text-emerald-500")}
-                  onClick={(e) => { e.stopPropagation(); onToggleCorrect(); }}
-                >
-                  <Check className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Marcar como correcta</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
-
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 hover:text-destructive"
-                onClick={(e) => { e.stopPropagation(); onDelete(); }}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Eliminar</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// COMPONENT: QuestionCanvas
-// ============================================================================
-
-interface QuestionCanvasProps {
-  question: AppQuestion;
-  viewport: typeof VIEWPORT_SIZES[number];
-  onQuestionChange: (updates: Partial<AppQuestion>) => void;
-  onOptionChange: (optionId: string, updates: Partial<any>) => void;
-  onAddOption: () => void;
-  onDeleteOption: (optionId: string) => void;
-  onSetCorrectOption: (optionId: string) => void;
-  onAddMatchingPair?: () => void;
-}
-
-function QuestionCanvas({
-  question,
-  viewport,
-  onQuestionChange,
-  onOptionChange,
-  onAddOption,
-  onDeleteOption,
-  onSetCorrectOption,
-}: QuestionCanvasProps) {
-  const [isEditingText, setIsEditingText] = useState(false);
-  const [editingOptionId, setEditingOptionId] = useState<string | null>(null);
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textAreaRef.current) {
-      textAreaRef.current.style.height = 'auto';
-      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
-    }
-  }, [question.text, editingOptionId]);
-
-  const handleTextBlur = () => {
-    setIsEditingText(false);
-  };
-
-  const handleOptionTextBlur = () => {
-    setEditingOptionId(null);
-  };
-
-  const handleOptionTextChange = (optionId: string, text: string) => {
-    onOptionChange(optionId, { text });
-  };
-
-  const handleAddDefaultOptions = useCallback(() => {
-    if (question.type === 'TRUE_FALSE' && (!question.options || question.options.length === 0)) {
-      const trueOption = { id: generateId(), text: 'Verdadero', isCorrect: false, points: 0 };
-      const falseOption = { id: generateId(), text: 'Falso', isCorrect: false, points: 0 };
-      
-      onQuestionChange({ 
-        options: [trueOption, falseOption] 
-      });
-    } else {
-      onAddOption();
-    }
-  }, [question.type, question.options, onQuestionChange, onAddOption]);
-
-  const renderQuestionContent = () => {
-    // We re-verify type here to ensure render is in sync
-    const renderType = question.type;
-
-    switch (renderType) {
-      case 'SHORT_ANSWER':
-      case 'LONG_ANSWER':
-        return (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            {/* Question Text */}
-            <div className="relative group">
-              {isEditingText ? (
-                <textarea
-                  ref={textAreaRef}
-                  value={question.text || ''}
-                  onChange={(e) => onQuestionChange({ text: e.target.value })}
-                  onBlur={handleTextBlur}
-                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none overflow-hidden"
-                  autoFocus
-                  rows={2}
-                />
-              ) : (
-                <div
-                  onClick={() => setIsEditingText(true)}
-                  className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
-                >
-                  <h2 className={cn("text-2xl font-bold min-h-[60px] break-words whitespace-pre-wrap", !question.text && "text-muted-foreground opacity-50")}>
-                    {question.text || 'Escribe tu pregunta aquí...'}
-                  </h2>
-                </div>
-              )}
-            </div>
-
-            {/* Answer Field */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Type className="h-4 w-4" />
-                Campo de respuesta
-              </h3>
-              <div className="p-6 rounded-lg border-2 border-dashed border-border bg-muted/20 flex flex-col items-center justify-center min-h-[120px]">
-                <Input disabled placeholder="Espacio para la respuesta del estudiante" className="max-w-md cursor-not-allowed bg-background/50" />
-                <p className="text-sm text-muted-foreground mt-2">
-                  {question.type === 'SHORT_ANSWER' 
-                    ? 'Respuesta corta (una línea)' 
-                    : 'Respuesta extensa (párrafo)'}
-                </p>
-              </div>
-            </div>
-
-            {/* Explanation */}
-            <div className="space-y-2 pt-4 border-t">
-              <h3 className="text-sm font-semibold text-muted-foreground">Explicación (Opcional)</h3>
-              <Textarea
-                value={question.explanation || ''}
-                onChange={(e) => onQuestionChange({ explanation: e.target.value })}
-                placeholder="Explica la respuesta correcta para el feedback..."
-                rows={2}
-                className="bg-muted/30"
-              />
-            </div>
-          </div>
-        );
-
-      case 'MATCHING':
-        return (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            {/* Question Text */}
-            <div className="relative group">
-              {isEditingText ? (
-                <textarea
-                  ref={textAreaRef}
-                  value={question.text || ''}
-                  onChange={(e) => onQuestionChange({ text: e.target.value })}
-                  onBlur={handleTextBlur}
-                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none overflow-hidden"
-                  autoFocus
-                  rows={2}
-                />
-              ) : (
-                <div
-                  onClick={() => setIsEditingText(true)}
-                  className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
-                >
-                  <h2 className={cn("text-2xl font-bold min-h-[60px] break-words whitespace-pre-wrap", !question.text && "text-muted-foreground opacity-50")}>
-                    {question.text || 'Escribe tu pregunta de emparejamiento...'}
-                  </h2>
-                </div>
-              )}
-            </div>
-
-            {/* Matching Pairs */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Link className="h-4 w-4" />
-                  Pares
-                </h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddDefaultOptions}
-                  className="gap-1"
-                >
-                  <PlusCircle className="h-4 w-4" />
-                  Añadir par
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                {question.options?.map((option, index) => (
-                  <div key={option.id} className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-lg border bg-card/50">
-                     <div className="flex-1 w-full">
-                       <Label className="text-xs mb-1.5 block text-muted-foreground">Concepto A</Label>
-                       <Input
-                        value={option.left || ''}
-                        onChange={(e) => onOptionChange(option.id, { left: e.target.value })}
-                        placeholder="Elemento izquierdo"
-                      />
-                    </div>
-                    <div className="text-muted-foreground shrink-0 mt-4">
-                      <ArrowUpDown className="h-5 w-5 sm:rotate-90" />
-                    </div>
-                    <div className="flex-1 w-full">
-                      <Label className="text-xs mb-1.5 block text-muted-foreground">Concepto B</Label>
-                      <Input
-                        value={option.right || ''}
-                        onChange={(e) => onOptionChange(option.id, { right: e.target.value })}
-                        placeholder="Elemento derecho"
-                      />
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 hover:text-destructive sm:mt-6"
-                      onClick={() => onDeleteOption(option.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-
-      case 'ORDERING':
-        return (
-          <div className="space-y-6 animate-in fade-in duration-300">
-             {/* Question Text */}
-             <div className="relative group">
-              {isEditingText ? (
-                <textarea
-                  ref={textAreaRef}
-                  value={question.text || ''}
-                  onChange={(e) => onQuestionChange({ text: e.target.value })}
-                  onBlur={handleTextBlur}
-                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none overflow-hidden"
-                  autoFocus
-                  rows={2}
-                />
-              ) : (
-                <div
-                  onClick={() => setIsEditingText(true)}
-                  className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
-                >
-                  <h2 className={cn("text-2xl font-bold min-h-[60px] break-words whitespace-pre-wrap", !question.text && "text-muted-foreground opacity-50")}>
-                    {question.text || 'Escribe la instrucción de ordenamiento...'}
-                  </h2>
-                </div>
-              )}
-            </div>
-
-            {/* Ordering Items */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <ListOrdered className="h-4 w-4" />
-                  Secuencia Correcta
-                </h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onAddOption}
-                  className="gap-1"
-                >
-                  <PlusCircle className="h-4 w-4" />
-                  Añadir paso
-                </Button>
-              </div>
-
-              <div className="space-y-2">
-                {question.options?.map((option, index) => (
-                  <OptionRenderer
-                    key={option.id}
-                    option={option}
-                    index={index}
-                    questionType={question.type}
-                    isEditing={editingOptionId === option.id}
-                    onStartEdit={() => setEditingOptionId(option.id)}
-                    onTextChange={(text) => handleOptionTextChange(option.id, text)}
-                    onDelete={() => onDeleteOption(option.id)}
-                    onToggleCorrect={() => onSetCorrectOption(option.id)}
-                    isCorrect={option.isCorrect}
-                    showCorrectIndicator={false}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-
-      default: // SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE
-        return (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            {/* Question Text */}
-            <div className="relative group">
-              {isEditingText ? (
-                <textarea
-                  ref={textAreaRef}
-                  value={question.text || ''}
-                  onChange={(e) => onQuestionChange({ text: e.target.value })}
-                  onBlur={handleTextBlur}
-                  className="w-full text-2xl font-bold bg-transparent border-none outline-none resize-none overflow-hidden"
-                  autoFocus
-                  rows={2}
-                />
-              ) : (
-                <div
-                  onClick={() => setIsEditingText(true)}
-                  className="cursor-text hover:bg-muted/50 transition-colors rounded-lg p-2 -m-2"
-                >
-                  <h2 className={cn("text-2xl font-bold min-h-[60px] break-words whitespace-pre-wrap", !question.text && "text-muted-foreground opacity-50")}>
-                    {question.text || 'Haz clic para editar la pregunta'}
-                  </h2>
-                </div>
-              )}
-              
-              <div className="absolute -top-2 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={() => setIsEditingText(true)}
-                >
-                  <PenLine className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Question Image */}
-            {question.imageUrl && (
-              <div className="relative rounded-xl overflow-hidden border border-border group/image">
-                <div className="w-full h-64 bg-muted relative">
-                  <Image
-                    src={question.imageUrl}
-                    alt="Question image"
-                    fill
-                    className="object-contain"
-                    unoptimized={question.imageUrl.startsWith('blob:')}
-                  />
-                </div>
-                <div className="absolute top-2 right-2 opacity-0 group-hover/image:opacity-100 transition-opacity">
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="h-8 w-8 shadow-sm"
-                    onClick={() => onQuestionChange({ imageUrl: null })}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Options */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <CheckSquare className="h-4 w-4" />
-                  {question.type === 'MULTIPLE_CHOICE' ? 'Selección Múltiple' : 
-                   question.type === 'TRUE_FALSE' ? 'Opciones' : 
-                   'Respuestas'}
-                </h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddDefaultOptions}
-                  className="gap-1"
-                >
-                  <PlusCircle className="h-4 w-4" />
-                  {question.type === 'TRUE_FALSE' ? 'Restablecer' : 'Añadir'}
-                </Button>
-              </div>
-
-              <div className="space-y-2">
-                {question.options?.map((option, index) => (
-                  <OptionRenderer
-                    key={option.id}
-                    option={option}
-                    index={index}
-                    questionType={question.type}
-                    isEditing={editingOptionId === option.id}
-                    onStartEdit={() => setEditingOptionId(option.id)}
-                    onTextChange={(text) => handleOptionTextChange(option.id, text)}
-                    onDelete={() => onDeleteOption(option.id)}
-                    onToggleCorrect={() => onSetCorrectOption(option.id)}
-                    isCorrect={option.isCorrect}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Explanation */}
-            <div className="space-y-2 pt-4 border-t">
-              <h3 className="text-sm font-semibold text-muted-foreground">Explicación (Feedback)</h3>
-              <Textarea
-                value={question.explanation || ''}
-                onChange={(e) => onQuestionChange({ explanation: e.target.value })}
-                placeholder="Texto que verá el alumno tras responder..."
-                rows={2}
-                className="resize-none bg-muted/30"
-              />
-            </div>
-          </div>
-        );
-    }
-  };
-
-  return (
-    <div className="h-full flex flex-col bg-muted/5">
-      {/* Viewport Selector */}
-      <div className="shrink-0 p-4 border-b border-border bg-background">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg border">
-            {VIEWPORT_SIZES.map((vp) => (
-              <TooltipProvider key={vp.id}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant={viewport.id === vp.id ? "secondary" : "ghost"}
-                      size="icon"
-                      className={cn("h-8 w-8 rounded-md transition-all", viewport.id === vp.id && "bg-white shadow-sm")}
-                      onClick={() => setViewport(vp)}
-                    >
-                      <vp.icon className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{vp.label} ({vp.width}x{vp.height})</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ))}
-          </div>
-          
-          <div className="text-sm text-muted-foreground flex items-center gap-3">
-            <span className="font-semibold text-primary">{question.basePoints || 10} pts</span>
-            <span className="h-4 w-px bg-border" />
-            <span className="capitalize">{getDifficultyLabel(question.difficulty)}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Canvas Area with Responsive Scaling */}
-      <div className="flex-1 overflow-hidden relative w-full h-full flex items-center justify-center bg-dot-pattern">
-        <div className="absolute inset-0 bg-muted/10 pointer-events-none" />
-        
-        {/* Helper text */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 text-xs text-muted-foreground opacity-50 z-0">
-          Vista previa del dispositivo: {viewport.label}
-        </div>
-
-        <div 
-          className="relative transition-all duration-300 ease-in-out shadow-2xl rounded-[2rem] overflow-hidden bg-background border-[8px] border-zinc-800"
-          style={{
-            width: `${viewport.width}px`,
-            height: `${viewport.height}px`,
-            transform: `scale(${viewport.scale})`,
-            transformOrigin: 'center center',
-          }}
-        >
-          {/* Status Bar Mockup */}
-          <div className="h-6 bg-zinc-800 w-full flex items-center justify-between px-6">
-            <div className="w-12 h-1.5 bg-zinc-700 rounded-full" />
-            <div className="flex gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-zinc-700" />
-              <div className="w-1.5 h-1.5 rounded-full bg-zinc-700" />
-            </div>
-          </div>
-
-          <div className="h-full overflow-y-auto overflow-x-hidden scrollbar-thin">
-            <div className="p-8 pb-20">
-               {/* Key added to force re-render on type change */}
-              <div key={question.type}>
-                {renderQuestionContent()}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// COMPONENT: PropertiesPanel
-// ============================================================================
-
-interface PropertiesPanelProps {
-  selectedElement: 'question' | 'option' | 'quiz';
-  question?: AppQuestion;
-  option?: any;
-  quiz?: AppQuiz;
-  onQuestionUpdate: (updates: Partial<AppQuestion>) => void;
-  onOptionUpdate: (updates: Partial<any>) => void;
-  onQuizUpdate: (updates: Partial<AppQuiz>) => void;
-}
-
-function PropertiesPanel({
-  selectedElement,
-  question,
-  option,
-  quiz,
-  onQuestionUpdate,
-  onOptionUpdate,
-  onQuizUpdate,
-}: PropertiesPanelProps) {
-
-  const handleQuestionTypeChange = (value: string) => {
-    const newType = value as QuestionType;
-    
-    // Reset options based on question type
-    let newOptions = [];
-    switch (newType) {
-      case 'TRUE_FALSE':
-        newOptions = [
-          { id: generateId(), text: 'Verdadero', isCorrect: false, points: 0 },
-          { id: generateId(), text: 'Falso', isCorrect: false, points: 0 },
-        ];
-        break;
-      case 'SINGLE_CHOICE':
-      case 'MULTIPLE_CHOICE':
-        newOptions = [
-          { id: generateId(), text: 'Opción 1', isCorrect: true, points: 10 },
-          { id: generateId(), text: 'Opción 2', isCorrect: false, points: 0 },
-        ];
-        break;
-      case 'MATCHING':
-        newOptions = [
-          { id: generateId(), left: 'Concepto A', right: 'Definición A', isCorrect: true, points: 10 },
-          { id: generateId(), left: 'Concepto B', right: 'Definición B', isCorrect: true, points: 10 },
-        ];
-        break;
-      case 'ORDERING':
-        newOptions = [
-          { id: generateId(), text: 'Paso 1', isCorrect: false, points: 0 },
-          { id: generateId(), text: 'Paso 2', isCorrect: false, points: 0 },
-        ];
-        break;
-      default:
-        newOptions = [];
-    }
-
-    onQuestionUpdate({ 
-      type: newType,
-      options: newOptions 
-    });
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'question' | 'quiz') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      alert('Por favor, sube solo archivos de imagen');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert('La imagen no debe superar los 5MB');
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(file);
-
-    if (type === 'question') {
-      onQuestionUpdate({ imageUrl: objectUrl });
-    } else {
-      onQuizUpdate({ coverImage: objectUrl });
-    }
-  };
-
-  const renderQuestionProperties = () => {
-    if (!question) return null;
-
-    return (
-      <div className="space-y-6">
-        {/* Basic Settings */}
-        <div className="space-y-4">
-          <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Configuración</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="question-type" className="mb-2 block">Tipo de pregunta</Label>
-              <Select
-                value={question.type}
-                onValueChange={handleQuestionTypeChange}
-              >
-                <SelectTrigger id="question-type" className="h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {QUESTION_TYPES.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${type.color}`} />
-                        {type.label}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="question-difficulty" className="mb-2 block">Dificultad</Label>
-              <Select
-                value={question.difficulty}
-                onValueChange={(value) => onQuestionUpdate({ difficulty: value as any })}
-              >
-                <SelectTrigger id="question-difficulty" className="h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DIFFICULTY_LEVELS.map((level) => (
-                    <SelectItem key={level.value} value={level.value}>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${level.color}`} />
-                        {level.label}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                 <Label htmlFor="question-points">Puntos</Label>
-                 <span className="text-xs font-mono text-muted-foreground">{question.basePoints || 10} pts</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Slider
-                  id="question-points"
-                  value={[question.basePoints || 10]}
-                  onValueChange={([value]) => onQuestionUpdate({ basePoints: value })}
-                  min={0}
-                  max={100}
-                  step={5}
-                  className="flex-1"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Time Settings */}
-        <div className="space-y-4 pt-4 border-t">
-          <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Tiempo</h3>
-          
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="time-limit">Límite de tiempo</Label>
-              <Switch
-                id="time-limit"
-                checked={!!question.timeLimit}
-                onCheckedChange={(checked) => 
-                  onQuestionUpdate({ timeLimit: checked ? 30 : undefined })
-                }
-              />
-            </div>
-
-            {question.timeLimit && (
-              <div className="animate-in slide-in-from-top-2 fade-in">
-                <div className="flex justify-between mb-2">
-                   <Label htmlFor="time-seconds" className="text-xs">Duración</Label>
-                   <span className="text-xs font-mono">{question.timeLimit}s</span>
-                </div>
-                <Slider
-                  id="time-seconds"
-                  value={[question.timeLimit]}
-                  onValueChange={([value]) => onQuestionUpdate({ timeLimit: value })}
-                  min={5}
-                  max={300}
-                  step={5}
-                  className="flex-1"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Media Settings */}
-        <div className="space-y-4 pt-4 border-t">
-          <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Multimedia</h3>
-          
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor="question-image">Imagen de apoyo</Label>
-              <div className="mt-2">
-                <label
-                  htmlFor="question-image-upload"
-                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors group"
-                >
-                  <input
-                    id="question-image-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleImageUpload(e, 'question')}
-                  />
-                  <div className="text-center p-4">
-                    <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground group-hover:text-primary transition-colors" />
-                    <p className="text-sm font-medium mt-2">Subir imagen</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Max 5MB (JPG, PNG)
-                    </p>
-                  </div>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderQuizProperties = () => {
-    if (!quiz) return null;
-
-    return (
-      <div className="space-y-6">
-        {/* Quiz Settings */}
-        <div className="space-y-4">
-          <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">General</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="quiz-title" className="mb-1.5 block">Título</Label>
-              <Input
-                id="quiz-title"
-                value={quiz.title}
-                onChange={(e) => onQuizUpdate({ title: e.target.value })}
-                placeholder="Nombre del quiz"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="quiz-description" className="mb-1.5 block">Descripción</Label>
-              <Textarea
-                id="quiz-description"
-                value={quiz.description || ''}
-                onChange={(e) => onQuizUpdate({ description: e.target.value })}
-                placeholder="¿De qué trata este quiz?"
-                rows={3}
-                className="resize-none"
-              />
-            </div>
-
-            <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
-              <Label htmlFor="quiz-published">Estado Público</Label>
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="quiz-published"
-                  checked={quiz.published}
-                  onCheckedChange={(checked) => onQuizUpdate({ published: checked })}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Appearance Settings */}
-        <div className="space-y-4 pt-4 border-t">
-          <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Diseño</h3>
-          
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor="quiz-theme">Tema de color</Label>
-              <div className="flex gap-3 mt-2">
-                {[
-                  { color: 'blue', name: 'Azul' },
-                  { color: 'green', name: 'Verde' },
-                  { color: 'purple', name: 'Morado' },
-                  { color: 'orange', name: 'Naranja' },
-                  { color: 'pink', name: 'Rosa' },
-                ].map((theme) => (
-                  <TooltipProvider key={theme.color}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => onQuizUpdate({ theme: theme.color })}
-                          className={cn(
-                            "w-6 h-6 rounded-full ring-2 ring-offset-2 transition-all",
-                            quiz.theme === theme.color 
-                              ? "ring-primary scale-110" 
-                              : "ring-transparent hover:scale-105"
-                          )}
-                          style={{ 
-                            backgroundColor: `var(--${theme.color}-500, ${theme.color})` 
-                          }}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{theme.name}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="quiz-cover">Portada</Label>
-              <div className="mt-2">
-                <label
-                  htmlFor="quiz-cover-upload"
-                  className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                >
-                  <input
-                    id="quiz-cover-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleImageUpload(e, 'quiz')}
-                  />
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <ImageIcon className="h-4 w-4" />
-                    <span className="text-xs">Cambiar portada</span>
-                  </div>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="h-full flex flex-col bg-background">
-      {/* Panel Header */}
-      <div className="shrink-0 p-4 border-b border-border bg-muted/10">
-        <div className="flex items-center gap-2">
-          <Settings2 className="h-4 w-4 text-primary" />
-          <h2 className="font-semibold text-sm">Propiedades</h2>
-          <Badge variant="secondary" className="ml-auto text-xs font-normal">
-            {selectedElement === 'question' && 'Pregunta'}
-            {selectedElement === 'option' && 'Opción'}
-            {selectedElement === 'quiz' && 'Quiz Global'}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Panel Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-5">
-          {selectedElement === 'question' && renderQuestionProperties()}
-          {selectedElement === 'quiz' && renderQuizProperties()}
-          {selectedElement === 'option' && option && (
-            <div className="space-y-6">
-               <div className="space-y-4">
-                <h3 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Opción</h3>
-                <div>
-                  <Label htmlFor="option-text" className="mb-2 block">Texto</Label>
-                  <Textarea
-                    id="option-text"
-                    value={option.text}
-                    onChange={(e) => onOptionUpdate({ text: e.target.value })}
-                    rows={3}
-                    className="resize-none"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <Label htmlFor="option-correct">Es correcta</Label>
-                  <Switch
-                    id="option-correct"
-                    checked={option.isCorrect}
-                    onCheckedChange={(checked) => onOptionUpdate({ isCorrect: checked })}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
-    </div>
-  );
-}
-
-// ============================================================================
-// MAIN COMPONENT: QuizEditorModal
-// ============================================================================
-
-interface QuizEditorModalProps {
-  isOpen: boolean;
+  onClose 
+}: { 
+  onSelect: (type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS') => void;
   onClose: () => void;
-  quiz: AppQuiz;
-  onSave: (updatedQuiz: AppQuiz) => void;
-  onPreview?: () => void;
-}
+}) => {
+  const [showTextSubmenu, setShowTextSubmenu] = useState(false);
 
-export function QuizEditorModal({ 
-  isOpen, 
-  onClose, 
-  quiz, 
-  onSave,
-  onPreview 
-}: QuizEditorModalProps) {
-  const [localQuiz, setLocalQuiz] = useState<AppQuiz>(quiz);
-  const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
-  const [viewport, setViewport] = useState<typeof VIEWPORT_SIZES[number]>(VIEWPORT_SIZES[2]); // Default desktop
-  const [selectedElement, setSelectedElement] = useState<'question' | 'option' | 'quiz'>('question');
-  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const contentTypes = [
+    { type: 'TEXT' as const, label: 'Texto', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-100' },
+    { type: 'VIDEO' as const, label: 'Video', icon: Video, color: 'text-red-600', bg: 'bg-red-100' },
+    { type: 'FILE' as const, label: 'Archivo', icon: FileGenericIcon, color: 'text-amber-600', bg: 'bg-amber-100' },
+    { type: 'IMAGE' as const, label: 'Imagen', icon: ImagePlus, color: 'text-green-600', bg: 'bg-green-100' },
+    { type: 'QUIZ' as const, label: 'Quiz', icon: Pencil, color: 'text-purple-600', bg: 'bg-purple-100' },
+  ];
+
+  const textSubmenuTypes = [
+    { type: 'ACCORDION' as const, label: 'Acordeón', icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-100', description: 'Elementos expandibles' },
+    { type: 'TABS' as const, label: 'Pestañas', icon: SquareStack, color: 'text-pink-600', bg: 'bg-pink-100', description: 'Contenido organizado en pestañas' },
+    { type: 'FLIP_CARDS' as const, label: 'Tarjetas de volteo', icon: FlipHorizontal2, color: 'text-teal-600', bg: 'bg-teal-100', description: 'Tarjetas interactivas' },
+  ];
+
+  if (showTextSubmenu) {
+    return (
+      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border shadow-lg w-72">
+        <div className="mb-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mb-2 px-2 h-7 text-sm"
+            onClick={() => setShowTextSubmenu(false)}
+          >
+            <ChevronLeft className="h-3.5 w-3.5 mr-1" />
+            Volver a contenido
+          </Button>
+          <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300">Texto interactivo</h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Elige un formato interactivo</p>
+        </div>
+        <div className="space-y-2">
+          {textSubmenuTypes.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Button
+                key={item.type}
+                variant="ghost"
+                className="w-full justify-start px-3 py-3 h-auto hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-lg"
+                onClick={() => {
+                  onSelect(item.type);
+                  onClose();
+                }}
+              >
+                <div className={`p-2 rounded-lg ${item.bg} mr-3`}>
+                  <Icon className={`h-5 w-5 ${item.color}`} />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-medium">{item.label}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{item.description}</div>
+                </div>
+              </Button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border shadow-lg w-64">
+      <div className="mb-2">
+        <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300">Añadir contenido</h4>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Selecciona el tipo de contenido</p>
+      </div>
+      <div className="space-y-1">
+        {contentTypes.map((item) => {
+          const Icon = item.icon;
+          if (item.type === 'TEXT') {
+            return (
+              <Button
+                key={item.type}
+                variant="ghost"
+                className="w-full justify-between px-3 py-2 h-auto hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setShowTextSubmenu(true)}
+              >
+                <div className="flex items-center">
+                  <div className={`p-2 rounded-md ${item.bg} mr-3`}>
+                    <Icon className={`h-4 w-4 ${item.color}`} />
+                  </div>
+                  <span className="text-sm font-medium">{item.label}</span>
+                </div>
+                <ChevronRight className="h-3.5 w-3.5 text-gray-400" />
+              </Button>
+            );
+          }
+          return (
+            <Button
+              key={item.type}
+              variant="ghost"
+              className="w-full justify-start px-3 py-2 h-auto hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => {
+                onSelect(item.type);
+                onClose();
+              }}
+            >
+              <div className={`p-2 rounded-md ${item.bg} mr-3`}>
+                <Icon className={`h-4 w-4 ${item.color}`} />
+              </div>
+              <span className="text-sm font-medium">{item.label}</span>
+            </Button>
+          );
+        })}
+      </div>
+      <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full text-xs text-gray-500 hover:text-gray-700"
+          onClick={onClose}
+        >
+          Cancelar
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// === COMPONENTE PARA EDITAR CONTENIDO ESPECÍFICO ===
+const ContentEditor = ({ 
+  type, 
+  onSave, 
+  onCancel 
+}: { 
+  type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS';
+  onSave: (content: any) => void;
+  onCancel: () => void;
+}) => {
   const { toast } = useToast();
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [videoSource, setVideoSource] = useState<'url' | 'upload'>('url');
+  const [file, setFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [items, setItems] = useState<Array<{ id: string; title: string; content: string; imageFile?: File }>>([
+    { id: generateUniqueId('item'), title: '', content: '' }
+  ]);
+  const [settings, setSettings] = useState({
+    allowMultipleOpen: true,
+    flipDirection: 'horizontal' as 'horizontal' | 'vertical',
+    tabPosition: 'top' as 'top' | 'left' | 'right' | 'bottom',
+  });
 
-  // Initialize with quiz data
-  useEffect(() => {
-    if (quiz && isOpen) {
-      const clonedQuiz = {
-        ...quiz,
-        questions: quiz.questions.map((q, index) => ({
-          ...q,
-          order: index,
-          options: q.options?.map(opt => ({ 
-            ...opt,
-            left: (opt as any).left || '',
-            right: (opt as any).right || ''
-          })) || []
-        }))
-      };
-      setLocalQuiz(clonedQuiz);
-      setActiveQuestionIndex(0);
-      setSelectedElement('question');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+
+  const getContentConfig = () => {
+    switch(type) {
+      case 'ACCORDION':
+        return {
+          title: 'Acordeón',
+          icon: Layers,
+          description: 'Crea elementos expandibles',
+          color: 'text-indigo-600',
+          bg: 'bg-indigo-100'
+        };
+      case 'TABS':
+        return {
+          title: 'Pestañas',
+          icon: SquareStack,
+          description: 'Organiza contenido en pestañas',
+          color: 'text-pink-600',
+          bg: 'bg-pink-100'
+        };
+      case 'FLIP_CARDS':
+        return {
+          title: 'Tarjetas de volteo',
+          icon: FlipHorizontal2,
+          description: 'Crea tarjetas interactivas que se voltean',
+          color: 'text-teal-600',
+          bg: 'bg-teal-100'
+        };
+      case 'TEXT':
+        return {
+          title: 'Texto',
+          icon: FileText,
+          description: 'Editor de texto simple',
+          color: 'text-blue-600',
+          bg: 'bg-blue-100'
+        };
+      case 'VIDEO':
+        return {
+          title: 'Video',
+          icon: Video,
+          description: 'Inserta un video desde URL o sube un archivo',
+          color: 'text-red-600',
+          bg: 'bg-red-100'
+        };
+      case 'IMAGE':
+        return {
+          title: 'Imagen',
+          icon: ImagePlus,
+          description: 'Sube una imagen',
+          color: 'text-green-600',
+          bg: 'bg-green-100'
+        };
+      case 'FILE':
+        return {
+          title: 'Archivo',
+          icon: FileGenericIcon,
+          description: 'Sube un archivo',
+          color: 'text-amber-600',
+          bg: 'bg-amber-100'
+        };
+      case 'QUIZ':
+        return {
+          title: 'Quiz',
+          icon: Pencil,
+          description: 'Crea un cuestionario interactivo',
+          color: 'text-purple-600',
+          bg: 'bg-purple-100'
+        };
+      default:
+        return {
+          title: type,
+          icon: FileText,
+          description: 'Añadir contenido',
+          color: 'text-gray-600',
+          bg: 'bg-gray-100'
+        };
     }
-  }, [quiz, isOpen]);
-
-  const activeQuestion = localQuiz.questions[activeQuestionIndex];
-  const selectedOption = activeQuestion?.options?.find(opt => opt.id === selectedOptionId);
-
-  // Handlers
-  const handleQuestionUpdate = (updates: Partial<AppQuestion>) => {
-    const newQuestions = [...localQuiz.questions];
-    newQuestions[activeQuestionIndex] = {
-      ...newQuestions[activeQuestionIndex],
-      ...updates,
-    };
-    setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
   };
 
-  const handleOptionUpdate = (optionId: string, updates: Partial<any>) => {
-    const newQuestions = [...localQuiz.questions];
-    const question = newQuestions[activeQuestionIndex];
-    const optionIndex = question.options?.findIndex(opt => opt.id === optionId);
-    
-    if (optionIndex !== undefined && optionIndex !== -1 && question.options) {
-      question.options[optionIndex] = {
-        ...question.options[optionIndex],
-        ...updates,
-      };
-      setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
+  const config = getContentConfig();
+  const Icon = config.icon;
+
+  const addItem = () => {
+    setItems([...items, { id: generateUniqueId('item'), title: '', content: '' }]);
+  };
+
+  const removeItem = (id: string) => {
+    if (items.length > 1) {
+      setItems(items.filter(item => item.id !== id));
     }
   };
 
-  const handleQuizUpdate = (updates: Partial<AppQuiz>) => {
-    setLocalQuiz(prev => ({ ...prev, ...updates }));
+  const updateItem = (id: string, field: 'title' | 'content', value: string) => {
+    setItems(items.map(item => 
+      item.id === id ? { ...item, [field]: value } : item
+    ));
   };
 
-  const handleAddQuestion = () => {
-    const newQuestion: AppQuestion = {
-      id: generateId(),
-      text: '',
-      order: localQuiz.questions.length,
-      type: 'SINGLE_CHOICE',
-      difficulty: 'medium',
-      basePoints: 10,
-      options: [
-        { id: generateId(), text: 'Opción 1', isCorrect: true, points: 10 },
-        { id: generateId(), text: 'Opción 2', isCorrect: false, points: 0 },
-      ],
-    };
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>, fileType: 'file' | 'image' | 'video') => {
+    if (!e.target.files?.[0]) return;
     
-    setLocalQuiz(prev => ({
-      ...prev,
-      questions: [...prev.questions, newQuestion]
-    }));
-    setActiveQuestionIndex(localQuiz.questions.length);
-    setSelectedElement('question');
+    const selectedFile = e.target.files[0];
+    
+    if (fileType === 'image') {
+      if (!selectedFile.type.startsWith('image/')) {
+        toast({ 
+          title: '❌ Error', 
+          description: 'Por favor selecciona un archivo de imagen válido.', 
+          variant: 'destructive' 
+        });
+        return;
+      }
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        toast({ 
+          title: '❌ Error', 
+          description: 'La imagen no debe superar los 5MB.', 
+          variant: 'destructive' 
+        });
+        return;
+      }
+      setImageFile(selectedFile);
+    } 
+    else if (fileType === 'video') {
+      if (!selectedFile.type.startsWith('video/')) {
+        toast({ 
+          title: '❌ Error', 
+          description: 'Por favor selecciona un archivo de video válido.', 
+          variant: 'destructive' 
+        });
+        return;
+      }
+      if (selectedFile.size > 100 * 1024 * 1024) {
+        toast({ 
+          title: '❌ Error', 
+          description: 'El video no debe superar los 100MB.', 
+          variant: 'destructive' 
+        });
+        return;
+      }
+      setVideoFile(selectedFile);
+    }
+    else {
+      if (selectedFile.size > 50 * 1024 * 1024) {
+        toast({ 
+          title: '❌ Error', 
+          description: 'El archivo no debe superar los 50MB.', 
+          variant: 'destructive' 
+        });
+        return;
+      }
+      setFile(selectedFile);
+    }
   };
 
-  const handleDeleteQuestion = (index: number) => {
-    if (localQuiz.questions.length <= 1) {
-      toast({
-        title: "No se puede eliminar",
-        description: "El quiz debe tener al menos una pregunta.",
-        variant: "destructive"
+  const handleUploadFile = async (file: File, endpoint: string): Promise<string | null> => {
+    setIsUploading(true);
+    try {
+      const result = await uploadWithProgress(endpoint, file, () => {});
+      if (result?.url) {
+        return result.url;
+      } else {
+        throw new Error('No se recibió URL del archivo');
+      }
+    } catch (err) {
+      console.error('Error al subir archivo:', err);
+      toast({ 
+        title: '❌ Error', 
+        description: (err as Error).message || 'No se pudo subir el archivo.', 
+        variant: 'destructive' 
       });
-      return;
+      return null;
+    } finally {
+      setIsUploading(false);
     }
-    
-    const newQuestions = localQuiz.questions.filter((_, i) => i !== index);
-    setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
-    
-    if (activeQuestionIndex >= index && activeQuestionIndex > 0) {
-      setActiveQuestionIndex(activeQuestionIndex - 1);
-    }
-  };
-
-  const handleDuplicateQuestion = (index: number) => {
-    const questionToDuplicate = { ...localQuiz.questions[index] };
-    const newQuestion = {
-      ...questionToDuplicate,
-      id: generateId(),
-      text: `${questionToDuplicate.text} (Copia)`,
-      order: localQuiz.questions.length,
-      options: questionToDuplicate.options?.map(opt => ({
-        ...opt,
-        id: generateId()
-      })) || []
-    };
-    
-    setLocalQuiz(prev => ({
-      ...prev,
-      questions: [...prev.questions, newQuestion]
-    }));
-  };
-
-  const handleAddOption = () => {
-    const newOption = {
-      id: generateId(),
-      text: 'Nueva opción',
-      isCorrect: false,
-      points: 0,
-      left: '',
-      right: ''
-    };
-    
-    const newQuestions = [...localQuiz.questions];
-    if (!newQuestions[activeQuestionIndex].options) {
-      newQuestions[activeQuestionIndex].options = [];
-    }
-    newQuestions[activeQuestionIndex].options!.push(newOption);
-    
-    setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
-  };
-
-  const handleDeleteOption = (optionId: string) => {
-    const newQuestions = [...localQuiz.questions];
-    const question = newQuestions[activeQuestionIndex];
-    question.options = question.options?.filter(opt => opt.id !== optionId) || [];
-    setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
-  };
-
-  const handleSetCorrectOption = (optionId: string) => {
-    const newQuestions = [...localQuiz.questions];
-    const question = newQuestions[activeQuestionIndex];
-    
-    if (question.type === 'SINGLE_CHOICE') {
-      question.options = question.options?.map(opt => ({
-        ...opt,
-        isCorrect: opt.id === optionId
-      })) || [];
-    } else if (question.type === 'MULTIPLE_CHOICE') {
-      question.options = question.options?.map(opt => 
-        opt.id === optionId ? { ...opt, isCorrect: !opt.isCorrect } : opt
-      ) || [];
-    } else {
-      question.options = question.options?.map(opt => ({
-        ...opt,
-        isCorrect: opt.id === optionId
-      })) || [];
-    }
-    
-    setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
-  };
-
-  const handleReorderQuestions = (fromIndex: number, toIndex: number) => {
-    const newQuestions = arrayMove(localQuiz.questions, fromIndex, toIndex);
-    newQuestions.forEach((q, idx) => {
-      q.order = idx;
-    });
-    setLocalQuiz(prev => ({ ...prev, questions: newQuestions }));
-    setActiveQuestionIndex(toIndex);
   };
 
   const handleSave = async () => {
-    setIsSaving(true);
+    if (!title.trim()) {
+      toast({ 
+        title: '❌ Error', 
+        description: 'Por favor ingresa un título.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    let contentToSave = content;
+    let additionalData: any = {};
+
     try {
-      // Validate quiz
-      if (!localQuiz.title?.trim()) {
-        toast({
-          title: "Falta el título",
-          description: "Por favor añade un título al quiz.",
-          variant: "destructive"
+      if (type === 'IMAGE' && imageFile) {
+        const imageUrl = await handleUploadFile(imageFile, '/api/upload/image');
+        if (!imageUrl) return;
+        contentToSave = imageUrl;
+        additionalData.fileName = imageFile.name;
+        additionalData.fileSize = imageFile.size;
+      }
+      else if (type === 'FILE' && file) {
+        const fileUrl = await handleUploadFile(file, '/api/upload/file');
+        if (!fileUrl) return;
+        contentToSave = fileUrl;
+        additionalData.fileName = file.name;
+        additionalData.fileSize = file.size;
+      }
+      else if (type === 'VIDEO') {
+        if (videoSource === 'upload' && videoFile) {
+          const videoUrl = await handleUploadFile(videoFile, '/api/upload/video');
+          if (!videoUrl) return;
+          contentToSave = videoUrl;
+          additionalData.fileName = videoFile.name;
+          additionalData.fileSize = videoFile.size;
+          additionalData.source = 'upload';
+        } else {
+          additionalData.source = 'url';
+        }
+      }
+      else if (type === 'QUIZ') {
+        // Para quiz, el contenido es un objeto JSON
+        contentToSave = JSON.stringify({
+          title,
+          questions: [],
+          settings: {}
         });
-        setIsSaving(false);
-        return;
+        additionalData.quizData = {
+          title,
+          questions: [],
+          settings: {}
+        };
+      }
+      else if (type === 'ACCORDION' || type === 'TABS' || type === 'FLIP_CARDS') {
+        // Procesar items con imágenes
+        const processedItems = await Promise.all(items.map(async (item) => {
+          const processedItem: any = { ...item };
+          if (item.imageFile) {
+            const imageUrl = await handleUploadFile(item.imageFile, '/api/upload/image');
+            if (imageUrl) {
+              processedItem.imageUrl = imageUrl;
+            }
+            delete processedItem.imageFile;
+          }
+          return processedItem;
+        }));
+
+        contentToSave = JSON.stringify({
+          items: processedItems,
+          settings,
+          type
+        });
+        additionalData.interactiveData = {
+          items: processedItems,
+          settings,
+          type
+        };
       }
 
-      // Basic question validation
-      const emptyQuestions = localQuiz.questions.filter(q => !q.text || q.text.trim() === '');
-      if (emptyQuestions.length > 0) {
-        toast({
-            title: "Preguntas incompletas",
-            description: `Hay ${emptyQuestions.length} pregunta(s) sin texto.`,
-            variant: "destructive"
-        });
-        setIsSaving(false);
-        return;
-      }
-
-      await onSave(localQuiz);
-      
-      toast({
-        title: "✅ Guardado",
-        description: "El quiz se ha actualizado correctamente.",
+      onSave({
+        type,
+        title: title.trim(),
+        content: contentToSave,
+        ...additionalData
       });
-      
-      onClose();
+
     } catch (error) {
-      console.error('Error saving quiz:', error);
-      toast({
-        title: "Error",
-        description: "No se pudieron guardar los cambios.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSaving(false);
+      console.error('Error al guardar contenido:', error);
+    }
+  };
+
+  const renderContentFields = () => {
+    switch(type) {
+      case 'TEXT':
+        return (
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="text-content">Contenido</Label>
+              <Textarea
+                id="text-content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Escribe tu texto aquí..."
+                className="min-h-[200px] mt-1"
+              />
+            </div>
+          </div>
+        );
+
+      case 'VIDEO':
+        return (
+          <div className="space-y-4">
+            <div className="border rounded-lg p-3">
+              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Fuente del video</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={videoSource === 'url' ? 'default' : 'outline'}
+                  className="h-10"
+                  onClick={() => setVideoSource('url')}
+                >
+                  <Youtube className="h-4 w-4 mr-2" />
+                  URL
+                </Button>
+                <Button
+                  type="button"
+                  variant={videoSource === 'upload' ? 'default' : 'outline'}
+                  className="h-10"
+                  onClick={() => setVideoSource('upload')}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Subir
+                </Button>
+              </div>
+            </div>
+
+            {videoSource === 'url' ? (
+              <div>
+                <Label htmlFor="video-url">URL del video (YouTube, Vimeo, MP4, etc.)</Label>
+                <Input
+                  id="video-url"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=... o https://ejemplo.com/video.mp4"
+                  className="mt-1"
+                />
+              </div>
+            ) : (
+              <div>
+                <Label htmlFor="video-file">Subir archivo de video</Label>
+                <div className="mt-2">
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    className="hidden"
+                    accept="video/*"
+                    onChange={(e) => handleFileChange(e, 'video')}
+                    disabled={isUploading}
+                  />
+                  
+                  {videoFile ? (
+                    <div className="border border-green-200 dark:border-green-800 rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Video className="h-5 w-5 text-green-600" />
+                          <div>
+                            <p className="font-medium truncate">{videoFile.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {(videoFile.size / (1024 * 1024)).toFixed(2)} MB
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setVideoFile(null);
+                            if (videoInputRef.current) videoInputRef.current.value = '';
+                          }}
+                          className="h-7 w-7"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-20 border-dashed"
+                      onClick={() => videoInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <UploadCloud className="h-6 w-6 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium">Haz clic para seleccionar un video</p>
+                          <p className="text-xs text-gray-500">MP4, MOV, AVI, etc. (máx. 100MB)</p>
+                        </div>
+                      </div>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'IMAGE':
+        return (
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="image-file">Subir imagen</Label>
+              <div className="mt-2">
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, 'image')}
+                  disabled={isUploading}
+                />
+                
+                {imageFile ? (
+                  <div className="border border-green-200 dark:border-green-800 rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
+                    <div className="flex items-center gap-3">
+                      <ImagePlus className="h-5 w-5 text-green-600" />
+                      <div className="flex-1">
+                        <p className="font-medium truncate">{imageFile.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {(imageFile.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setImageFile(null);
+                          if (imageInputRef.current) imageInputRef.current.value = '';
+                        }}
+                        className="h-7 w-7"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-20 border-dashed"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <UploadCloud className="h-6 w-6 text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium">Haz clic para seleccionar una imagen</p>
+                        <p className="text-xs text-gray-500">JPG, PNG, GIF, etc. (máx. 5MB)</p>
+                      </div>
+                    </div>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'FILE':
+        return (
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="file-upload">Subir archivo</Label>
+              <div className="mt-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => handleFileChange(e, 'file')}
+                  disabled={isUploading}
+                />
+                
+                {file ? (
+                  <div className="border border-green-200 dark:border-green-800 rounded-lg p-3 bg-green-50 dark:bg-green-900/20">
+                    <div className="flex items-center gap-3">
+                      <FileGenericIcon className="h-5 w-5 text-green-600" />
+                      <div className="flex-1">
+                        <p className="font-medium truncate">{file.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {(file.size / (1024 * 1024)).toFixed(2)} MB • {file.type}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setFile(null);
+                          if (fileInputRef.current) fileInputRef.current.value = '';
+                        }}
+                        className="h-7 w-7"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-20 border-dashed"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <UploadCloud className="h-6 w-6 text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium">Haz clic para seleccionar un archivo</p>
+                        <p className="text-xs text-gray-500">Cualquier tipo (máx. 50MB)</p>
+                      </div>
+                    </div>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'QUIZ':
+        return (
+          <div className="space-y-4">
+            <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300">Configurar Quiz</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Crea preguntas, establece puntuación y configura opciones
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    // Abrir editor de quiz
+                    const quizData = {
+                      id: generateUniqueId('quiz'),
+                      title: title || 'Nuevo Quiz',
+                      questions: [],
+                      passingScore: 70,
+                      timeLimit: null,
+                      attempts: 3,
+                      showResults: true,
+                      randomizeQuestions: false,
+                    };
+                    onSave({
+                      type: 'QUIZ',
+                      title: title.trim(),
+                      content: '',
+                      quizData,
+                      openQuizEditor: true
+                    });
+                  }}
+                >
+                  <Settings2 className="h-4 w-4 mr-2" />
+                  Configurar Quiz
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'ACCORDION':
+      case 'TABS':
+      case 'FLIP_CARDS':
+        return (
+          <div className="space-y-4">
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-gray-700 dark:text-gray-300">Elementos</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={addItem}
+                  className="h-8"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Añadir elemento
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                {items.map((item, index) => (
+                  <div key={item.id} className="p-3 border rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Elemento {index + 1}
+                      </span>
+                      {items.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeItem(item.id)}
+                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor={`item-title-${item.id}`} className="text-xs">Título</Label>
+                        <Input
+                          id={`item-title-${item.id}`}
+                          value={item.title}
+                          onChange={(e) => updateItem(item.id, 'title', e.target.value)}
+                          placeholder="Título del elemento"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`item-content-${item.id}`} className="text-xs">Contenido</Label>
+                        <Textarea
+                          id={`item-content-${item.id}`}
+                          value={item.content}
+                          onChange={(e) => updateItem(item.id, 'content', e.target.value)}
+                          placeholder="Contenido del elemento"
+                          className="min-h-[80px] text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`item-image-${item.id}`} className="text-xs">Imagen (opcional)</Label>
+                        <div className="mt-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            id={`item-image-${item.id}`}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setItems(items.map(i => 
+                                  i.id === item.id ? { ...i, imageFile: file } : i
+                                ));
+                              }
+                            }}
+                          />
+                          {item.imageFile ? (
+                            <div className="flex items-center gap-2">
+                              <ImagePlus className="h-4 w-4 text-green-600" />
+                              <span className="text-sm truncate">{item.imageFile.name}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 ml-auto"
+                                onClick={() => {
+                                  setItems(items.map(i => 
+                                    i.id === item.id ? { ...i, imageFile: undefined } : i
+                                  ));
+                                  const input = document.getElementById(`item-image-${item.id}`) as HTMLInputElement;
+                                  if (input) input.value = '';
+                                }}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => {
+                                const input = document.getElementById(`item-image-${item.id}`) as HTMLInputElement;
+                                input?.click();
+                              }}
+                            >
+                              <ImagePlus className="h-3.5 w-3.5 mr-1" />
+                              Seleccionar imagen
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Settings */}
+            <div className="border-t pt-4">
+              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-3">Configuración</h4>
+              <div className="space-y-3">
+                {type === 'ACCORDION' && (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">Múltiples abiertos</p>
+                      <p className="text-xs text-gray-500">Permitir abrir varios elementos a la vez</p>
+                    </div>
+                    <Switch
+                      checked={settings.allowMultipleOpen}
+                      onCheckedChange={(checked) => setSettings({...settings, allowMultipleOpen: checked})}
+                    />
+                  </div>
+                )}
+                
+                {type === 'FLIP_CARDS' && (
+                  <div>
+                    <Label htmlFor="flip-direction" className="text-sm">Dirección del volteo</Label>
+                    <Select
+                      value={settings.flipDirection}
+                      onValueChange={(value: 'horizontal' | 'vertical') => setSettings({...settings, flipDirection: value})}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="horizontal">Horizontal</SelectItem>
+                        <SelectItem value="vertical">Vertical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                {type === 'TABS' && (
+                  <div>
+                    <Label htmlFor="tab-position" className="text-sm">Posición de pestañas</Label>
+                    <Select
+                      value={settings.tabPosition}
+                      onValueChange={(value: 'top' | 'left' | 'right' | 'bottom') => setSettings({...settings, tabPosition: value})}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="top">Superior</SelectItem>
+                        <SelectItem value="left">Izquierda</SelectItem>
+                        <SelectItem value="right">Derecha</SelectItem>
+                        <SelectItem value="bottom">Inferior</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div>
+            <Label htmlFor="content-value">Contenido</Label>
+            <Input
+              id="content-value"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Ingresa el contenido"
+              className="mt-1"
+            />
+          </div>
+        );
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[100vw] w-screen h-screen p-0 overflow-hidden rounded-none border-none">
-        <div className="h-full flex flex-col bg-background">
-          {/* Top Bar */}
-          <div className="shrink-0 h-16 border-b border-border bg-background px-4 flex items-center justify-between z-10">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="h-8 w-px bg-border hidden sm:block" />
-              <div className="flex flex-col">
-                <input
-                  value={localQuiz.title}
-                  onChange={(e) => handleQuizUpdate({ title: e.target.value })}
-                  className="font-bold text-lg bg-transparent border-none outline-none placeholder:text-muted-foreground focus:ring-0 p-0"
-                  placeholder="Título del Quiz"
-                />
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                   <Badge variant={localQuiz.published ? "default" : "secondary"} className="h-5 px-1.5 font-normal text-[10px]">
-                      {localQuiz.published ? "Publicado" : "Borrador"}
-                   </Badge>
-                   <span>•</span>
-                   <span>{localQuiz.questions.length} preguntas</span>
+    <div className="bg-white dark:bg-gray-800 rounded-lg border shadow-lg p-4 w-full max-w-2xl">
+      <div className="flex items-center gap-3 mb-4">
+        <div className={`p-2 rounded-lg ${config.bg}`}>
+          <Icon className={`h-5 w-5 ${config.color}`} />
+        </div>
+        <div>
+          <h3 className="font-semibold text-gray-900 dark:text-white">{config.title}</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{config.description}</p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="content-title">Título *</Label>
+          <Input
+            id="content-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={`Título del ${config.title.toLowerCase()}`}
+            className="mt-1"
+          />
+        </div>
+
+        {renderContentFields()}
+
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          <Button variant="outline" size="sm" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button size="sm" onClick={handleSave} disabled={isUploading}>
+            {isUploading ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+                Subiendo...
+              </>
+            ) : (
+              <>
+                <Save className="h-3.5 w-3.5 mr-2" />
+                Guardar
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// === COMPONENTES PRINCIPALES ===
+
+const ModuleCard = React.forwardRef<HTMLDivElement, {
+  module: AppModule;
+  index: number;
+  onEdit: () => void;
+  onDelete: () => void;
+  onDuplicate: () => void;
+  onAddLesson: () => void;
+  onUpdateTitle: (title: string) => void;
+  isExpanded: boolean;
+  onToggle: () => void;
+  dragHandleProps: any;
+}>(({ module, index, onEdit, onDelete, onDuplicate, onAddLesson, onUpdateTitle, isExpanded, onToggle, dragHandleProps }, ref) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(module.title);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleTitleClick = () => {
+    setIsEditing(true);
+    setEditingTitle(module.title);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 10);
+  };
+
+  const handleTitleSave = () => {
+    if (editingTitle.trim() !== '' && editingTitle !== module.title) {
+      onUpdateTitle(editingTitle.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTitleSave();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+      setEditingTitle(module.title);
+    }
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="group relative"
+    >
+      <Card className="overflow-hidden border-2 hover:border-primary/20 transition-all duration-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-primary to-primary/60" />
+        
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="flex flex-col items-center">
+                <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                  <GripVertical className="h-4 w-4 text-gray-400" />
+                </div>
+                <Badge variant="secondary" className="mt-2 text-xs font-bold">
+                  MÓDULO {index + 1}
+                </Badge>
+              </div>
+              
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <Layers3 className="h-4 w-4 text-primary" />
+                  {isEditing ? (
+                    <div className="flex-1">
+                      <Input
+                        ref={inputRef}
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onBlur={handleTitleSave}
+                        onKeyDown={handleKeyDown}
+                        className="text-lg font-semibold h-9 px-3"
+                        placeholder="Nombre del módulo"
+                      />
+                    </div>
+                  ) : (
+                    <h3 
+                      className="text-lg font-semibold text-gray-800 dark:text-white truncate cursor-pointer hover:text-primary transition-colors"
+                      onClick={handleTitleClick}
+                      title="Haz clic para editar"
+                    >
+                      {module.title}
+                    </h3>
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <Badge variant="outline" className="text-xs">
+                    {module.lessons.length} {module.lessons.length === 1 ? 'lección' : 'lecciones'}
+                  </Badge>
+                  <span className="text-xs text-gray-500">
+                    {module.lessons.reduce((acc, lesson) => acc + lesson.contentBlocks.length, 0)} elementos
+                  </span>
                 </div>
               </div>
             </div>
-
-            <div className="flex items-center gap-2">
+            
+            <div className="flex items-center gap-1">
               <Button
-                variant="outline"
-                onClick={() => setSelectedElement('quiz')}
-                className={cn("gap-2 hidden sm:flex", selectedElement === 'quiz' && "bg-muted")}
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle();
+                }}
+                className="h-8 w-8"
               >
-                <Settings2 className="h-4 w-4" />
-                Configuración
+                {isExpanded ? 
+                  <ChevronDown className="h-4 w-4 rotate-180" /> : 
+                  <ChevronDown className="h-4 w-4" />
+                }
               </Button>
-              
               <Button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="gap-2 min-w-[120px]"
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDuplicate();
+                }}
+                className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               >
-                {isSaving ? (
-                  <span className="animate-spin">⌛</span>
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                Guardar
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
-          
-          {/* Main Workspace */}
-          <div className="flex-1 flex overflow-hidden">
-            {/* Left: Questions List */}
-            <div className="w-80 border-r border-border flex flex-col bg-muted/10 shrink-0">
-               <QuestionList
-                  questions={localQuiz.questions}
-                  activeIndex={activeQuestionIndex}
-                  onSelect={(idx) => {
-                    setActiveQuestionIndex(idx);
-                    setSelectedElement('question');
-                    setSelectedOptionId(null);
-                  }}
-                  onDelete={handleDeleteQuestion}
-                  onAdd={handleAddQuestion}
-                  onReorder={handleReorderQuestions}
-                  onDuplicate={handleDuplicateQuestion}
+        </CardHeader>
+        
+        {isExpanded && (
+          <CardContent className="pt-0">
+            <div className="space-y-3 mt-4">
+              {module.lessons.map((lesson, lessonIndex) => (
+                <LessonCard
+                  key={lesson.id}
+                  lesson={lesson}
+                  index={lessonIndex}
+                  moduleId={module.id}
                 />
+              ))}
             </div>
             
-            {/* Center: Canvas */}
-            <div className="flex-1 bg-muted/20 relative flex flex-col min-w-0">
-               {activeQuestion ? (
-                  <QuestionCanvas
-                    question={activeQuestion}
-                    viewport={viewport}
-                    onQuestionChange={handleQuestionUpdate}
-                    onOptionChange={handleOptionUpdate}
-                    onAddOption={handleAddOption}
-                    onDeleteOption={handleDeleteOption}
-                    onSetCorrectOption={handleSetCorrectOption}
+            <div className="mt-6 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddLesson();
+                }}
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Añadir lección
+              </Button>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+    </motion.div>
+  );
+});
+
+ModuleCard.displayName = 'ModuleCard';
+
+const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: number; moduleId: string }) => {
+  const { toast } = useToast();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(lesson.title);
+  const [showContentMenu, setShowContentMenu] = useState(false);
+  const [showAddContent, setShowAddContent] = useState(false);
+  const [editingContent, setEditingContent] = useState<{
+    type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS';
+    isEditing: boolean;
+  } | null>(null);
+  const [quizToEdit, setQuizToEdit] = useState<AppQuiz | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleTitleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditing(true);
+    setEditingTitle(lesson.title);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 10);
+  };
+
+  const handleTitleSave = () => {
+    if (editingTitle.trim() !== '' && editingTitle !== lesson.title) {
+      console.log('Actualizar título de lección:', editingTitle);
+      toast({
+        title: "Título actualizado",
+        description: "El título de la lección se ha actualizado.",
+      });
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTitleSave();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+      setEditingTitle(lesson.title);
+    }
+  };
+
+  const handleAddContent = (type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS') => {
+    console.log('Añadir contenido tipo:', type, 'a lección:', lesson.id);
+    setEditingContent({ type, isEditing: true });
+    setShowContentMenu(false);
+    setShowAddContent(false);
+  };
+
+  const handleSaveContent = (contentData: any) => {
+    console.log('Guardar contenido:', contentData);
+    
+    if (contentData.type === 'QUIZ' && contentData.openQuizEditor) {
+      setQuizToEdit(contentData.quizData);
+      setEditingContent(null);
+    } else {
+      toast({
+        title: "Contenido añadido",
+        description: `Se ha añadido un elemento de tipo ${contentData.type} a la lección.`,
+      });
+      setEditingContent(null);
+    }
+  };
+
+  const handleSaveQuiz = (updatedQuiz: AppQuiz) => {
+    console.log('Quiz guardado:', updatedQuiz);
+    setQuizToEdit(null);
+    toast({
+      title: "Quiz guardado",
+      description: "El quiz se ha configurado correctamente.",
+    });
+  };
+
+  const handleCancelContent = () => {
+    setEditingContent(null);
+  };
+
+  // Cerrar menús al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowContentMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3" ref={menuRef}>
+      {editingContent ? (
+        <div className="mb-4">
+          <ContentEditor
+            type={editingContent.type}
+            onSave={handleSaveContent}
+            onCancel={handleCancelContent}
+          />
+        </div>
+      ) : null}
+      
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 flex-1">
+          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded">
+            <BookOpenText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs">
+                Lección {index + 1}
+              </Badge>
+              {isEditing ? (
+                <div className="flex-1 max-w-md">
+                  <Input
+                    ref={inputRef}
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    onBlur={handleTitleSave}
+                    onKeyDown={handleKeyDown}
+                    className="h-7 text-sm px-2"
+                    placeholder="Nombre de la lección"
                   />
-                ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-8 text-center">
-                    <BrainCircuit className="h-12 w-12 mb-4 opacity-20" />
-                    <p>Selecciona una pregunta para editarla</p>
-                  </div>
-                )}
+                </div>
+              ) : (
+                <h4 
+                  className="font-medium truncate cursor-pointer hover:text-primary transition-colors"
+                  onClick={handleTitleClick}
+                  title="Haz clic para editar"
+                >
+                  {lesson.title}
+                </h4>
+              )}
             </div>
-            
-            {/* Right: Properties */}
-            <div className="w-80 border-l border-border bg-background shrink-0">
-               <PropertiesPanel
-                  selectedElement={selectedElement}
-                  question={activeQuestion}
-                  option={selectedOption}
-                  quiz={localQuiz}
-                  onQuestionUpdate={handleQuestionUpdate}
-                  onOptionUpdate={(updates) => {
-                    if (selectedOptionId) {
-                      handleOptionUpdate(selectedOptionId, updates);
-                    }
-                  }}
-                  onQuizUpdate={handleQuizUpdate}
-                />
-            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {lesson.contentBlocks.length} elementos
+            </p>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+        
+        <div className="flex items-center gap-1">
+          <Popover open={showContentMenu} onOpenChange={setShowContentMenu}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowContentMenu(!showContentMenu);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Contenido
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-0" align="end">
+              <ContentTypeMenu 
+                onSelect={handleAddContent} 
+                onClose={() => setShowContentMenu(false)} 
+              />
+            </PopoverContent>
+          </Popover>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(!isExpanded);
+            }}
+            className="h-7 w-7"
+          >
+            {isExpanded ? 
+              <ChevronDown className="h-3.5 w-3.5 rotate-180" /> : 
+              <ChevronDown className="h-3.5 w-3.5" />
+            }
+          </Button>
+        </div>
+      </div>
+      
+      {showAddContent && !showContentMenu && !editingContent && (
+        <div className="mt-3 pl-11">
+          <ContentTypeMenu 
+            onSelect={handleAddContent} 
+            onClose={() => setShowAddContent(false)} 
+          />
+        </div>
+      )}
+      
+      {isExpanded && lesson.contentBlocks.length > 0 && (
+        <div className="mt-3 space-y-2 pl-11">
+          {lesson.contentBlocks.map((block, blockIndex) => (
+            <ContentBlockPreview key={block.id} block={block} index={blockIndex} />
+          ))}
+        </div>
+      )}
+      
+      {isExpanded && lesson.contentBlocks.length === 0 && !editingContent && (
+        <div className="mt-3 pl-11">
+          <div className="p-4 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-center">
+            <FilePlus2 className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+              Esta lección no tiene contenido aún
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowAddContent(true)}
+            >
+              <Plus className="h-3 w-3 mr-2" />
+              Añadir primer elemento
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Quiz Editor Modal */}
+      {quizToEdit && (
+        <QuizEditorModal
+          isOpen={!!quizToEdit}
+          onClose={() => setQuizToEdit(null)}
+          quiz={quizToEdit}
+          onSave={handleSaveQuiz}
+        />
+      )}
+    </div>
   );
-}
+};
+
+const ContentBlockPreview = ({ block, index }: { block: ContentBlock; index: number }) => {
+  const getBlockInfo = () => {
+    switch(block.type) {
+      case 'TEXT': return { icon: FileText, color: 'text-blue-600', bg: 'bg-blue-100' };
+      case 'VIDEO': return { icon: Video, color: 'text-red-600', bg: 'bg-red-100' };
+      case 'FILE': return { icon: FileGenericIcon, color: 'text-amber-600', bg: 'bg-amber-100' };
+      case 'IMAGE': return { icon: ImagePlus, color: 'text-green-600', bg: 'bg-green-100' };
+      case 'QUIZ': return { icon: Pencil, color: 'text-purple-600', bg: 'bg-purple-100' };
+      case 'ACCORDION': return { icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-100' };
+      case 'TABS': return { icon: SquareStack, color: 'text-pink-600', bg: 'bg-pink-100' };
+      case 'FLIP_CARDS': return { icon: FlipHorizontal2, color: 'text-teal-600', bg: 'bg-teal-100' };
+      default: return { icon: FileText, color: 'text-gray-600', bg: 'bg-gray-100' };
+    }
+  };
+
+  const info = getBlockInfo();
+  const Icon = info.icon;
+
+  return (
+    <div className="flex items-center gap-2 p-2 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className={`p-1.5 rounded ${info.bg}`}>
+        <Icon className={`h-3.5 w-3.5 ${info.color}`} />
+      </div>
+      <span className="text-sm font-medium flex-1">
+        {block.type === 'QUIZ' ? block.quiz?.title || 'Quiz' : 
+         block.type === 'ACCORDION' ? 'Acordeón' :
+         block.type === 'TABS' ? 'Pestañas' :
+         block.type === 'FLIP_CARDS' ? 'Tarjetas de volteo' : `${block.type}`}
+      </span>
+      <Badge variant="outline" className="text-xs">
+        #{index + 1}
+      </Badge>
+    </div>
+  );
+};
+
+// === COMPONENTE PRINCIPAL REDISEÑADO ===
+
+export function CourseEditor({ courseId }: { courseId: string }) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const { user, settings, isLoading: isAuthLoading } = useAuth();
+  const { setPageTitle } = useTitle();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [course, setCourse] = useState<AppCourse | null>(null);
+  const [allCoursesForPrereq, setAllCoursesForPrereq] = useState<AppCourse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [activeTab, setActiveTab] = useState('basics');
+
+  const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [templates, setTemplates] = useState<ApiTemplate[]>([]);
+  const [certificateTemplates, setCertificateTemplates] = useState<PrismaCertificateTemplate[]>([]);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
+  const [quizToEdit, setQuizToEdit] = useState<{ quiz: AppQuiz; onSave: (updatedQuiz: AppQuiz) => void } | null>(null);
+  
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
+
+  // Data fetching
+  useEffect(() => {
+    const fetchAllData = async () => {
+      if (!user) return;
+
+      try {
+        setIsLoading(true);
+
+        if (courseId === 'new') {
+          setCourse({
+            id: generateUniqueId('course'),
+            title: 'Nuevo Curso sin Título',
+            description: 'Añade una descripción aquí.',
+            instructor: user as any,
+            instructorId: user?.id,
+            status: 'DRAFT',
+            category: '',
+            modules: [],
+            modulesCount: 0,
+            prerequisiteId: null,
+            isMandatory: false,
+            certificateTemplateId: null,
+            imageUrl: null,
+          });
+          setPageTitle('Crear Nuevo Curso');
+          return;
+        }
+
+        const [courseRes, templatesRes, certificatesRes, coursesRes] = await Promise.all([
+          fetch(`/api/courses/${courseId}`),
+          fetch('/api/templates'),
+          fetch('/api/certificates/templates'),
+          fetch('/api/courses?simple=true')
+        ]);
+
+        if (!courseRes.ok) throw new Error("Curso no encontrado");
+
+        const courseData: AppCourse = await courseRes.json();
+        setCourse(courseData);
+
+        if (templatesRes.ok) setTemplates(await templatesRes.json());
+        if (certificatesRes.ok) setCertificateTemplates(await certificatesRes.json());
+        if (coursesRes.ok) {
+          const data = await coursesRes.json();
+          setAllCoursesForPrereq((data.courses || []).filter((c: AppCourse) => c.id !== courseId));
+        }
+
+      } catch (err) {
+        toast({ 
+          title: "Error", 
+          description: "No se pudo cargar el curso para editar.", 
+          variant: "destructive" 
+        });
+        router.push('/manage-courses');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAllData();
+  }, [courseId, user, router, toast, setPageTitle]);
+
+  const handleSaveCourse = useCallback(async () => {
+    if (!course) return;
+    setIsSaving(true);
+
+    const payload = { ...course };
+    (payload.modules || []).forEach((mod, mIdx) => {
+      mod.order = mIdx;
+      (mod.lessons || []).forEach((les, lIdx) => {
+        les.order = lIdx;
+        (les.contentBlocks || []).forEach((block, bIdx) => {
+          block.order = bIdx;
+        });
+      });
+    });
+
+    try {
+      const endpoint = courseId === 'new' ? '/api/courses' : `/api/courses/${courseId}`;
+      const method = courseId === 'new' ? 'POST' : 'PUT';
+
+      const response = await fetch(endpoint, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) throw new Error((await response.json()).message || 'Error al guardar el curso.');
+
+      const savedCourse = await response.json();
+
+      toast({ 
+        title: "✅ Curso Guardado", 
+        description: "La información del curso se ha guardado correctamente.",
+        duration: 3000
+      });
+
+      setCourse(savedCourse);
+      setIsDirty(false);
+
+      if (courseId === 'new') {
+        router.replace(`/manage-courses/${savedCourse.id}/edit`, { scroll: false });
+      }
+
+      return savedCourse;
+
+    } catch (error: any) {
+      console.error('Error al guardar el curso:', error);
+      toast({ 
+        title: "❌ Error al Guardar", 
+        description: error.message || "No se pudo guardar. Intenta nuevamente.", 
+        variant: "destructive",
+        duration: 5000
+      });
+      return null;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [course, courseId, router, toast]);
+
+  const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
+    setCourse(prev => {
+      if (!prev) return null;
+      const newCourse = JSON.parse(JSON.stringify(prev));
+      return updater(newCourse);
+    });
+    setIsDirty(true);
+  }, []);
+
+  const updateCourseField = (field: keyof AppCourse, value: any) => {
+    handleStateUpdate(prev => {
+      prev[field] = value;
+      return prev;
+    });
+  };
+
+  const handleAddModule = () => {
+    handleStateUpdate(prev => {
+      const newModule: AppModule = {
+        id: generateUniqueId('module'),
+        title: 'Nuevo Módulo',
+        order: (prev.modules || []).length,
+        lessons: [],
+      };
+      if (!prev.modules) prev.modules = [];
+      prev.modules.push(newModule);
+      return prev;
+    });
+  };
+
+  const handleDeleteModule = (moduleId: string) => {
+    const module = course?.modules.find(m => m.id === moduleId);
+    setItemToDelete({
+      type: 'module',
+      name: module?.title,
+      onConfirm: () => {
+        handleStateUpdate(prev => {
+          // Filtrar el módulo eliminado
+          const updatedModules = prev.modules.filter(m => m.id !== moduleId);
+          
+          // Re-indexar los módulos restantes (actualizar order y títulos si es necesario)
+          updatedModules.forEach((mod, index) => {
+            mod.order = index; // Actualizar el orden numérico
+          });
+          
+          prev.modules = updatedModules;
+          return prev;
+        });
+        
+        // Limpiar del estado de módulos expandidos si existe
+        setExpandedModules(prev => {
+          const next = new Set(prev);
+          next.delete(moduleId);
+          return next;
+        });
+        
+        toast({ 
+          title: "Módulo eliminado", 
+          description: "El módulo se ha eliminado y el resto ha sido re-indexado." 
+        });
+      }
+    });
+  };
+
+  const handleDuplicateModule = (moduleId: string) => {
+    const module = course?.modules.find(m => m.id === moduleId);
+    if (!module) return;
+
+    const duplicate = JSON.parse(JSON.stringify(module));
+    duplicate.id = generateUniqueId('module');
+    duplicate.title = `${module.title} (Copia)`;
+    duplicate.order = course.modules.length; // Asignar al final
+
+    handleStateUpdate(prev => {
+      const index = prev.modules.findIndex(m => m.id === moduleId);
+      prev.modules.splice(index + 1, 0, duplicate);
+      
+      // Re-indexar después de insertar
+      prev.modules.forEach((mod, idx) => {
+        mod.order = idx;
+      });
+      
+      return prev;
+    });
+
+    toast({ 
+      title: "✅ Módulo duplicado", 
+      description: "El módulo se ha duplicado correctamente." 
+    });
+  };
+
+  const handleUpdateModuleTitle = (moduleId: string, newTitle: string) => {
+    handleStateUpdate(prev => {
+      const moduleIndex = prev.modules.findIndex(m => m.id === moduleId);
+      if (moduleIndex !== -1) {
+        prev.modules[moduleIndex].title = newTitle;
+      }
+      return prev;
+    });
+  };
+
+  const handleAddLesson = (moduleId: string) => {
+    handleStateUpdate(prev => {
+      const moduleIndex = prev.modules.findIndex(m => m.id === moduleId);
+      if (moduleIndex === -1) return prev;
+
+      const newLesson: AppLesson = {
+        id: generateUniqueId('lesson'),
+        title: 'Nueva Lección',
+        description: '',
+        order: prev.modules[moduleIndex].lessons.length,
+        contentBlocks: [],
+      };
+
+      prev.modules[moduleIndex].lessons.push(newLesson);
+      return prev;
+    });
+
+    // Expandir el módulo automáticamente
+    setExpandedModules(prev => new Set(prev).add(moduleId));
+
+    toast({
+      title: "Lección añadida",
+      description: "Se ha añadido una nueva lección al módulo.",
+    });
+  };
+
+  const toggleModuleExpansion = (moduleId: string) => {
+    setExpandedModules(prev => {
+      const next = new Set(prev);
+      if (next.has(moduleId)) {
+        next.delete(moduleId);
+      } else {
+        next.add(moduleId);
+      }
+      return next;
+    });
+  };
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+    
+    const file = e.target.files[0];
+    
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      toast({ 
+        title: '❌ Error', 
+        description: 'Por favor selecciona un archivo de imagen válido.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ 
+        title: '❌ Error', 
+        description: 'La imagen no debe superar los 5MB.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    setIsUploadingImage(true);
+
+    try {
+      const result = await uploadWithProgress('/api/upload/course-image', file, () => {});
+      
+      if (result?.url) {
+        updateCourseField('imageUrl', result.url);
+        toast({ 
+          title: '✅ Imagen actualizada', 
+          description: 'La imagen de portada se ha actualizado correctamente.' 
+        });
+      } else {
+        throw new Error('No se recibió URL de la imagen');
+      }
+    } catch (err) {
+      console.error('Error al subir imagen:', err);
+      toast({ 
+        title: '❌ Error', 
+        description: (err as Error).message || 'No se pudo subir la imagen. Intenta nuevamente.', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsUploadingImage(false);
+      // Limpiar el input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const calculateStats = () => {
+    if (!course) return null;
+    
+    return {
+      modules: course.modules?.length || 0,
+      lessons: course.modules?.reduce((acc, mod) => acc + (mod.lessons?.length || 0), 0) || 0,
+      blocks: course.modules?.reduce((acc, mod) => 
+        acc + mod.lessons?.reduce((acc2, les) => acc2 + (les.contentBlocks?.length || 0), 0), 0) || 0,
+      hasCertificate: !!course.certificateTemplateId,
+      isMandatory: course.isMandatory,
+      hasPrerequisite: !!course.prerequisiteId,
+    };
+  };
+
+  const stats = calculateStats();
+
+  if (isLoading || isAuthLoading || !course) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+            <Loader2 className="h-12 w-12 animate-spin text-primary relative" />
+          </div>
+          <p className="text-lg font-medium text-muted-foreground animate-pulse">
+            {courseId === 'new' ? 'Creando curso...' : 'Cargando editor...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+      {/* Header con bordes redondeados */}
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b rounded-b-xl mx-3 mt-2">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-4">
+          <div className="flex flex-col py-3">
+            {/* Fila superior: Título y acciones */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href="/manage-courses">
+                    <ArrowLeft className="h-5 w-5" />
+                  </Link>
+                </Button>
+                <div className="max-w-2xl">
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                    {course.title}
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1">
+                    <StatusBadge status={course.status} />
+                    <span className="text-sm text-muted-foreground">
+                      {courseId === 'new' ? 'Nuevo curso' : 'Editando'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => window.open(`/courses/${courseId}?preview=true`, '_blank')}
+                  disabled={courseId === 'new'}
+                  className="gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  Vista previa
+                </Button>
+                
+                <Button
+                  onClick={handleSaveCourse}
+                  disabled={isSaving || !isDirty}
+                  className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                >
+                  {isSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  {isSaving ? 'Guardando...' : 'Guardar cambios'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Eliminamos la barra de contadores aquí */}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content - ESPACIO OPTIMIZADO */}
+      <main className="w-full max-w-[98rem] mx-auto px-2 sm:px-3 lg:px-4 py-6">
+        <div className="grid lg:grid-cols-4 gap-6">
+          {/* Sidebar */}
+          <aside className="lg:col-span-1 space-y-6">
+            {/* Course Image */}
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="relative aspect-video">
+                  {course.imageUrl ? (
+                    <Image
+                      src={course.imageUrl}
+                      alt={course.title}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center">
+                      <ImagePlus className="h-12 w-12 text-gray-400" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      disabled={isUploadingImage}
+                    />
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      className="gap-2"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploadingImage}
+                    >
+                      {isUploadingImage ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Replace className="h-4 w-4" />
+                      )}
+                      Cambiar imagen
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Navigation */}
+            <Card>
+              <CardContent className="p-4">
+                <nav className="space-y-1">
+                  <Button
+                    variant={activeTab === 'basics' ? 'default' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('basics')}
+                  >
+                    <Layout className="h-4 w-4 mr-3" />
+                    Información básica
+                  </Button>
+                  <Button
+                    variant={activeTab === 'curriculum' ? 'default' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('curriculum')}
+                  >
+                    <BookOpen className="h-4 w-4 mr-3" />
+                    Plan de estudios
+                  </Button>
+                  <Button
+                    variant={activeTab === 'settings' ? 'default' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('settings')}
+                  >
+                    <Settings2 className="h-4 w-4 mr-3" />
+                    Configuración
+                  </Button>
+                  <Button
+                    variant={activeTab === 'publish' ? 'default' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('publish')}
+                  >
+                    <GlobeIcon className="h-4 w-4 mr-3" />
+                    Publicación
+                  </Button>
+                </nav>
+              </CardContent>
+            </Card>
+          </aside>
+
+          {/* Main Content Area - ESPACIO EXPANDIDO */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Tab Content */}
+            {activeTab === 'basics' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Información del curso</CardTitle>
+                    <CardDescription>
+                      Configura los detalles principales de tu curso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Título del curso *</Label>
+                      <Input
+                        id="title"
+                        value={course.title}
+                        onChange={(e) => updateCourseField('title', e.target.value)}
+                        placeholder="Ej: Introducción al Desarrollo Web"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Descripción</Label>
+                      <RichTextEditor
+                        value={course.description || ''}
+                        onChange={(value) => updateCourseField('description', value)}
+                        placeholder="Describe qué aprenderán los estudiantes..."
+                        className="min-h-[200px]"
+                      />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="category">Categoría</Label>
+                        <Select
+                          value={course.category || ''}
+                          onValueChange={(value) => updateCourseField('category', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar categoría" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(settings?.resourceCategories || []).map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="status">Estado</Label>
+                        <Select
+                          value={course.status}
+                          onValueChange={(value) => updateCourseField('status', value as CourseStatus)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="DRAFT">Borrador</SelectItem>
+                            <SelectItem value="PUBLISHED">Publicado</SelectItem>
+                            <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {activeTab === 'curriculum' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                {/* Header - CON ESPACIO OPTIMIZADO */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      Plan de estudios
+                    </h2>
+                    <p className="text-muted-foreground">
+                      Organiza los módulos y lecciones de tu curso
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowTemplateModal(true)}
+                      className="gap-2"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      Plantillas
+                    </Button>
+                    <Button
+                      onClick={handleAddModule}
+                      className="gap-2 bg-gradient-to-r from-primary to-primary/80"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      Nuevo módulo
+                    </Button>
+                  </div>
+                </div>
+
+                {/* View Toggle */}
+                <div className="flex items-center gap-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-fit px-1">
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="gap-2"
+                  >
+                    <List className="h-4 w-4" />
+                    Lista
+                  </Button>
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="gap-2"
+                  >
+                    <Grid3x3 className="h-4 w-4" />
+                    Cuadrícula
+                  </Button>
+                </div>
+
+                {/* Modules List - CON TARJETAS EXPANDIDAS */}
+                {course.modules.length === 0 ? (
+                  <Card className="border-dashed mx-1">
+                    <CardContent className="py-12 text-center">
+                      <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                        <FolderOpen className="h-8 w-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Comienza a estructurar tu curso</h3>
+                      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                        Crea módulos para organizar el contenido de manera lógica y progresiva
+                      </p>
+                      <Button onClick={handleAddModule} className="gap-2">
+                        <PlusCircle className="h-4 w-4" />
+                        Crear primer módulo
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : viewMode === 'grid' ? (
+                  <div className="grid md:grid-cols-2 gap-6 px-1">
+                    {course.modules.map((module, index) => (
+                      <Card key={module.id} className="hover:shadow-lg transition-shadow">
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline">Módulo {index + 1}</Badge>
+                            <div className="flex items-center gap-1">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7"
+                                onClick={() => handleDuplicateModule(module.id)}
+                              >
+                                <Copy className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7"
+                                onClick={() => handleDeleteModule(module.id)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                          <CardTitle className="mt-2 text-lg">{module.title}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">Lecciones:</span>
+                              <span className="font-semibold">{module.lessons.length}</span>
+                            </div>
+                            {module.lessons.slice(0, 2).map((lesson) => (
+                              <div key={lesson.id} className="flex items-center gap-2 p-2 rounded bg-gray-50 dark:bg-gray-800">
+                                <BookOpenText className="h-4 w-4 text-blue-500" />
+                                <span className="text-sm truncate">{lesson.title}</span>
+                              </div>
+                            ))}
+                            {module.lessons.length > 2 && (
+                              <div className="text-center text-sm text-muted-foreground">
+                                +{module.lessons.length - 2} más
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  // CONTENEDOR DE MÓDULOS CON ANCHO COMPLETO
+                  <div className="w-full px-1">
+                    <DragDropContext onDragEnd={() => {}}>
+                      <Droppable droppableId="modules" type="MODULES">
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                            className="space-y-4"
+                          >
+                            {course.modules.map((module, index) => (
+                              <Draggable key={module.id} draggableId={module.id} index={index}>
+                                {(provided) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    className="w-full"
+                                  >
+                                    <ModuleCard
+                                      module={module}
+                                      index={index}
+                                      isExpanded={expandedModules.has(module.id)}
+                                      onToggle={() => toggleModuleExpansion(module.id)}
+                                      onAddLesson={() => handleAddLesson(module.id)}
+                                      onUpdateTitle={(title) => handleUpdateModuleTitle(module.id, title)}
+                                      onDelete={() => handleDeleteModule(module.id)}
+                                      onDuplicate={() => handleDuplicateModule(module.id)}
+                                      dragHandleProps={provided.dragHandleProps}
+                                    />
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'settings' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Certificate */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Award className="h-5 w-5 text-primary" />
+                        Certificado
+                      </CardTitle>
+                      <CardDescription>
+                        Configura el certificado del curso
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Select
+                        value={course.certificateTemplateId || 'none'}
+                        onValueChange={(value) => updateCourseField('certificateTemplateId', value === 'none' ? null : value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sin certificado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Sin certificado</SelectItem>
+                          {certificateTemplates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </CardContent>
+                  </Card>
+
+                  {/* Prerequisites */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Target className="h-5 w-5 text-primary" />
+                        Prerrequisitos
+                      </CardTitle>
+                      <CardDescription>
+                        Establece cursos previos requeridos
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Select
+                        value={course.prerequisiteId || 'none'}
+                        onValueChange={(value) => updateCourseField('prerequisiteId', value === 'none' ? null : value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sin prerrequisito" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Sin prerrequisito</SelectItem>
+                          {allCoursesForPrereq.map((courseItem) => (
+                            <SelectItem key={courseItem.id} value={courseItem.id}>
+                              {courseItem.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Advanced Settings */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Configuración avanzada</CardTitle>
+                    <CardDescription>
+                      Opciones adicionales para el curso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium">Curso obligatorio</p>
+                        <p className="text-sm text-muted-foreground">
+                          Los estudiantes deben completar este curso
+                        </p>
+                      </div>
+                      <Switch
+                        checked={course.isMandatory}
+                        onCheckedChange={(checked) => {
+                          updateCourseField('isMandatory', checked);
+                          if (checked) {
+                            setTimeout(() => setIsAssignmentModalOpen(true), 300);
+                          }
+                        }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {activeTab === 'publish' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Disponibilidad</CardTitle>
+                    <CardDescription>
+                      Define cuándo estará disponible el curso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <DateRangePicker
+                      date={{
+                        from: course.startDate ? new Date(course.startDate) : undefined,
+                        to: course.endDate ? new Date(course.endDate) : undefined
+                      }}
+                      onDateChange={(range) => {
+                        updateCourseField('startDate', range?.from?.toISOString());
+                        updateCourseField('endDate', range?.to?.toISOString());
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Publishing Options */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Publicación</CardTitle>
+                    <CardDescription>
+                      Configura cómo se publicará el curso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Visibilidad</Label>
+                      <Select
+                        value={course.status}
+                        onValueChange={(value) => updateCourseField('status', value as CourseStatus)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="DRAFT">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                              Borrador
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="PUBLISHED">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full" />
+                              Publicado
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <Alert>
+                      <InfoIcon className="h-4 w-4" />
+                      <AlertTitle>Listo para publicar</AlertTitle>
+                      <AlertDescription>
+                        Una vez publicado, el curso estará disponible para los estudiantes asignados.
+                      </AlertDescription>
+                    </Alert>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Save Indicator */}
+      {isDirty && (
+        <motion.div
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          className="fixed bottom-4 right-4 z-50"
+        >
+          <Card className="shadow-2xl border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <div>
+                    <p className="font-medium">Cambios sin guardar</p>
+                    <p className="text-sm text-muted-foreground">Guarda tu progreso</p>
+                  </div>
+                </div>
+                <Button onClick={handleSaveCourse} disabled={isSaving} size="sm">
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                      Guardando...
+                    </>
+                  ) : (
+                    'Guardar'
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Dialogs */}
+      <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar {itemToDelete?.type}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará "{itemToDelete?.name}" permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                itemToDelete?.onConfirm();
+                setItemToDelete(null);
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Template Modal */}
+      <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Plantillas de lección</DialogTitle>
+            <DialogDescription>
+              Selecciona una plantilla para crear una lección rápidamente
+            </DialogDescription>
+          </DialogHeader>
+          
+          <ScrollArea className="h-[60vh]">
+            <div className="grid gap-3 p-1">
+              {templates.length === 0 ? (
+                <div className="text-center py-8">
+                  <Sparkles className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No hay plantillas disponibles</p>
+                </div>
+              ) : (
+                templates.map((template) => (
+                  <Card key={template.id} className="hover:border-primary cursor-pointer">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-semibold">{template.name}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {template.description}
+                          </p>
+                          <div className="flex flex-wrap gap-1 mt-3">
+                            {template.templateBlocks.slice(0, 3).map((block, i) => (
+                              <Badge key={i} variant="secondary" className="text-xs">
+                                {block.type.toLowerCase()}
+                              </Badge>
+                            ))}
+                            {template.templateBlocks.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{template.templateBlocks.length - 3} más
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          Usar plantilla
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
