@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, X, Replace, Pencil, Eye, FilePlus2, ChevronDown, BookOpenText, Video, FileText, File as FileGenericIcon, Layers3, Sparkles, Award, CheckCircle, Calendar as CalendarIcon, Info, Settings2, Globe as GlobeIcon, Target, Shield, Clock3, Layout, Sparkles as SparklesIcon, BookOpen, Zap, Target as TargetIcon, BarChart, Users, Tag, Hash, Lock, Unlock, Filter, Palette, EyeOff, ArrowRight, Check, Plus, Minus, Grid3x3, List, Eye as EyeIcon, Maximize2, Minimize2, FolderPlus, FolderOpen, Calendar, Timer, TrendingUp, BarChart2, PieChart, Download, Share2, Bell, Star, Edit, Copy, MoreHorizontal, ExternalLink, HelpCircle, AlertCircle, Info as InfoIcon, ChevronRight, ChevronLeft, FlipVertical, FlipHorizontal, SquareStack, PanelLeft, PanelRight, PanelsTopLeft, Layers } from 'lucide-react';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, X, Replace, Pencil, Eye, FilePlus2, ChevronDown, BookOpenText, Video, FileText, File as FileGenericIcon, Layers3, Sparkles, Award, CheckCircle, Calendar as CalendarIcon, Info, Settings2, Globe as GlobeIcon, Target, Shield, Clock3, Layout, Sparkles as SparklesIcon, BookOpen, Zap, Target as TargetIcon, BarChart, Users, Tag, Hash, Lock, Unlock, Filter, Palette, EyeOff, ArrowRight, Check, Plus, Minus, Grid3x3, List, Eye as EyeIcon, Maximize2, Minimize2, FolderPlus, FolderOpen, Calendar, Timer, TrendingUp, BarChart2, PieChart, Download, Share2, Bell, Star, Edit, Copy, MoreHorizontal, ExternalLink, HelpCircle, AlertCircle, Info as InfoIcon, ChevronRight, ChevronLeft, FlipVertical, FlipHorizontal, SquareStack, PanelLeft, PanelRight, PanelsTopLeft, Layers, ChevronRightCircle, Grid, FlipHorizontal2, Table } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState, useCallback, ChangeEvent, useRef } from 'react';
@@ -63,7 +63,7 @@ interface PrismaCertificateTemplate {
 }
 
 interface InteractiveComponentData {
-  type: 'accordion' | 'flipCards' | 'tabs';
+  type: 'accordion' | 'flipCards' | 'tabs' | 'text';
   items: InteractiveItem[];
   settings?: {
     allowMultipleOpen?: boolean;
@@ -107,26 +107,16 @@ const StatusBadge = ({ status }: { status: CourseStatus }) => {
   );
 };
 
-const StatCard = ({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) => (
-  <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-    <div className={`p-2 rounded-lg ${color}`}>
-      <Icon className="h-5 w-5" />
-    </div>
-    <div>
-      <div className="text-2xl font-bold">{value}</div>
-      <div className="text-sm text-gray-500">{label}</div>
-    </div>
-  </div>
-);
-
-// === COMPONENTE PARA MENÚ DE CONTENIDO ===
+// === COMPONENTE PARA MENÚ DE CONTENIDO CON SUBMENÚ DE TEXTO ===
 const ContentTypeMenu = ({ 
   onSelect, 
   onClose 
 }: { 
-  onSelect: (type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ') => void;
+  onSelect: (type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS') => void;
   onClose: () => void;
 }) => {
+  const [showTextSubmenu, setShowTextSubmenu] = useState(false);
+
   const contentTypes = [
     { type: 'TEXT' as const, label: 'Texto', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-100' },
     { type: 'VIDEO' as const, label: 'Video', icon: Video, color: 'text-red-600', bg: 'bg-red-100' },
@@ -134,6 +124,56 @@ const ContentTypeMenu = ({
     { type: 'IMAGE' as const, label: 'Imagen', icon: ImagePlus, color: 'text-green-600', bg: 'bg-green-100' },
     { type: 'QUIZ' as const, label: 'Quiz', icon: Pencil, color: 'text-purple-600', bg: 'bg-purple-100' },
   ];
+
+  const textSubmenuTypes = [
+    { type: 'ACCORDION' as const, label: 'Acordeón', icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-100', description: 'Elementos expandibles' },
+    { type: 'TABS' as const, label: 'Pestañas', icon: SquareStack, color: 'text-pink-600', bg: 'bg-pink-100', description: 'Contenido organizado en pestañas' },
+    { type: 'FLIP_CARDS' as const, label: 'Tarjetas de volteo', icon: FlipHorizontal2, color: 'text-teal-600', bg: 'bg-teal-100', description: 'Tarjetas interactivas' },
+  ];
+
+  if (showTextSubmenu) {
+    return (
+      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border shadow-lg w-72">
+        <div className="mb-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mb-2 px-2 h-7 text-sm"
+            onClick={() => setShowTextSubmenu(false)}
+          >
+            <ChevronLeft className="h-3.5 w-3.5 mr-1" />
+            Volver a contenido
+          </Button>
+          <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300">Texto interactivo</h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Elige un formato interactivo</p>
+        </div>
+        <div className="space-y-2">
+          {textSubmenuTypes.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Button
+                key={item.type}
+                variant="ghost"
+                className="w-full justify-start px-3 py-3 h-auto hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-lg"
+                onClick={() => {
+                  onSelect(item.type);
+                  onClose();
+                }}
+              >
+                <div className={`p-2 rounded-lg ${item.bg} mr-3`}>
+                  <Icon className={`h-5 w-5 ${item.color}`} />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-medium">{item.label}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{item.description}</div>
+                </div>
+              </Button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border shadow-lg w-64">
@@ -144,6 +184,24 @@ const ContentTypeMenu = ({
       <div className="space-y-1">
         {contentTypes.map((item) => {
           const Icon = item.icon;
+          if (item.type === 'TEXT') {
+            return (
+              <Button
+                key={item.type}
+                variant="ghost"
+                className="w-full justify-between px-3 py-2 h-auto hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setShowTextSubmenu(true)}
+              >
+                <div className="flex items-center">
+                  <div className={`p-2 rounded-md ${item.bg} mr-3`}>
+                    <Icon className={`h-4 w-4 ${item.color}`} />
+                  </div>
+                  <span className="text-sm font-medium">{item.label}</span>
+                </div>
+                <ChevronRight className="h-3.5 w-3.5 text-gray-400" />
+              </Button>
+            );
+          }
           return (
             <Button
               key={item.type}
@@ -176,6 +234,319 @@ const ContentTypeMenu = ({
   );
 };
 
+// === COMPONENTE PARA EDITAR CONTENIDO ===
+const ContentEditor = ({ 
+  type, 
+  onSave, 
+  onCancel 
+}: { 
+  type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS';
+  onSave: (content: any) => void;
+  onCancel: () => void;
+}) => {
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [items, setItems] = useState<Array<{ id: string; title: string; content: string }>>([
+    { id: generateUniqueId('item'), title: '', content: '' }
+  ]);
+  const [settings, setSettings] = useState({
+    allowMultipleOpen: true,
+    flipDirection: 'horizontal' as 'horizontal' | 'vertical',
+    tabPosition: 'top' as 'top' | 'left' | 'right' | 'bottom',
+  });
+
+  const getContentConfig = () => {
+    switch(type) {
+      case 'ACCORDION':
+        return {
+          title: 'Acordeón',
+          icon: Layers,
+          description: 'Crea elementos expandibles',
+          fields: [
+            { name: 'title', label: 'Título del acordeón', placeholder: 'Ej: Preguntas frecuentes' },
+          ]
+        };
+      case 'TABS':
+        return {
+          title: 'Pestañas',
+          icon: SquareStack,
+          description: 'Organiza contenido en pestañas',
+          fields: [
+            { name: 'title', label: 'Título de las pestañas', placeholder: 'Ej: Características del producto' },
+          ]
+        };
+      case 'FLIP_CARDS':
+        return {
+          title: 'Tarjetas de volteo',
+          icon: FlipHorizontal2,
+          description: 'Crea tarjetas interactivas que se voltean',
+          fields: [
+            { name: 'title', label: 'Título de las tarjetas', placeholder: 'Ej: Términos y definiciones' },
+          ]
+        };
+      case 'TEXT':
+        return {
+          title: 'Texto',
+          icon: FileText,
+          description: 'Editor de texto enriquecido',
+          fields: [
+            { name: 'title', label: 'Título del texto', placeholder: 'Ej: Introducción' },
+          ]
+        };
+      case 'VIDEO':
+        return {
+          title: 'Video',
+          icon: Video,
+          description: 'Inserta un video',
+          fields: [
+            { name: 'title', label: 'Título del video', placeholder: 'Ej: Tutorial paso a paso' },
+            { name: 'url', label: 'URL del video', placeholder: 'https://...' },
+          ]
+        };
+      default:
+        return {
+          title: type,
+          icon: FileText,
+          description: 'Añadir contenido',
+          fields: []
+        };
+    }
+  };
+
+  const config = getContentConfig();
+  const Icon = config.icon;
+
+  const addItem = () => {
+    setItems([...items, { id: generateUniqueId('item'), title: '', content: '' }]);
+  };
+
+  const removeItem = (id: string) => {
+    if (items.length > 1) {
+      setItems(items.filter(item => item.id !== id));
+    }
+  };
+
+  const updateItem = (id: string, field: 'title' | 'content', value: string) => {
+    setItems(items.map(item => 
+      item.id === id ? { ...item, [field]: value } : item
+    ));
+  };
+
+  const handleSave = () => {
+    if (type === 'ACCORDION' || type === 'TABS' || type === 'FLIP_CARDS') {
+      const validItems = items.filter(item => item.title.trim() && item.content.trim());
+      if (validItems.length === 0) {
+        alert('Agrega al menos un elemento válido');
+        return;
+      }
+      onSave({
+        type,
+        title,
+        items: validItems,
+        settings,
+        interactiveType: type
+      });
+    } else {
+      onSave({
+        type,
+        title,
+        content,
+      });
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg border shadow-lg p-4 w-full max-w-2xl">
+      <div className="flex items-center gap-3 mb-4">
+        <div className={`p-2 rounded-lg ${type === 'ACCORDION' ? 'bg-indigo-100' : type === 'TABS' ? 'bg-pink-100' : type === 'FLIP_CARDS' ? 'bg-teal-100' : 'bg-blue-100'}`}>
+          <Icon className={`h-5 w-5 ${type === 'ACCORDION' ? 'text-indigo-600' : type === 'TABS' ? 'text-pink-600' : type === 'FLIP_CARDS' ? 'text-teal-600' : 'text-blue-600'}`} />
+        </div>
+        <div>
+          <h3 className="font-semibold text-gray-900 dark:text-white">{config.title}</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{config.description}</p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="content-title">Título</Label>
+          <Input
+            id="content-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={config.fields[0]?.placeholder || 'Título del contenido'}
+            className="mt-1"
+          />
+        </div>
+
+        {(type === 'ACCORDION' || type === 'TABS' || type === 'FLIP_CARDS') ? (
+          <>
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-gray-700 dark:text-gray-300">Elementos</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={addItem}
+                  className="h-8"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Añadir elemento
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                {items.map((item, index) => (
+                  <div key={item.id} className="p-3 border rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Elemento {index + 1}
+                      </span>
+                      {items.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeItem(item.id)}
+                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <Label htmlFor={`item-title-${item.id}`} className="text-xs">Título</Label>
+                        <Input
+                          id={`item-title-${item.id}`}
+                          value={item.title}
+                          onChange={(e) => updateItem(item.id, 'title', e.target.value)}
+                          placeholder="Título del elemento"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`item-content-${item.id}`} className="text-xs">Contenido</Label>
+                        <Textarea
+                          id={`item-content-${item.id}`}
+                          value={item.content}
+                          onChange={(e) => updateItem(item.id, 'content', e.target.value)}
+                          placeholder="Contenido del elemento"
+                          className="min-h-[80px] text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Settings */}
+            <div className="border-t pt-4">
+              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-3">Configuración</h4>
+              <div className="space-y-3">
+                {type === 'ACCORDION' && (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">Múltiples abiertos</p>
+                      <p className="text-xs text-gray-500">Permitir abrir varios elementos a la vez</p>
+                    </div>
+                    <Switch
+                      checked={settings.allowMultipleOpen}
+                      onCheckedChange={(checked) => setSettings({...settings, allowMultipleOpen: checked})}
+                    />
+                  </div>
+                )}
+                
+                {type === 'FLIP_CARDS' && (
+                  <div>
+                    <Label htmlFor="flip-direction" className="text-sm">Dirección del volteo</Label>
+                    <Select
+                      value={settings.flipDirection}
+                      onValueChange={(value: 'horizontal' | 'vertical') => setSettings({...settings, flipDirection: value})}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="horizontal">Horizontal</SelectItem>
+                        <SelectItem value="vertical">Vertical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                {type === 'TABS' && (
+                  <div>
+                    <Label htmlFor="tab-position" className="text-sm">Posición de pestañas</Label>
+                    <Select
+                      value={settings.tabPosition}
+                      onValueChange={(value: 'top' | 'left' | 'right' | 'bottom') => setSettings({...settings, tabPosition: value})}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="top">Superior</SelectItem>
+                        <SelectItem value="left">Izquierda</SelectItem>
+                        <SelectItem value="right">Derecha</SelectItem>
+                        <SelectItem value="bottom">Inferior</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        ) : type === 'TEXT' ? (
+          <div>
+            <Label htmlFor="text-content">Contenido</Label>
+            <Textarea
+              id="text-content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Escribe tu contenido aquí..."
+              className="min-h-[150px] mt-1"
+            />
+          </div>
+        ) : type === 'VIDEO' ? (
+          <div>
+            <Label htmlFor="video-url">URL del video</Label>
+            <Input
+              id="video-url"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
+              className="mt-1"
+            />
+            <p className="text-xs text-gray-500 mt-2">Soporta YouTube, Vimeo, y archivos de video directos</p>
+          </div>
+        ) : (
+          <div>
+            <Label htmlFor="content-value">Contenido</Label>
+            <Input
+              id="content-value"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Ingresa el contenido"
+              className="mt-1"
+            />
+          </div>
+        )}
+
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          <Button variant="outline" size="sm" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button size="sm" onClick={handleSave}>
+            <Save className="h-3.5 w-3.5 mr-2" />
+            Guardar
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // === COMPONENTES PRINCIPALES ===
 
 const ModuleCard = React.forwardRef<HTMLDivElement, {
@@ -197,7 +568,6 @@ const ModuleCard = React.forwardRef<HTMLDivElement, {
   const handleTitleClick = () => {
     setIsEditing(true);
     setEditingTitle(module.title);
-    // Enfocar el input después de un pequeño delay para asegurar que se renderice
     setTimeout(() => {
       inputRef.current?.focus();
       inputRef.current?.select();
@@ -357,11 +727,16 @@ const ModuleCard = React.forwardRef<HTMLDivElement, {
 ModuleCard.displayName = 'ModuleCard';
 
 const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: number; moduleId: string }) => {
+  const { toast } = useToast();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingTitle, setEditingTitle] = useState(lesson.title);
   const [showContentMenu, setShowContentMenu] = useState(false);
   const [showAddContent, setShowAddContent] = useState(false);
+  const [editingContent, setEditingContent] = useState<{
+    type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS';
+    isEditing: boolean;
+  } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -379,6 +754,10 @@ const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: num
     if (editingTitle.trim() !== '' && editingTitle !== lesson.title) {
       // Aquí deberías llamar a una función para actualizar el título de la lección
       console.log('Actualizar título de lección:', editingTitle);
+      toast({
+        title: "Título actualizado",
+        description: "El título de la lección se ha actualizado.",
+      });
     }
     setIsEditing(false);
   };
@@ -392,11 +771,24 @@ const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: num
     }
   };
 
-  const handleAddContent = (type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ') => {
+  const handleAddContent = (type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS') => {
     console.log('Añadir contenido tipo:', type, 'a lección:', lesson.id);
-    // Aquí deberías llamar a una función para añadir el contenido
+    setEditingContent({ type, isEditing: true });
     setShowContentMenu(false);
     setShowAddContent(false);
+  };
+
+  const handleSaveContent = (contentData: any) => {
+    console.log('Guardar contenido:', contentData);
+    toast({
+      title: "Contenido añadido",
+      description: `Se ha añadido un elemento de tipo ${contentData.type} a la lección.`,
+    });
+    setEditingContent(null);
+  };
+
+  const handleCancelContent = () => {
+    setEditingContent(null);
   };
 
   // Cerrar menús al hacer clic fuera
@@ -412,7 +804,17 @@ const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: num
   }, []);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3" ref={menuRef}>
+      {editingContent ? (
+        <div className="mb-4">
+          <ContentEditor
+            type={editingContent.type}
+            onSave={handleSaveContent}
+            onCancel={handleCancelContent}
+          />
+        </div>
+      ) : null}
+      
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 flex-1">
           <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded">
@@ -492,8 +894,8 @@ const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: num
         </div>
       </div>
       
-      {showAddContent && !showContentMenu && (
-        <div className="mt-3 pl-11" ref={menuRef}>
+      {showAddContent && !showContentMenu && !editingContent && (
+        <div className="mt-3 pl-11">
           <ContentTypeMenu 
             onSelect={handleAddContent} 
             onClose={() => setShowAddContent(false)} 
@@ -509,7 +911,7 @@ const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: num
         </div>
       )}
       
-      {isExpanded && lesson.contentBlocks.length === 0 && (
+      {isExpanded && lesson.contentBlocks.length === 0 && !editingContent && (
         <div className="mt-3 pl-11">
           <div className="p-4 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-center">
             <FilePlus2 className="h-8 w-8 text-gray-400 mx-auto mb-2" />
@@ -539,6 +941,9 @@ const ContentBlockPreview = ({ block, index }: { block: ContentBlock; index: num
       case 'FILE': return { icon: FileGenericIcon, color: 'text-amber-600', bg: 'bg-amber-100' };
       case 'IMAGE': return { icon: ImagePlus, color: 'text-green-600', bg: 'bg-green-100' };
       case 'QUIZ': return { icon: Pencil, color: 'text-purple-600', bg: 'bg-purple-100' };
+      case 'ACCORDION': return { icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-100' };
+      case 'TABS': return { icon: SquareStack, color: 'text-pink-600', bg: 'bg-pink-100' };
+      case 'FLIP_CARDS': return { icon: FlipHorizontal2, color: 'text-teal-600', bg: 'bg-teal-100' };
       default: return { icon: FileText, color: 'text-gray-600', bg: 'bg-gray-100' };
     }
   };
@@ -552,7 +957,10 @@ const ContentBlockPreview = ({ block, index }: { block: ContentBlock; index: num
         <Icon className={`h-3.5 w-3.5 ${info.color}`} />
       </div>
       <span className="text-sm font-medium flex-1">
-        {block.type === 'QUIZ' ? block.quiz?.title || 'Quiz' : `${block.type}`}
+        {block.type === 'QUIZ' ? block.quiz?.title || 'Quiz' : 
+         block.type === 'ACCORDION' ? 'Acordeón' :
+         block.type === 'TABS' ? 'Pestañas' :
+         block.type === 'FLIP_CARDS' ? 'Tarjetas de volteo' : `${block.type}`}
       </span>
       <Badge variant="outline" className="text-xs">
         #{index + 1}
@@ -936,12 +1344,12 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b">
+      {/* Header con bordes redondeados */}
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b rounded-b-xl mx-3 mt-2">
         <div className="container mx-auto px-3 sm:px-4 lg:px-4">
-          <div className="flex flex-col py-4">
+          <div className="flex flex-col py-3">
             {/* Fila superior: Título y acciones */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" asChild>
                   <Link href="/manage-courses">
@@ -987,73 +1395,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
               </div>
             </div>
 
-            {/* Barra de contadores unificada */}
-            {stats && (
-              <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg border">
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                      <Layers3 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {stats.modules}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Módulos
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator orientation="vertical" className="h-8" />
-
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                      <BookOpen className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {stats.lessons}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Lecciones
-                      </div>
-                    </div>
-                  </div>
-
-                  <Separator orientation="vertical" className="h-8" />
-
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
-                      <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {stats.blocks}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Elementos
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {stats.hasCertificate && (
-                    <Badge variant="outline" className="gap-1">
-                      <Award className="h-3 w-3" />
-                      Certificado
-                    </Badge>
-                  )}
-                  {stats.isMandatory && (
-                    <Badge variant="default" className="gap-1 bg-amber-500 hover:bg-amber-600">
-                      <AlertTriangle className="h-3 w-3" />
-                      Obligatorio
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
+            {/* Eliminamos la barra de contadores aquí */}
           </div>
         </div>
       </header>
