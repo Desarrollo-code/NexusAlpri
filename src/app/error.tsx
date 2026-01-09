@@ -254,7 +254,7 @@ export default function GlobalError({
           ¿Necesitas ayuda inmediata?
         </p>
         <a 
-          href="mailto:soporte@tuempresa.com" 
+          href="desarrolloalprigrama@gmail.com" 
           className="text-sm text-amber-600 dark:text-amber-400 hover:underline underline-offset-4 font-medium"
         >
           Contactar Soporte Técnico
