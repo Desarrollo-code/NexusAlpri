@@ -1,602 +1,350 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from '@/contexts/auth-context';
-import { useTitle } from '@/contexts/title-context';
-import { motion, AnimatePresence } from 'framer-motion';
-
-// Componentes UI - Importados individualmente desde sus rutas específicas
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, ShieldAlert, ImagePlus, X, Replace, Pencil, Eye, FilePlus2, ChevronDown, BookOpenText, Video, FileText, File as FileGenericIcon, Layers3, Sparkles, Award, CheckCircle, Calendar as CalendarIcon, Info, Settings2, Globe as GlobeIcon, Target, Shield, Clock3, Layout, Sparkles as SparklesIcon, BookOpen, Zap, Target as TargetIcon, BarChart, Users, Tag, Hash, Lock, Unlock, Filter, Palette, EyeOff, ArrowRight, Check, Plus, Minus, Grid3x3, List, Eye as EyeIcon, Maximize2, Minimize2, FolderPlus, FolderOpen, Calendar, Timer, TrendingUp, BarChart2, PieChart, Download, Share2, Bell, Star, Edit, Copy, MoreHorizontal, ExternalLink, HelpCircle, AlertCircle, Info as InfoIcon, ChevronRight, ChevronLeft, FlipVertical, FlipHorizontal, SquareStack, PanelLeft, PanelRight, PanelsTopLeft, Layers } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, useCallback, ChangeEvent } from 'react';
+import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType, CourseStatus, Quiz as AppQuiz, ContentBlock } from '@/types';
+import Image from 'next/image';
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/auth-context';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { motion, AnimatePresence } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
-} from '@/components/ui/alert-dialog';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from '@/components/ui/tooltip';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { 
-  Collapsible, 
-  CollapsibleContent, 
-  CollapsibleTrigger 
-} from '@/components/ui/collapsible';
-
-// Iconos esenciales - Solo los necesarios
-import { 
-  ArrowLeft, 
-  Save, 
-  PlusCircle, 
-  Trash2, 
-  UploadCloud, 
-  GripVertical, 
-  Loader2, 
-  AlertTriangle, 
-  ImagePlus, 
-  X, 
-  Copy, 
-  Eye, 
-  FilePlus2, 
-  ChevronDown, 
-  BookOpenText, 
-  Video, 
-  FileText, 
-  Layers3, 
-  Sparkles, 
-  Award, 
-  CheckCircle, 
-  Calendar as CalendarIcon, 
-  Settings2, 
-  Globe, 
-  Target, 
-  Shield,
-  Layout, 
-  BookOpen, 
-  Download, 
-  Info, 
-  Check, 
-  Plus, 
-  Grid3x3, 
-  List,
-  FolderOpen, 
-  File as FileIcon,
-  Zap, 
-  Users, 
-  Tag, 
-  Lock, 
-  Filter, 
-  Palette, 
-  MoreHorizontal, 
-  HelpCircle,
-  ChevronRight,
-  ChevronLeft,
-  ArrowRight,
-  EyeOff,
-  Maximize2,
-  Minimize2,
-  Bell,
-  Star,
-  Edit,
-  ExternalLink,
-  PieChart,
-  BarChart2,
-  TrendingUp,
-  Timer,
-  Calendar,
-  Share2,
-  Hash,
-  Unlock,
-  PanelLeft,
-  PanelRight,
-  PanelsTopLeft,
-  FlipVertical,
-  FlipHorizontal,
-  SquareStack,
-  Layers
-} from 'lucide-react';
-
-import Link from 'next/link';
-import Image from 'next/image';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { UploadArea } from '@/components/ui/upload-area';
 import { uploadWithProgress } from '@/lib/upload-with-progress';
-import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 import { CourseAssignmentModal } from '@/components/course-assignment-modal';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
-import { cn } from '@/lib/utils';
-import type { Course, Module, Lesson, LessonType, CourseStatus, Quiz, ContentBlock } from '@/types';
+import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
+import { useTitle } from '@/contexts/title-context';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Toggle } from '@/components/ui/toggle';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-// === UTILIDADES ===
-const generateUniqueId = (prefix: string): string => {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-};
-
-const safeFetch = async (url: string, options?: RequestInit) => {
-  const response = await fetch(url, options);
-  const contentType = response.headers.get('content-type');
-  
-  if (!contentType?.includes('application/json')) {
-    const text = await response.text();
-    throw new Error(`API returned non-JSON: ${text.substring(0, 100)}`);
-  }
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || `HTTP ${response.status}`);
-  }
-  
-  return response.json();
-};
-
-// === COMPONENTES SIMPLIFICADOS ===
-
-interface InteractiveComponent {
-  type: 'accordion' | 'flipCards' | 'tabs';
-  items: Array<{ id: string; title: string; content: string; imageUrl?: string }>;
+// === INTERFACES Y UTILIDADES ===
+interface ApiTemplate {
+  id: string;
+  name: string;
+  description: string;
+  templateBlocks: any[];
+  creator: { name: string | null } | null;
 }
 
-const BlockTypeSelector = ({ onSelect }: { onSelect: (type: LessonType) => void }) => {
-  const types = [
-    { value: 'TEXT', label: 'Texto', icon: FileText, color: 'text-blue-600' },
-    { value: 'VIDEO', label: 'Video', icon: Video, color: 'text-red-600' },
-    { value: 'FILE', label: 'Archivo', icon: FileIcon, color: 'text-amber-600' },
-    { value: 'QUIZ', label: 'Quiz', icon: Zap, color: 'text-purple-600' },
-  ] as const;
+interface PrismaCertificateTemplate {
+  id: string;
+  name: string;
+}
+
+interface InteractiveComponentData {
+  type: 'accordion' | 'flipCards' | 'tabs';
+  items: InteractiveItem[];
+  settings?: {
+    allowMultipleOpen?: boolean;
+    flipDirection?: 'horizontal' | 'vertical';
+    tabPosition?: 'top' | 'left' | 'right' | 'bottom';
+  };
+}
+
+interface InteractiveItem {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  imagePreview?: string;
+}
+
+const generateUniqueId = (prefix: string): string => {
+  if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
+    return `${prefix}-${window.crypto.randomUUID()}`;
+  }
+  const timestamp = Date.now();
+  const randomPart = Math.random().toString(36).substring(2, 9);
+  return `${prefix}-${timestamp}-${randomPart}`;
+};
+
+// === COMPONENTES REUTILIZABLES ===
+
+const StatusBadge = ({ status }: { status: CourseStatus }) => {
+  const statusConfig = {
+    DRAFT: { label: 'Borrador', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+    PUBLISHED: { label: 'Publicado', color: 'bg-green-100 text-green-800 border-green-200' },
+    ARCHIVED: { label: 'Archivado', color: 'bg-gray-100 text-gray-800 border-gray-200' }
+  };
+
+  const config = statusConfig[status] || statusConfig.DRAFT;
 
   return (
-    <div className="p-3 border rounded-lg bg-background/50">
-      <p className="text-sm font-medium mb-3">Tipo de contenido</p>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {types.map(({ value, label, icon: Icon, color }) => (
-          <Button
-            key={value}
-            variant="outline"
-            onClick={() => onSelect(value as LessonType)}
-            className="h-auto py-3 flex-col gap-2 hover:scale-[1.02] transition-all"
-          >
-            <Icon className={`h-5 w-5 ${color}`} />
-            <span className="text-xs">{label}</span>
-          </Button>
-        ))}
-      </div>
-    </div>
+    <Badge variant="outline" className={`font-medium ${config.color}`}>
+      {config.label}
+    </Badge>
   );
 };
 
-const ContentBlockItem = ({ 
-  block, 
-  onUpdate, 
-  onDelete,
-  onEditQuiz,
-  dragHandleProps,
-  isSaving = false 
-}: { 
-  block: ContentBlock;
-  onUpdate: (field: string, value: any) => void;
+const StatCard = ({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) => (
+  <div className="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+    <div className={`p-2 rounded-lg ${color}`}>
+      <Icon className="h-5 w-5" />
+    </div>
+    <div>
+      <div className="text-2xl font-bold">{value}</div>
+      <div className="text-sm text-gray-500">{label}</div>
+    </div>
+  </div>
+);
+
+// === COMPONENTES PRINCIPALES ===
+
+const ModuleCard = React.forwardRef<HTMLDivElement, {
+  module: AppModule;
+  index: number;
+  onEdit: () => void;
   onDelete: () => void;
-  onEditQuiz?: () => void;
+  onDuplicate: () => void;
+  isExpanded: boolean;
+  onToggle: () => void;
   dragHandleProps: any;
-  isSaving?: boolean;
-}) => {
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-
-  const handleFileUpload = async (file: File) => {
-    setIsUploading(true);
-    try {
-      const result = await uploadWithProgress('/api/upload/lesson-file', file, setUploadProgress);
-      onUpdate('content', result.url);
-    } catch (error) {
-      console.error('Upload failed:', error);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const renderContent = () => {
-    switch (block.type) {
-      case 'TEXT':
-        return (
-          <RichTextEditor
-            value={block.content || ''}
-            onChange={(value) => onUpdate('content', value)}
-            placeholder="Escribe el contenido..."
-            disabled={isSaving}
-          />
-        );
+}>(({ module, index, onEdit, onDelete, onDuplicate, isExpanded, onToggle, dragHandleProps }, ref) => (
+  <motion.div
+    ref={ref}
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="group relative"
+  >
+    <Card className="overflow-hidden border-2 hover:border-primary/20 transition-all duration-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-primary to-primary/60" />
       
-      case 'VIDEO':
-        return (
-          <div className="space-y-2">
-            <Label>URL del video</Label>
-            <Input
-              value={block.content || ''}
-              onChange={(e) => onUpdate('content', e.target.value)}
-              placeholder="https://..."
-              disabled={isSaving}
-            />
-          </div>
-        );
-      
-      case 'FILE':
-        return (
-          <div className="space-y-3">
-            <Label>Archivo adjunto</Label>
-            {block.content ? (
-              <div className="flex items-center gap-3 p-3 border rounded-lg">
-                <FileIcon className="h-8 w-8 text-muted-foreground" />
-                <div className="flex-1">
-                  <p className="font-medium truncate">
-                    {block.content.split('/').pop()}
-                  </p>
-                  <Button 
-                    variant="link" 
-                    size="sm" 
-                    onClick={() => window.open(block.content, '_blank')}
-                  >
-                    Ver archivo
-                  </Button>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onUpdate('content', '')}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-4 flex-1">
+            <div className="flex flex-col items-center">
+              <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <GripVertical className="h-4 w-4 text-gray-400" />
               </div>
-            ) : (
-              <UploadArea
-                onFileSelect={handleFileUpload}
-                accept="*/*"
-                disabled={isSaving || isUploading}
-              >
-                {isUploading ? (
-                  <div className="text-center">
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-                    <Progress value={uploadProgress} className="mt-2" />
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <UploadCloud className="h-8 w-8 mx-auto mb-2" />
-                    <p>Arrastra o haz clic para subir</p>
-                  </div>
-                )}
-              </UploadArea>
-            )}
-          </div>
-        );
-      
-      case 'QUIZ':
-        return (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Configuración del quiz</Label>
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={onEditQuiz}
-              >
-                Editar preguntas
-              </Button>
+              <Badge variant="secondary" className="mt-2 text-xs font-bold">
+                MÓDULO {index + 1}
+              </Badge>
             </div>
-            <Input
-              value={block.quiz?.title || ''}
-              onChange={(e) => onUpdate('quiz', { ...block.quiz, title: e.target.value })}
-              placeholder="Título del quiz"
-              disabled={isSaving}
-            />
-          </div>
-        );
-      
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="flex gap-3 p-3 border rounded-lg bg-card">
-      <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing">
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
-      </div>
-      <div className="flex-1 space-y-3">
-        <div className="flex items-center justify-between">
-          <Badge variant="outline">
-            {block.type.toLowerCase()}
-          </Badge>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onDelete}
-            disabled={isSaving}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-        {renderContent()}
-      </div>
-    </div>
-  );
-};
-
-const LessonItem = ({ 
-  lesson, 
-  index,
-  onUpdate,
-  onDelete,
-  onAddBlock,
-  onBlockUpdate,
-  onBlockDelete,
-  onEditQuiz,
-  dragHandleProps
-}: {
-  lesson: Lesson;
-  index: number;
-  onUpdate: (field: keyof Lesson, value: any) => void;
-  onDelete: () => void;
-  onAddBlock: (type: LessonType) => void;
-  onBlockUpdate: (blockIndex: number, field: string, value: any) => void;
-  onBlockDelete: (blockIndex: number) => void;
-  onEditQuiz: (quiz: Quiz) => void;
-  dragHandleProps: any;
-}) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  return (
-    <div className="border rounded-lg">
-      <div className="p-3 flex items-center gap-3">
-        <div {...dragHandleProps} className="cursor-grab">
-          <GripVertical className="h-4 w-4" />
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">L{index + 1}</Badge>
-            <Input
-              value={lesson.title}
-              onChange={(e) => onUpdate('title', e.target.value)}
-              placeholder="Título de la lección"
-              className="border-0 px-0"
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onDelete}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-      
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="p-3 border-t space-y-3">
-              <Droppable droppableId={lesson.id} type="BLOCKS">
-                {(provided) => (
-                  <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                    {lesson.contentBlocks.map((block, blockIndex) => (
-                      <Draggable key={block.id} draggableId={block.id} index={blockIndex}>
-                        {(provided) => (
-                          <div ref={provided.innerRef} {...provided.draggableProps}>
-                            <ContentBlockItem
-                              block={block}
-                              onUpdate={(field, value) => onBlockUpdate(blockIndex, field, value)}
-                              onDelete={() => onBlockDelete(blockIndex)}
-                              onEditQuiz={() => block.type === 'QUIZ' && block.quiz && onEditQuiz(block.quiz)}
-                              dragHandleProps={provided.dragHandleProps}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
+            
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <Layers3 className="h-4 w-4 text-primary" />
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white truncate">
+                  {module.title}
+                </h3>
+              </div>
               
-              <BlockTypeSelector onSelect={onAddBlock} />
+              <div className="flex flex-wrap items-center gap-2 mt-2">
+                <Badge variant="outline" className="text-xs">
+                  {module.lessons.length} {module.lessons.length === 1 ? 'lección' : 'lecciones'}
+                </Badge>
+                <span className="text-xs text-gray-500">
+                  {module.lessons.reduce((acc, lesson) => acc + lesson.contentBlocks.length, 0)} elementos
+                </span>
+              </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
-
-const ModuleItem = ({
-  module,
-  index,
-  onUpdate,
-  onDelete,
-  onAddLesson,
-  onLessonUpdate,
-  onLessonDelete,
-  onAddBlock,
-  onBlockUpdate,
-  onBlockDelete,
-  onEditQuiz,
-  dragHandleProps
-}: {
-  module: Module;
-  index: number;
-  onUpdate: (field: keyof Module, value: any) => void;
-  onDelete: () => void;
-  onAddLesson: () => void;
-  onLessonUpdate: (lessonIndex: number, field: keyof Lesson, value: any) => void;
-  onLessonDelete: (lessonIndex: number) => void;
-  onAddBlock: (lessonIndex: number, type: LessonType) => void;
-  onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void;
-  onBlockDelete: (lessonIndex: number, blockIndex: number) => void;
-  onEditQuiz: (quiz: Quiz) => void;
-  dragHandleProps: any;
-}) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="border rounded-xl overflow-hidden"
-    >
-      <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 flex items-center justify-between">
-        <div className="flex items-center gap-3 flex-1">
-          <div {...dragHandleProps} className="cursor-grab">
-            <GripVertical className="h-5 w-5" />
           </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <Layers3 className="h-4 w-4 text-primary" />
-              <span className="text-xs font-medium">MÓDULO {index + 1}</span>
+          
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggle}
+              className="h-8 w-8"
+            >
+              {isExpanded ? 
+                <ChevronDown className="h-4 w-4 rotate-180" /> : 
+                <ChevronDown className="h-4 w-4" />
+              }
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onDuplicate}
+              className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onDelete}
+              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      
+      {isExpanded && (
+        <CardContent className="pt-0">
+          <div className="space-y-3 mt-4">
+            {module.lessons.map((lesson, lessonIndex) => (
+              <LessonCard
+                key={lesson.id}
+                lesson={lesson}
+                index={lessonIndex}
+              />
+            ))}
+          </div>
+          
+          <div className="mt-6 pt-4 border-t">
+            <Button variant="outline" size="sm" className="w-full" onClick={onEdit}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Añadir lección
+            </Button>
+          </div>
+        </CardContent>
+      )}
+    </Card>
+  </motion.div>
+));
+
+ModuleCard.displayName = 'ModuleCard';
+
+const LessonCard = ({ lesson, index }: { lesson: AppLesson; index: number }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  return (
+    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 flex-1">
+          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded">
+            <BookOpenText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs">
+                Lección {index + 1}
+              </Badge>
+              <h4 className="font-medium truncate">{lesson.title}</h4>
             </div>
-            <Input
-              value={module.title}
-              onChange={(e) => onUpdate('title', e.target.value)}
-              placeholder="Nombre del módulo"
-              className="text-lg font-semibold border-0 bg-transparent p-0"
-            />
+            <p className="text-xs text-gray-500 mt-1">
+              {lesson.contentBlocks.length} elementos
+            </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onDelete}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="h-7 w-7"
+        >
+          {isExpanded ? 
+            <ChevronDown className="h-3.5 w-3.5 rotate-180" /> : 
+            <ChevronDown className="h-3.5 w-3.5" />
+          }
+        </Button>
       </div>
       
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: 'auto' }}
-            exit={{ height: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="p-4 space-y-3">
-              <Droppable droppableId={module.id} type="LESSONS">
-                {(provided) => (
-                  <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
-                    {module.lessons.map((lesson, lessonIndex) => (
-                      <Draggable key={lesson.id} draggableId={lesson.id} index={lessonIndex}>
-                        {(provided) => (
-                          <div ref={provided.innerRef} {...provided.draggableProps}>
-                            <LessonItem
-                              lesson={lesson}
-                              index={lessonIndex}
-                              onUpdate={(field, value) => onLessonUpdate(lessonIndex, field, value)}
-                              onDelete={() => onLessonDelete(lessonIndex)}
-                              onAddBlock={(type) => onAddBlock(lessonIndex, type)}
-                              onBlockUpdate={(blockIndex, field, value) => onBlockUpdate(lessonIndex, blockIndex, field, value)}
-                              onBlockDelete={(blockIndex) => onBlockDelete(lessonIndex, blockIndex)}
-                              onEditQuiz={onEditQuiz}
-                              dragHandleProps={provided.dragHandleProps}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-              
-              <Button onClick={onAddLesson} variant="outline" className="w-full">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Añadir lección
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+      {isExpanded && (
+        <div className="mt-3 space-y-2 pl-11">
+          {lesson.contentBlocks.map((block, blockIndex) => (
+            <ContentBlockPreview key={block.id} block={block} index={blockIndex} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ContentBlockPreview = ({ block, index }: { block: ContentBlock; index: number }) => {
+  const getBlockInfo = () => {
+    switch(block.type) {
+      case 'TEXT': return { icon: FileText, color: 'text-blue-600', bg: 'bg-blue-100' };
+      case 'VIDEO': return { icon: Video, color: 'text-red-600', bg: 'bg-red-100' };
+      case 'FILE': return { icon: FileGenericIcon, color: 'text-amber-600', bg: 'bg-amber-100' };
+      case 'QUIZ': return { icon: Pencil, color: 'text-purple-600', bg: 'bg-purple-100' };
+      default: return { icon: FileText, color: 'text-gray-600', bg: 'bg-gray-100' };
+    }
+  };
+
+  const info = getBlockInfo();
+  const Icon = info.icon;
+
+  return (
+    <div className="flex items-center gap-2 p-2 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className={`p-1.5 rounded ${info.bg}`}>
+        <Icon className={`h-3.5 w-3.5 ${info.color}`} />
+      </div>
+      <span className="text-sm font-medium flex-1">
+        {block.type === 'QUIZ' ? block.quiz?.title || 'Quiz' : `${block.type}`}
+      </span>
+      <Badge variant="outline" className="text-xs">
+        #{index + 1}
+      </Badge>
+    </div>
   );
 };
 
 // === COMPONENTE PRINCIPAL REDISEÑADO ===
+
 export function CourseEditor({ courseId }: { courseId: string }) {
   const router = useRouter();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, settings, isLoading: isAuthLoading } = useAuth();
   const { setPageTitle } = useTitle();
 
-  const [course, setCourse] = useState<Course | null>(null);
+  const [course, setCourse] = useState<AppCourse | null>(null);
+  const [allCoursesForPrereq, setAllCoursesForPrereq] = useState<AppCourse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [activeTab, setActiveTab] = useState('basics');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [quizToEdit, setQuizToEdit] = useState<{ quiz: Quiz; onSave: (quiz: Quiz) => void } | null>(null);
 
-  // Cargar datos del curso
+  const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [templates, setTemplates] = useState<ApiTemplate[]>([]);
+  const [certificateTemplates, setCertificateTemplates] = useState<PrismaCertificateTemplate[]>([]);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
+  const [quizToEdit, setQuizToEdit] = useState<{ quiz: AppQuiz; onSave: (updatedQuiz: AppQuiz) => void } | null>(null);
+  
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
+
+  // Data fetching
   useEffect(() => {
-    const loadCourse = async () => {
+    const fetchAllData = async () => {
       if (!user) return;
 
       try {
         setIsLoading(true);
-        
+
         if (courseId === 'new') {
           setCourse({
             id: generateUniqueId('course'),
-            title: 'Nuevo curso sin título',
-            description: '',
-            instructorId: user.id,
+            title: 'Nuevo Curso sin Título',
+            description: 'Añade una descripción aquí.',
             instructor: user as any,
+            instructorId: user?.id,
             status: 'DRAFT',
             category: '',
             modules: [],
@@ -606,19 +354,34 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             certificateTemplateId: null,
             imageUrl: null,
           });
-          setPageTitle('Crear nuevo curso');
+          setPageTitle('Crear Nuevo Curso');
           return;
         }
 
-        const courseData = await safeFetch(`/api/courses/${courseId}`);
+        const [courseRes, templatesRes, certificatesRes, coursesRes] = await Promise.all([
+          fetch(`/api/courses/${courseId}`),
+          fetch('/api/templates'),
+          fetch('/api/certificates/templates'),
+          fetch('/api/courses?simple=true')
+        ]);
+
+        if (!courseRes.ok) throw new Error("Curso no encontrado");
+
+        const courseData: AppCourse = await courseRes.json();
         setCourse(courseData);
-        setPageTitle(`Editando: ${courseData.title}`);
-        
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'No se pudo cargar el curso',
-          variant: 'destructive'
+
+        if (templatesRes.ok) setTemplates(await templatesRes.json());
+        if (certificatesRes.ok) setCertificateTemplates(await certificatesRes.json());
+        if (coursesRes.ok) {
+          const data = await coursesRes.json();
+          setAllCoursesForPrereq((data.courses || []).filter((c: AppCourse) => c.id !== courseId));
+        }
+
+      } catch (err) {
+        toast({ 
+          title: "Error", 
+          description: "No se pudo cargar el curso para editar.", 
+          variant: "destructive" 
         });
         router.push('/manage-courses');
       } finally {
@@ -626,764 +389,939 @@ export function CourseEditor({ courseId }: { courseId: string }) {
       }
     };
 
-    loadCourse();
+    fetchAllData();
   }, [courseId, user, router, toast, setPageTitle]);
 
-  // Manejar guardado
-  const handleSave = async () => {
+  const handleSaveCourse = useCallback(async () => {
     if (!course) return;
-    
     setIsSaving(true);
+
+    const payload = { ...course };
+    (payload.modules || []).forEach((mod, mIdx) => {
+      mod.order = mIdx;
+      (mod.lessons || []).forEach((les, lIdx) => {
+        les.order = lIdx;
+        (les.contentBlocks || []).forEach((block, bIdx) => {
+          block.order = bIdx;
+        });
+      });
+    });
+
     try {
       const endpoint = courseId === 'new' ? '/api/courses' : `/api/courses/${courseId}`;
       const method = courseId === 'new' ? 'POST' : 'PUT';
-      
-      const savedCourse = await safeFetch(endpoint, {
-        method,
+
+      const response = await fetch(endpoint, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(course)
+        body: JSON.stringify(payload),
       });
       
+      if (!response.ok) throw new Error((await response.json()).message || 'Error al guardar el curso.');
+
+      const savedCourse = await response.json();
+
+      toast({ 
+        title: "✅ Curso Guardado", 
+        description: "La información del curso se ha guardado correctamente.",
+        duration: 3000
+      });
+
       setCourse(savedCourse);
-      toast({ title: '✅ Curso guardado', duration: 3000 });
-      
+      setIsDirty(false);
+
       if (courseId === 'new') {
-        router.push(`/manage-courses/${savedCourse.id}/edit`);
+        router.replace(`/manage-courses/${savedCourse.id}/edit`, { scroll: false });
       }
+
+      return savedCourse;
+
     } catch (error: any) {
-      toast({
-        title: '❌ Error',
-        description: error.message || 'No se pudo guardar',
-        variant: 'destructive'
+      console.error('Error al guardar el curso:', error);
+      toast({ 
+        title: "❌ Error al Guardar", 
+        description: error.message || "No se pudo guardar. Intenta nuevamente.", 
+        variant: "destructive",
+        duration: 5000
       });
+      return null;
     } finally {
       setIsSaving(false);
     }
+  }, [course, courseId, router, toast]);
+
+  const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
+    setCourse(prev => {
+      if (!prev) return null;
+      const newCourse = JSON.parse(JSON.stringify(prev));
+      return updater(newCourse);
+    });
+    setIsDirty(true);
+  }, []);
+
+  const updateCourseField = (field: keyof AppCourse, value: any) => {
+    handleStateUpdate(prev => {
+      prev[field] = value;
+      return prev;
+    });
   };
 
-  // Actualizar campo del curso
-  const updateCourse = (updates: Partial<Course>) => {
-    setCourse(prev => prev ? { ...prev, ...updates } : null);
+  const handleAddModule = () => {
+    handleStateUpdate(prev => {
+      const newModule: AppModule = {
+        id: generateUniqueId('module'),
+        title: 'Nuevo Módulo',
+        order: (prev.modules || []).length,
+        lessons: [],
+      };
+      if (!prev.modules) prev.modules = [];
+      prev.modules.push(newModule);
+      return prev;
+    });
   };
 
-  // Manejar drag & drop
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination || !course) return;
+  const handleDeleteModule = (moduleId: string) => {
+    const module = course?.modules.find(m => m.id === moduleId);
+    setItemToDelete({
+      type: 'module',
+      name: module?.title,
+      onConfirm: () => {
+        handleStateUpdate(prev => {
+          prev.modules = prev.modules.filter(m => m.id !== moduleId);
+          return prev;
+        });
+        toast({ title: "Módulo eliminado", description: "El módulo se ha eliminado correctamente." });
+      }
+    });
+  };
 
-    const { source, destination, type } = result;
+  const handleDuplicateModule = (moduleId: string) => {
+    const module = course?.modules.find(m => m.id === moduleId);
+    if (!module) return;
+
+    const duplicate = JSON.parse(JSON.stringify(module));
+    duplicate.id = generateUniqueId('module');
+    duplicate.title = `${module.title} (Copia)`;
+
+    handleStateUpdate(prev => {
+      const index = prev.modules.findIndex(m => m.id === moduleId);
+      prev.modules.splice(index + 1, 0, duplicate);
+      return prev;
+    });
+
+    toast({ title: "✅ Módulo duplicado", description: "El módulo se ha duplicado correctamente." });
+  };
+
+  const toggleModuleExpansion = (moduleId: string) => {
+    setExpandedModules(prev => {
+      const next = new Set(prev);
+      if (next.has(moduleId)) {
+        next.delete(moduleId);
+      } else {
+        next.add(moduleId);
+      }
+      return next;
+    });
+  };
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
     
-    if (type === 'MODULES') {
-      const modules = [...course.modules];
-      const [moved] = modules.splice(source.index, 1);
-      modules.splice(destination.index, 0, moved);
-      updateCourse({ modules });
+    const file = e.target.files[0];
+    setIsUploadingImage(true);
+
+    try {
+      const result = await uploadWithProgress('/api/upload/course-image', file, () => {});
+      updateCourseField('imageUrl', result.url);
+      toast({ title: '✅ Imagen actualizada', description: 'La imagen de portada se ha actualizado.' });
+    } catch (err) {
+      toast({ title: '❌ Error', description: (err as Error).message, variant: 'destructive' });
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
-  // Operaciones con módulos
-  const addModule = () => {
-    const newModule: Module = {
-      id: generateUniqueId('module'),
-      title: 'Nuevo módulo',
-      order: course?.modules.length || 0,
-      lessons: []
-    };
-    updateCourse({ modules: [...(course?.modules || []), newModule] });
-  };
-
-  const updateModule = (moduleId: string, updates: Partial<Module>) => {
-    const modules = course?.modules.map(module => 
-      module.id === moduleId ? { ...module, ...updates } : module
-    ) || [];
-    updateCourse({ modules });
-  };
-
-  const deleteModule = (moduleId: string) => {
-    const modules = course?.modules.filter(m => m.id !== moduleId) || [];
-    updateCourse({ modules });
-  };
-
-  // Operaciones con lecciones
-  const addLesson = (moduleId: string) => {
-    const newLesson: Lesson = {
-      id: generateUniqueId('lesson'),
-      title: 'Nueva lección',
-      order: 0,
-      contentBlocks: []
-    };
+  const calculateStats = () => {
+    if (!course) return null;
     
-    const modules = course?.modules.map(module => {
-      if (module.id === moduleId) {
-        return {
-          ...module,
-          lessons: [...module.lessons, newLesson]
-        };
-      }
-      return module;
-    }) || [];
-    
-    updateCourse({ modules });
+    return {
+      modules: course.modules?.length || 0,
+      lessons: course.modules?.reduce((acc, mod) => acc + (mod.lessons?.length || 0), 0) || 0,
+      blocks: course.modules?.reduce((acc, mod) => 
+        acc + mod.lessons?.reduce((acc2, les) => acc2 + (les.contentBlocks?.length || 0), 0), 0) || 0,
+      hasCertificate: !!course.certificateTemplateId,
+      isMandatory: course.isMandatory,
+      hasPrerequisite: !!course.prerequisiteId,
+    };
   };
 
-  // Si está cargando
-  if (isLoading || !course) {
+  const stats = calculateStats();
+
+  if (isLoading || isAuthLoading || !course) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
-          <p className="mt-4 text-muted-foreground">Cargando editor...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+            <Loader2 className="h-12 w-12 animate-spin text-primary relative" />
+          </div>
+          <p className="text-lg font-medium text-muted-foreground animate-pulse">
+            {courseId === 'new' ? 'Creando curso...' : 'Cargando editor...'}
+          </p>
         </div>
-      </div>
-    );
-  }
-
-  // Verificar permisos
-  if (courseId !== 'new' && user?.role !== 'ADMINISTRATOR' && user?.id !== course.instructorId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="max-w-md text-center">
-          <CardContent className="pt-6">
-            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2">Acceso restringido</h2>
-            <p className="text-muted-foreground mb-4">
-              No tienes permiso para editar este curso
-            </p>
-            <Button asChild>
-              <Link href="/manage-courses">
-                Volver a mis cursos
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header unificado */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              asChild
-              className="shrink-0"
-            >
-              <Link href="/manage-courses">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-            </Button>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-lg font-semibold truncate">
-                {course.title || 'Nuevo curso'}
-              </h1>
-              <p className="text-sm text-muted-foreground truncate">
-                {courseId === 'new' ? 'Creando nuevo curso' : 'Editor de curso'}
-              </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="/manage-courses">
+                  <ArrowLeft className="h-5 w-5" />
+                </Link>
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {course.title}
+                </h1>
+                <div className="flex items-center gap-2 mt-1">
+                  <StatusBadge status={course.status} />
+                  <span className="text-sm text-muted-foreground">
+                    {courseId === 'new' ? 'Nuevo curso' : 'Editando'}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open(`/courses/${courseId}?preview=true`, '_blank')}
-              disabled={courseId === 'new'}
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              Vista previa
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
-              size="sm"
-            >
-              {isSaving ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4 mr-2" />
-              )}
-              Guardar
-            </Button>
+
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => window.open(`/courses/${courseId}?preview=true`, '_blank')}
+                disabled={courseId === 'new'}
+                className="gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                Vista previa
+              </Button>
+              
+              <Button
+                onClick={handleSaveCourse}
+                disabled={isSaving || !isDirty}
+                className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                {isSaving ? 'Guardando...' : 'Guardar cambios'}
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Contenido principal - FULL WIDTH */}
-      <main className="px-4 sm:px-6 lg:px-8 py-6 max-w-none">
-        {/* Pestañas de navegación */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="border-b">
-            <TabsList className="h-12 w-full justify-start overflow-x-auto">
-              <TabsTrigger value="basics" className="flex-1 min-w-0">
-                <Layout className="h-4 w-4 mr-2" />
-                <span className="truncate">Básico</span>
-              </TabsTrigger>
-              <TabsTrigger value="curriculum" className="flex-1 min-w-0">
-                <BookOpen className="h-4 w-4 mr-2" />
-                <span className="truncate">Plan de estudios</span>
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex-1 min-w-0">
-                <Settings2 className="h-4 w-4 mr-2" />
-                <span className="truncate">Configuración</span>
-              </TabsTrigger>
-              <TabsTrigger value="publish" className="flex-1 min-w-0">
-                <Globe className="h-4 w-4 mr-2" />
-                <span className="truncate">Publicación</span>
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          {/* Pestaña: Básico */}
-          <TabsContent value="basics" className="space-y-6">
-            <div className="grid lg:grid-cols-3 gap-6">
-              {/* Información principal */}
-              <div className="lg:col-span-2 space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Información del curso</CardTitle>
-                    <CardDescription>
-                      Detalles principales que identifican tu curso
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Título del curso</Label>
-                      <Input
-                        value={course.title}
-                        onChange={(e) => updateCourse({ title: e.target.value })}
-                        placeholder="Ej: Fundamentos de React"
+      {/* Main Content */}
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid lg:grid-cols-4 gap-8">
+          {/* Sidebar */}
+          <aside className="lg:col-span-1 space-y-6">
+            {/* Course Image */}
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="relative aspect-video">
+                  {course.imageUrl ? (
+                    <Image
+                      src={course.imageUrl}
+                      alt={course.title}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center">
+                      <ImagePlus className="h-12 w-12 text-gray-400" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        disabled={isUploadingImage}
                       />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Descripción</Label>
-                      <RichTextEditor
-                        value={course.description || ''}
-                        onChange={(value) => updateCourse({ description: value })}
-                        placeholder="Describe tu curso..."
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                {/* Estadísticas rápidas */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Resumen del curso</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <div className="text-center p-3 bg-primary/5 rounded-lg">
-                        <div className="text-2xl font-bold">{course.modules.length}</div>
-                        <div className="text-sm text-muted-foreground">Módulos</div>
-                      </div>
-                      <div className="text-center p-3 bg-primary/5 rounded-lg">
-                        <div className="text-2xl font-bold">
-                          {course.modules.reduce((acc, m) => acc + m.lessons.length, 0)}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Lecciones</div>
-                      </div>
-                      <div className="text-center p-3 bg-primary/5 rounded-lg">
-                        <div className="text-2xl font-bold">
-                          {course.modules.reduce((acc, m) => 
-                            acc + m.lessons.reduce((lAcc, l) => lAcc + l.contentBlocks.length, 0), 0)
-                          }
-                        </div>
-                        <div className="text-sm text-muted-foreground">Contenidos</div>
-                      </div>
-                      <div className="text-center p-3 bg-primary/5 rounded-lg">
-                        <div className="text-2xl font-bold">
-                          {course.status === 'PUBLISHED' ? '✓' : '—'}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Estado</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              {/* Imagen de portada */}
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Imagen de portada</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="aspect-video rounded-lg border-2 border-dashed overflow-hidden relative group">
-                      {course.imageUrl ? (
-                        <>
-                          <Image
-                            src={course.imageUrl}
-                            alt="Portada del curso"
-                            fill
-                            className="object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => document.getElementById('cover-upload')?.click()}
-                            >
-                              Cambiar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => updateCourse({ imageUrl: null })}
-                            >
-                              Eliminar
-                            </Button>
-                          </div>
-                        </>
-                      ) : (
-                        <UploadArea
-                          onFileSelect={async (file) => {
-                            if (!file) return;
-                            const result = await uploadWithProgress('/api/upload/course-image', file);
-                            updateCourse({ imageUrl: result.url });
-                          }}
-                          className="h-full"
-                        >
-                          <div className="text-center p-6">
-                            <ImagePlus className="h-8 w-8 mx-auto mb-2" />
-                            <p>Subir imagen</p>
-                          </div>
-                        </UploadArea>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                {/* Estado rápido */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Estado actual</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {[
-                      { label: 'Certificado', value: !!course.certificateTemplateId },
-                      { label: 'Obligatorio', value: course.isMandatory },
-                      { label: 'Prerrequisito', value: !!course.prerequisiteId },
-                      { label: 'Publicado', value: course.status === 'PUBLISHED' }
-                    ].map((item) => (
-                      <div key={item.label} className="flex items-center justify-between">
-                        <span className="text-sm">{item.label}</span>
-                        {item.value ? (
-                          <CheckCircle className="h-5 w-5 text-green-500" />
+                      <Button variant="secondary" size="sm" className="gap-2">
+                        {isUploadingImage ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <X className="h-5 w-5 text-muted-foreground" />
+                          <Replace className="h-4 w-4" />
                         )}
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Pestaña: Plan de estudios */}
-          <TabsContent value="curriculum" className="space-y-6">
-            {/* Barra de herramientas */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h2 className="text-xl font-bold">Plan de estudios</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Organiza los módulos y lecciones de tu curso
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                    >
-                      {viewMode === 'list' ? (
-                        <Grid3x3 className="h-4 w-4 mr-2" />
-                      ) : (
-                        <List className="h-4 w-4 mr-2" />
-                      )}
-                      {viewMode === 'list' ? 'Vista cuadrícula' : 'Vista lista'}
-                    </Button>
-                    <Button onClick={addModule} size="sm">
-                      <PlusCircle className="h-4 w-4 mr-2" />
-                      Nuevo módulo
-                    </Button>
+                        Cambiar imagen
+                      </Button>
+                    </label>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Contenido del plan */}
-            {course.modules.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                    <FolderOpen className="h-8 w-8 text-primary" />
+            {/* Quick Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Resumen</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Módulos</span>
+                    <span className="font-semibold">{stats?.modules || 0}</span>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Comienza tu curso</h3>
-                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    Añade tu primer módulo para comenzar a estructurar el contenido
-                  </p>
-                  <Button onClick={addModule} size="lg">
-                    <PlusCircle className="h-5 w-5 mr-2" />
-                    Crear primer módulo
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Lecciones</span>
+                    <span className="font-semibold">{stats?.lessons || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Elementos</span>
+                    <span className="font-semibold">{stats?.blocks || 0}</span>
+                  </div>
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Certificado</span>
+                    {stats?.hasCertificate ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <X className="h-4 w-4 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Obligatorio</span>
+                    <Switch
+                      checked={stats?.isMandatory}
+                      onCheckedChange={(checked) => {
+                        updateCourseField('isMandatory', checked);
+                        if (checked) {
+                          setTimeout(() => setIsAssignmentModalOpen(true), 300);
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Navigation */}
+            <Card>
+              <CardContent className="p-4">
+                <nav className="space-y-1">
+                  <Button
+                    variant={activeTab === 'basics' ? 'default' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('basics')}
+                  >
+                    <Layout className="h-4 w-4 mr-3" />
+                    Información básica
                   </Button>
-                </CardContent>
-              </Card>
-            ) : viewMode === 'grid' ? (
-              // Vista cuadrícula
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {course.modules.map((module, index) => (
-                  <Card key={module.id} className="h-full">
+                  <Button
+                    variant={activeTab === 'curriculum' ? 'default' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('curriculum')}
+                  >
+                    <BookOpen className="h-4 w-4 mr-3" />
+                    Plan de estudios
+                  </Button>
+                  <Button
+                    variant={activeTab === 'settings' ? 'default' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('settings')}
+                  >
+                    <Settings2 className="h-4 w-4 mr-3" />
+                    Configuración
+                  </Button>
+                  <Button
+                    variant={activeTab === 'publish' ? 'default' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('publish')}
+                  >
+                    <GlobeIcon className="h-4 w-4 mr-3" />
+                    Publicación
+                  </Button>
+                </nav>
+              </CardContent>
+            </Card>
+          </aside>
+
+          {/* Main Content Area */}
+          <div className="lg:col-span-3 space-y-8">
+            {/* Tab Content */}
+            {activeTab === 'basics' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Información del curso</CardTitle>
+                    <CardDescription>
+                      Configura los detalles principales de tu curso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Título del curso *</Label>
+                      <Input
+                        id="title"
+                        value={course.title}
+                        onChange={(e) => updateCourseField('title', e.target.value)}
+                        placeholder="Ej: Introducción al Desarrollo Web"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Descripción</Label>
+                      <RichTextEditor
+                        value={course.description || ''}
+                        onChange={(value) => updateCourseField('description', value)}
+                        placeholder="Describe qué aprenderán los estudiantes..."
+                        className="min-h-[200px]"
+                      />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="category">Categoría</Label>
+                        <Select
+                          value={course.category || ''}
+                          onValueChange={(value) => updateCourseField('category', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar categoría" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(settings?.resourceCategories || []).map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="status">Estado</Label>
+                        <Select
+                          value={course.status}
+                          onValueChange={(value) => updateCourseField('status', value as CourseStatus)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="DRAFT">Borrador</SelectItem>
+                            <SelectItem value="PUBLISHED">Publicado</SelectItem>
+                            <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {activeTab === 'curriculum' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      Plan de estudios
+                    </h2>
+                    <p className="text-muted-foreground">
+                      Organiza los módulos y lecciones de tu curso
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowTemplateModal(true)}
+                      className="gap-2"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      Plantillas
+                    </Button>
+                    <Button
+                      onClick={handleAddModule}
+                      className="gap-2 bg-gradient-to-r from-primary to-primary/80"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      Nuevo módulo
+                    </Button>
+                  </div>
+                </div>
+
+                {/* View Toggle */}
+                <div className="flex items-center gap-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-fit">
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="gap-2"
+                  >
+                    <List className="h-4 w-4" />
+                    Lista
+                  </Button>
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="gap-2"
+                  >
+                    <Grid3x3 className="h-4 w-4" />
+                    Cuadrícula
+                  </Button>
+                </div>
+
+                {/* Modules List */}
+                {course.modules.length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="py-12 text-center">
+                      <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                        <FolderOpen className="h-8 w-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Comienza a estructurar tu curso</h3>
+                      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                        Crea módulos para organizar el contenido de manera lógica y progresiva
+                      </p>
+                      <Button onClick={handleAddModule} className="gap-2">
+                        <PlusCircle className="h-4 w-4" />
+                        Crear primer módulo
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : viewMode === 'grid' ? (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {course.modules.map((module, index) => (
+                      <Card key={module.id} className="hover:shadow-lg transition-shadow">
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline">Módulo {index + 1}</Badge>
+                            <div className="flex items-center gap-1">
+                              <Button variant="ghost" size="icon" className="h-7 w-7">
+                                <Copy className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                          <CardTitle className="mt-2 text-lg">{module.title}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">Lecciones:</span>
+                              <span className="font-semibold">{module.lessons.length}</span>
+                            </div>
+                            {module.lessons.slice(0, 2).map((lesson) => (
+                              <div key={lesson.id} className="flex items-center gap-2 p-2 rounded bg-gray-50 dark:bg-gray-800">
+                                <BookOpenText className="h-4 w-4 text-blue-500" />
+                                <span className="text-sm truncate">{lesson.title}</span>
+                              </div>
+                            ))}
+                            {module.lessons.length > 2 && (
+                              <div className="text-center text-sm text-muted-foreground">
+                                +{module.lessons.length - 2} más
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <DragDropContext onDragEnd={() => {}}>
+                    <Droppable droppableId="modules" type="MODULES">
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          className="space-y-4"
+                        >
+                          {course.modules.map((module, index) => (
+                            <Draggable key={module.id} draggableId={module.id} index={index}>
+                              {(provided) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                >
+                                  <ModuleCard
+                                    module={module}
+                                    index={index}
+                                    isExpanded={expandedModules.has(module.id)}
+                                    onToggle={() => toggleModuleExpansion(module.id)}
+                                    onEdit={() => {}}
+                                    onDelete={() => handleDeleteModule(module.id)}
+                                    onDuplicate={() => handleDuplicateModule(module.id)}
+                                    dragHandleProps={provided.dragHandleProps}
+                                  />
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
+                )}
+
+                {/* Quick Stats */}
+                {stats && stats.modules > 0 && (
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="grid grid-cols-3 gap-4">
+                        <StatCard
+                          icon={Layers3}
+                          label="Módulos"
+                          value={stats.modules}
+                          color="bg-blue-100 text-blue-600"
+                        />
+                        <StatCard
+                          icon={BookOpen}
+                          label="Lecciones"
+                          value={stats.lessons}
+                          color="bg-green-100 text-green-600"
+                        />
+                        <StatCard
+                          icon={FileText}
+                          label="Elementos"
+                          value={stats.blocks}
+                          color="bg-purple-100 text-purple-600"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'settings' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Certificate */}
+                  <Card>
                     <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Layers3 className="h-5 w-5 text-primary" />
-                        {module.title}
+                      <CardTitle className="flex items-center gap-2">
+                        <Award className="h-5 w-5 text-primary" />
+                        Certificado
                       </CardTitle>
                       <CardDescription>
-                        {module.lessons.length} lecciones
+                        Configura el certificado del curso
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2">
-                        {module.lessons.slice(0, 3).map(lesson => (
-                          <div key={lesson.id} className="flex items-center gap-2 p-2 rounded bg-muted">
-                            <BookOpenText className="h-4 w-4" />
-                            <span className="text-sm truncate">{lesson.title}</span>
-                          </div>
-                        ))}
-                        {module.lessons.length > 3 && (
-                          <div className="text-center text-sm text-muted-foreground">
-                            +{module.lessons.length - 3} más
-                          </div>
-                        )}
-                      </div>
+                      <Select
+                        value={course.certificateTemplateId || 'none'}
+                        onValueChange={(value) => updateCourseField('certificateTemplateId', value === 'none' ? null : value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sin certificado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Sin certificado</SelectItem>
+                          {certificateTemplates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </CardContent>
-                    <CardFooter className="flex gap-2 pt-4 border-t">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => addLesson(module.id)}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Lección
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => deleteModule(module.id)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Eliminar
-                      </Button>
-                    </CardFooter>
                   </Card>
-                ))}
-              </div>
-            ) : (
-              // Vista lista con drag & drop
-              <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="modules" type="MODULES">
-                  {(provided) => (
-                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                      {course.modules.map((module, index) => (
-                        <Draggable key={module.id} draggableId={module.id} index={index}>
-                          {(provided) => (
-                            <div ref={provided.innerRef} {...provided.draggableProps}>
-                              <ModuleItem
-                                module={module}
-                                index={index}
-                                onUpdate={(field, value) => updateModule(module.id, { [field]: value })}
-                                onDelete={() => deleteModule(module.id)}
-                                onAddLesson={() => addLesson(module.id)}
-                                onLessonUpdate={(lessonIndex, field, value) => {
-                                  const modules = course.modules.map(m => {
-                                    if (m.id === module.id) {
-                                      const lessons = [...m.lessons];
-                                      lessons[lessonIndex] = { ...lessons[lessonIndex], [field]: value };
-                                      return { ...m, lessons };
-                                    }
-                                    return m;
-                                  });
-                                  updateCourse({ modules });
-                                }}
-                                onLessonDelete={(lessonIndex) => {
-                                  const modules = course.modules.map(m => {
-                                    if (m.id === module.id) {
-                                      const lessons = m.lessons.filter((_, i) => i !== lessonIndex);
-                                      return { ...m, lessons };
-                                    }
-                                    return m;
-                                  });
-                                  updateCourse({ modules });
-                                }}
-                                onAddBlock={(lessonIndex, type) => {
-                                  const newBlock: ContentBlock = {
-                                    id: generateUniqueId('block'),
-                                    type,
-                                    content: '',
-                                    order: 0
-                                  };
-                                  
-                                  const modules = course.modules.map(m => {
-                                    if (m.id === module.id) {
-                                      const lessons = [...m.lessons];
-                                      lessons[lessonIndex].contentBlocks.push(newBlock);
-                                      return { ...m, lessons };
-                                    }
-                                    return m;
-                                  });
-                                  
-                                  updateCourse({ modules });
-                                }}
-                                onBlockUpdate={(lessonIndex, blockIndex, field, value) => {
-                                  const modules = course.modules.map(m => {
-                                    if (m.id === module.id) {
-                                      const lessons = [...m.lessons];
-                                      const blocks = [...lessons[lessonIndex].contentBlocks];
-                                      blocks[blockIndex] = { ...blocks[blockIndex], [field]: value };
-                                      lessons[lessonIndex].contentBlocks = blocks;
-                                      return { ...m, lessons };
-                                    }
-                                    return m;
-                                  });
-                                  updateCourse({ modules });
-                                }}
-                                onBlockDelete={(lessonIndex, blockIndex) => {
-                                  const modules = course.modules.map(m => {
-                                    if (m.id === module.id) {
-                                      const lessons = [...m.lessons];
-                                      const blocks = lessons[lessonIndex].contentBlocks.filter((_, i) => i !== blockIndex);
-                                      lessons[lessonIndex].contentBlocks = blocks;
-                                      return { ...m, lessons };
-                                    }
-                                    return m;
-                                  });
-                                  updateCourse({ modules });
-                                }}
-                                onEditQuiz={(quiz) => {
-                                  setQuizToEdit({
-                                    quiz,
-                                    onSave: (updatedQuiz) => {
-                                      // Actualizar el quiz en el estado
-                                      const modules = course.modules.map(m => {
-                                        const updatedLessons = m.lessons.map(l => {
-                                          const updatedBlocks = l.contentBlocks.map(b => {
-                                            if (b.quiz?.id === quiz.id) {
-                                              return { ...b, quiz: updatedQuiz };
-                                            }
-                                            return b;
-                                          });
-                                          return { ...l, contentBlocks: updatedBlocks };
-                                        });
-                                        return { ...m, lessons: updatedLessons };
-                                      });
-                                      updateCourse({ modules });
-                                    }
-                                  });
-                                }}
-                                dragHandleProps={provided.dragHandleProps}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
+
+                  {/* Prerequisites */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Target className="h-5 w-5 text-primary" />
+                        Prerrequisitos
+                      </CardTitle>
+                      <CardDescription>
+                        Establece cursos previos requeridos
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Select
+                        value={course.prerequisiteId || 'none'}
+                        onValueChange={(value) => updateCourseField('prerequisiteId', value === 'none' ? null : value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sin prerrequisito" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Sin prerrequisito</SelectItem>
+                          {allCoursesForPrereq.map((courseItem) => (
+                            <SelectItem key={courseItem.id} value={courseItem.id}>
+                              {courseItem.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Advanced Settings */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Configuración avanzada</CardTitle>
+                    <CardDescription>
+                      Opciones adicionales para el curso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium">Curso obligatorio</p>
+                        <p className="text-sm text-muted-foreground">
+                          Los estudiantes deben completar este curso
+                        </p>
+                      </div>
+                      <Switch
+                        checked={course.isMandatory}
+                        onCheckedChange={(checked) => {
+                          updateCourseField('isMandatory', checked);
+                          if (checked) {
+                            setTimeout(() => setIsAssignmentModalOpen(true), 300);
+                          }
+                        }}
+                      />
                     </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
+                  </CardContent>
+                </Card>
+              </motion.div>
             )}
-            
-            {/* Botón flotante para añadir módulo */}
-            {course.modules.length > 0 && (
-              <Button
-                onClick={addModule}
-                size="lg"
-                className="fixed bottom-6 right-6 rounded-full h-12 w-12 shadow-lg"
+
+            {activeTab === 'publish' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
               >
-                <Plus className="h-6 w-6" />
-              </Button>
-            )}
-          </TabsContent>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Disponibilidad</CardTitle>
+                    <CardDescription>
+                      Define cuándo estará disponible el curso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <DateRangePicker
+                      date={{
+                        from: course.startDate ? new Date(course.startDate) : undefined,
+                        to: course.endDate ? new Date(course.endDate) : undefined
+                      }}
+                      onDateChange={(range) => {
+                        updateCourseField('startDate', range?.from?.toISOString());
+                        updateCourseField('endDate', range?.to?.toISOString());
+                      }}
+                    />
+                  </CardContent>
+                </Card>
 
-          {/* Pestaña: Configuración */}
-          <TabsContent value="settings" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Certificado */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Award className="h-5 w-5" />
-                    Certificado
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Plantilla de certificado</Label>
-                    <Select
-                      value={course.certificateTemplateId || 'none'}
-                      onValueChange={(value) => 
-                        updateCourse({ certificateTemplateId: value === 'none' ? null : value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Sin certificado</SelectItem>
-                        {/* Las plantillas se cargarían aquí */}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Prerrequisitos */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    Prerrequisitos
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Curso prerrequisito</Label>
-                    <Select
-                      value={course.prerequisiteId || 'none'}
-                      onValueChange={(value) => 
-                        updateCourse({ prerequisiteId: value === 'none' ? null : value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Sin prerrequisito</SelectItem>
-                        {/* Los cursos se cargarían aquí */}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Obligatorio */}
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle>Configuración de acceso</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <p className="font-medium">Curso obligatorio</p>
-                      <p className="text-sm text-muted-foreground">
-                        Los estudiantes deben completar este curso
-                      </p>
+                {/* Publishing Options */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Publicación</CardTitle>
+                    <CardDescription>
+                      Configura cómo se publicará el curso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Visibilidad</Label>
+                      <Select
+                        value={course.status}
+                        onValueChange={(value) => updateCourseField('status', value as CourseStatus)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="DRAFT">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                              Borrador
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="PUBLISHED">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full" />
+                              Publicado
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <Switch
-                      checked={course.isMandatory}
-                      onCheckedChange={(checked) => updateCourse({ isMandatory: checked })}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Pestaña: Publicación */}
-          <TabsContent value="publish" className="space-y-6">
-            <div className="grid lg:grid-cols-3 gap-6">
-              {/* Disponibilidad */}
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Disponibilidad</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <DateRangePicker
-                    date={{
-                      from: course.startDate ? new Date(course.startDate) : undefined,
-                      to: course.endDate ? new Date(course.endDate) : undefined
-                    }}
-                    onDateChange={(range) => {
-                      updateCourse({
-                        startDate: range?.from?.toISOString(),
-                        endDate: range?.to?.toISOString()
-                      });
-                    }}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Estado y categoría */}
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Estado</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Select
-                      value={course.status}
-                      onValueChange={(value) => updateCourse({ status: value as CourseStatus })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="DRAFT">Borrador</SelectItem>
-                        <SelectItem value="PUBLISHED">Publicado</SelectItem>
-                        <SelectItem value="ARCHIVED">Archivado</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    
+                    <Alert>
+                      <InfoIcon className="h-4 w-4" />
+                      <AlertTitle>Listo para publicar</AlertTitle>
+                      <AlertDescription>
+                        Una vez publicado, el curso estará disponible para los estudiantes asignados.
+                      </AlertDescription>
+                    </Alert>
                   </CardContent>
                 </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Categoría</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Input
-                      value={course.category || ''}
-                      onChange={(e) => updateCourse({ category: e.target.value })}
-                      placeholder="Categoría del curso"
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+              </motion.div>
+            )}
+          </div>
+        </div>
       </main>
 
-      {/* Modal de confirmación */}
-      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+      {/* Save Indicator */}
+      {isDirty && (
+        <motion.div
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          className="fixed bottom-4 right-4 z-50"
+        >
+          <Card className="shadow-2xl border-primary/20">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <div>
+                    <p className="font-medium">Cambios sin guardar</p>
+                    <p className="text-sm text-muted-foreground">Guarda tu progreso</p>
+                  </div>
+                </div>
+                <Button onClick={handleSaveCourse} disabled={isSaving} size="sm">
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                      Guardando...
+                    </>
+                  ) : (
+                    'Guardar'
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Dialogs */}
+      <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar elemento?</AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar {itemToDelete?.type}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer.
+              Esta acción no se puede deshacer. Se eliminará "{itemToDelete?.name}" permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction>Eliminar</AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => {
+                itemToDelete?.onConfirm();
+                setItemToDelete(null);
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Modal de quiz */}
+      {/* Template Modal */}
+      <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Plantillas de lección</DialogTitle>
+            <DialogDescription>
+              Selecciona una plantilla para crear una lección rápidamente
+            </DialogDescription>
+          </DialogHeader>
+          
+          <ScrollArea className="h-[60vh]">
+            <div className="grid gap-3 p-1">
+              {templates.length === 0 ? (
+                <div className="text-center py-8">
+                  <Sparkles className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No hay plantillas disponibles</p>
+                </div>
+              ) : (
+                templates.map((template) => (
+                  <Card key={template.id} className="hover:border-primary cursor-pointer">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-semibold">{template.name}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {template.description}
+                          </p>
+                          <div className="flex flex-wrap gap-1 mt-3">
+                            {template.templateBlocks.slice(0, 3).map((block, i) => (
+                              <Badge key={i} variant="secondary" className="text-xs">
+                                {block.type.toLowerCase()}
+                              </Badge>
+                            ))}
+                            {template.templateBlocks.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{template.templateBlocks.length - 3} más
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          Usar plantilla
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assignment Modal */}
+      {isAssignmentModalOpen && (
+        <CourseAssignmentModal
+          isOpen={isAssignmentModalOpen}
+          onClose={() => setIsAssignmentModalOpen(false)}
+          courseId={course.id}
+          courseTitle={course.title}
+        />
+      )}
+
+      {/* Quiz Editor Modal */}
       {quizToEdit && (
         <QuizEditorModal
-          isOpen={true}
+          isOpen={!!quizToEdit}
           onClose={() => setQuizToEdit(null)}
           quiz={quizToEdit.quiz}
           onSave={quizToEdit.onSave}
