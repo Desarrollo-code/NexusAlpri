@@ -2567,3 +2567,4 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     </div>
   );
 }
+export const QuizEditorModal = () => { ... }

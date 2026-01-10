@@ -2576,4 +2576,2453 @@ export function CourseEditor({ courseId }: { courseId: string }) {
       )}
     </div>
   );
+}"use client";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+  ArrowLeft, Save, PlusCircle, Trash2, UploadCloud, GripVertical, Loader2, AlertTriangle, 
+  ImagePlus, X, Replace, Pencil, Eye, FilePlus2, ChevronDown, BookOpenText, Video, 
+  FileText, File as FileGenericIcon, Layers3, Sparkles, Award, Calendar as CalendarIcon, 
+  Info, Settings2, Globe as GlobeIcon, Target, Layout, BookOpen, Copy, ChevronLeft, 
+  ChevronRight, Layers, SquareStack, FlipHorizontal2, Youtube, Upload, List, Grid3x3, 
+  FolderOpen, Plus, Menu, Maximize2, Minimize2
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState, useCallback, ChangeEvent, useRef } from 'react';
+import type { Course as AppCourse, Module as AppModule, Lesson as AppLesson, LessonType, CourseStatus, Quiz as AppQuiz, ContentBlock } from '@/types';
+import Image from 'next/image';
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/auth-context';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { motion, AnimatePresence } from 'framer-motion';
+import { Switch } from '@/components/ui/switch';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { CourseAssignmentModal } from '@/components/course-assignment-modal';
+import { useTitle } from '@/contexts/title-context';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { FileUploader } from '@/components/ui/file-uploader';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+
+// === INTERFACES Y UTILIDADES ===
+interface ApiTemplate {
+  id: string;
+  name: string;
+  description: string;
+  templateBlocks: any[];
+  creator: { name: string | null } | null;
+}
+
+interface PrismaCertificateTemplate {
+  id: string;
+  name: string;
+}
+
+interface InteractiveComponentData {
+  type: 'accordion' | 'flipCards' | 'tabs' | 'text';
+  items: InteractiveItem[];
+  settings?: {
+    allowMultipleOpen?: boolean;
+    flipDirection?: 'horizontal' | 'vertical';
+    tabPosition?: 'top' | 'left' | 'right' | 'bottom';
+  };
+}
+
+interface InteractiveItem {
+  id: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  imagePreview?: string;
+}
+
+const generateUniqueId = (prefix: string): string => {
+  if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
+    return `${prefix}-${window.crypto.randomUUID()}`;
+  }
+  const timestamp = Date.now();
+  const randomPart = Math.random().toString(36).substring(2, 9);
+  return `${prefix}-${timestamp}-${randomPart}`;
+};
+
+// === COMPONENTES REUTILIZABLES ===
+
+const StatusBadge = ({ status }: { status: CourseStatus }) => {
+  const statusConfig = {
+    DRAFT: { label: 'Borrador', color: 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300' },
+    PUBLISHED: { label: 'Publicado', color: 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300' },
+    ARCHIVED: { label: 'Archivado', color: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300' }
+  };
+
+  const config = statusConfig[status] || statusConfig.DRAFT;
+
+  return (
+    <Badge variant="outline" className={`font-medium ${config.color}`}>
+      {config.label}
+    </Badge>
+  );
+};
+
+// === COMPONENTE PARA MENÚ DE CONTENIDO CON SUBMENÚ DE TEXTO ===
+const ContentTypeMenu = ({ 
+  onSelect, 
+  onClose 
+}: { 
+  onSelect: (type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS') => void;
+  onClose: () => void;
+}) => {
+  const [showTextSubmenu, setShowTextSubmenu] = useState(false);
+
+  const contentTypes = [
+    { type: 'TEXT' as const, label: 'Texto', icon: FileText, color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+    { type: 'VIDEO' as const, label: 'Video', icon: Video, color: 'text-red-600', bg: 'bg-red-100 dark:bg-red-900/30' },
+    { type: 'FILE' as const, label: 'Archivo', icon: FileGenericIcon, color: 'text-amber-600', bg: 'bg-amber-100 dark:bg-amber-900/30' },
+    { type: 'IMAGE' as const, label: 'Imagen', icon: ImagePlus, color: 'text-green-600', bg: 'bg-green-100 dark:bg-green-900/30' },
+    { type: 'QUIZ' as const, label: 'Quiz', icon: Pencil, color: 'text-purple-600', bg: 'bg-purple-100 dark:bg-purple-900/30' },
+  ];
+
+  const textSubmenuTypes = [
+    { type: 'ACCORDION' as const, label: 'Acordeón', icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-100 dark:bg-indigo-900/30', description: 'Elementos expandibles' },
+    { type: 'TABS' as const, label: 'Pestañas', icon: SquareStack, color: 'text-pink-600', bg: 'bg-pink-100 dark:bg-pink-900/30', description: 'Contenido organizado en pestañas' },
+    { type: 'FLIP_CARDS' as const, label: 'Tarjetas de volteo', icon: FlipHorizontal2, color: 'text-teal-600', bg: 'bg-teal-100 dark:bg-teal-900/30', description: 'Tarjetas interactivas' },
+  ];
+
+  if (showTextSubmenu) {
+    return (
+      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border shadow-lg w-full max-w-xs">
+        <div className="mb-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mb-2 px-2 h-7 text-sm"
+            onClick={() => setShowTextSubmenu(false)}
+          >
+            <ChevronLeft className="h-3.5 w-3.5 mr-1" />
+            Volver a contenido
+          </Button>
+          <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300">Texto interactivo</h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Elige un formato interactivo</p>
+        </div>
+        <div className="space-y-2">
+          {textSubmenuTypes.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Button
+                key={item.type}
+                variant="ghost"
+                className="w-full justify-start px-3 py-3 h-auto hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-lg"
+                onClick={() => {
+                  onSelect(item.type);
+                  onClose();
+                }}
+              >
+                <div className={`p-2 rounded-lg ${item.bg} mr-3`}>
+                  <Icon className={`h-5 w-5 ${item.color}`} />
+                </div>
+                <div className="text-left">
+                  <div className="text-sm font-medium">{item.label}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{item.description}</div>
+                </div>
+              </Button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border shadow-lg w-full max-w-xs">
+      <div className="mb-2">
+        <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300">Añadir contenido</h4>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Selecciona el tipo de contenido</p>
+      </div>
+      <div className="space-y-1">
+        {contentTypes.map((item) => {
+          const Icon = item.icon;
+          if (item.type === 'TEXT') {
+            return (
+              <Button
+                key={item.type}
+                variant="ghost"
+                className="w-full justify-between px-3 py-2 h-auto hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setShowTextSubmenu(true)}
+              >
+                <div className="flex items-center">
+                  <div className={`p-2 rounded-md ${item.bg} mr-3`}>
+                    <Icon className={`h-4 w-4 ${item.color}`} />
+                  </div>
+                  <span className="text-sm font-medium">{item.label}</span>
+                </div>
+                <ChevronRight className="h-3.5 w-3.5 text-gray-400" />
+              </Button>
+            );
+          }
+          return (
+            <Button
+              key={item.type}
+              variant="ghost"
+              className="w-full justify-start px-3 py-2 h-auto hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => {
+                onSelect(item.type);
+                onClose();
+              }}
+            >
+              <div className={`p-2 rounded-md ${item.bg} mr-3`}>
+                <Icon className={`h-4 w-4 ${item.color}`} />
+              </div>
+              <span className="text-sm font-medium">{item.label}</span>
+            </Button>
+          );
+        })}
+      </div>
+      <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full text-xs text-gray-500 hover:text-gray-700"
+          onClick={onClose}
+        >
+          Cancelar
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// === COMPONENTE PARA EDITAR CONTENIDO ESPECÍFICO ===
+const ContentEditor = ({ 
+  type, 
+  onSave, 
+  onCancel 
+}: { 
+  type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS';
+  onSave: (content: any) => void;
+  onCancel: () => void;
+}) => {
+  const { toast } = useToast();
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [videoSource, setVideoSource] = useState<'url' | 'upload'>('url');
+  const [isUploading, setIsUploading] = useState(false);
+  const [items, setItems] = useState<Array<{ id: string; title: string; content: string; imageFile?: File }>>([
+    { id: generateUniqueId('item'), title: '', content: '' }
+  ]);
+  const [settings, setSettings] = useState({
+    allowMultipleOpen: true,
+    flipDirection: 'horizontal' as 'horizontal' | 'vertical',
+    tabPosition: 'top' as 'top' | 'left' | 'right' | 'bottom',
+  });
+
+  const getContentConfig = () => {
+    switch(type) {
+      case 'ACCORDION':
+        return {
+          title: 'Acordeón',
+          icon: Layers,
+          description: 'Crea elementos expandibles',
+          color: 'text-indigo-600',
+          bg: 'bg-indigo-100 dark:bg-indigo-900/30'
+        };
+      case 'TABS':
+        return {
+          title: 'Pestañas',
+          icon: SquareStack,
+          description: 'Organiza contenido en pestañas',
+          color: 'text-pink-600',
+          bg: 'bg-pink-100 dark:bg-pink-900/30'
+        };
+      case 'FLIP_CARDS':
+        return {
+          title: 'Tarjetas de volteo',
+          icon: FlipHorizontal2,
+          description: 'Crea tarjetas interactivas que se voltean',
+          color: 'text-teal-600',
+          bg: 'bg-teal-100 dark:bg-teal-900/30'
+        };
+      case 'TEXT':
+        return {
+          title: 'Texto',
+          icon: FileText,
+          description: 'Editor de texto simple',
+          color: 'text-blue-600',
+          bg: 'bg-blue-100 dark:bg-blue-900/30'
+        };
+      case 'VIDEO':
+        return {
+          title: 'Video',
+          icon: Video,
+          description: 'Inserta un video desde URL o sube un archivo',
+          color: 'text-red-600',
+          bg: 'bg-red-100 dark:bg-red-900/30'
+        };
+      case 'IMAGE':
+        return {
+          title: 'Imagen',
+          icon: ImagePlus,
+          description: 'Sube una imagen',
+          color: 'text-green-600',
+          bg: 'bg-green-100 dark:bg-green-900/30'
+        };
+      case 'FILE':
+        return {
+          title: 'Archivo',
+          icon: FileGenericIcon,
+          description: 'Sube un archivo',
+          color: 'text-amber-600',
+          bg: 'bg-amber-100 dark:bg-amber-900/30'
+        };
+      case 'QUIZ':
+        return {
+          title: 'Quiz',
+          icon: Pencil,
+          description: 'Crea un cuestionario interactivo',
+          color: 'text-purple-600',
+          bg: 'bg-purple-100 dark:bg-purple-900/30'
+        };
+      default:
+        return {
+          title: type,
+          icon: FileText,
+          description: 'Añadir contenido',
+          color: 'text-gray-600',
+          bg: 'bg-gray-100 dark:bg-gray-800'
+        };
+    }
+  };
+
+  const config = getContentConfig();
+  const Icon = config.icon;
+
+  const addItem = () => {
+    setItems([...items, { id: generateUniqueId('item'), title: '', content: '' }]);
+  };
+
+  const removeItem = (id: string) => {
+    if (items.length > 1) {
+      setItems(items.filter(item => item.id !== id));
+    }
+  };
+
+  const updateItem = (id: string, field: 'title' | 'content', value: string) => {
+    setItems(items.map(item => 
+      item.id === id ? { ...item, [field]: value } : item
+    ));
+  };
+
+  const handleUploadFile = async (file: File, fileType: 'image' | 'video' | 'file'): Promise<string | null> => {
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch(`/api/upload?type=${fileType}`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Error ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success && result.url) {
+        return result.url;
+      } else {
+        throw new Error('No se recibió URL del archivo');
+      }
+    } catch (err) {
+      console.error('Error al subir archivo:', err);
+      toast({ 
+        title: '❌ Error', 
+        description: (err as Error).message || 'No se pudo subir el archivo.', 
+        variant: 'destructive' 
+      });
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!title.trim()) {
+      toast({ 
+        title: '❌ Error', 
+        description: 'Por favor ingresa un título.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    let contentToSave = content;
+    let additionalData: any = {};
+
+    try {
+      if (type === 'IMAGE') {
+        const imageInput = document.getElementById('image-upload') as HTMLInputElement;
+        const file = imageInput?.files?.[0];
+        if (file) {
+          const imageUrl = await handleUploadFile(file, 'image');
+          if (!imageUrl) return;
+          contentToSave = imageUrl;
+          additionalData.fileName = file.name;
+          additionalData.fileSize = file.size;
+        }
+      }
+      else if (type === 'FILE') {
+        const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+        const file = fileInput?.files?.[0];
+        if (file) {
+          const fileUrl = await handleUploadFile(file, 'file');
+          if (!fileUrl) return;
+          contentToSave = fileUrl;
+          additionalData.fileName = file.name;
+          additionalData.fileSize = file.size;
+        }
+      }
+      else if (type === 'VIDEO' && videoSource === 'upload') {
+        const videoInput = document.getElementById('video-upload') as HTMLInputElement;
+        const file = videoInput?.files?.[0];
+        if (file) {
+          const videoUrl = await handleUploadFile(file, 'video');
+          if (!videoUrl) return;
+          contentToSave = videoUrl;
+          additionalData.fileName = file.name;
+          additionalData.fileSize = file.size;
+          additionalData.source = 'upload';
+        }
+      } else if (type === 'VIDEO') {
+        additionalData.source = 'url';
+      }
+      else if (type === 'QUIZ') {
+        contentToSave = JSON.stringify({
+          title,
+          questions: [],
+          settings: {}
+        });
+        additionalData.quizData = {
+          title,
+          questions: [],
+          settings: {}
+        };
+      }
+      else if (type === 'ACCORDION' || type === 'TABS' || type === 'FLIP_CARDS') {
+        const processedItems = await Promise.all(items.map(async (item) => {
+          const processedItem: any = { ...item };
+          if (item.imageFile) {
+            const imageUrl = await handleUploadFile(item.imageFile, 'image');
+            if (imageUrl) {
+              processedItem.imageUrl = imageUrl;
+            }
+            delete processedItem.imageFile;
+          }
+          return processedItem;
+        }));
+
+        contentToSave = JSON.stringify({
+          items: processedItems,
+          settings,
+          type
+        });
+        additionalData.interactiveData = {
+          items: processedItems,
+          settings,
+          type
+        };
+      }
+
+      onSave({
+        type,
+        title: title.trim(),
+        content: contentToSave,
+        ...additionalData
+      });
+
+    } catch (error) {
+      console.error('Error al guardar contenido:', error);
+    }
+  };
+
+  const renderContentFields = () => {
+    switch(type) {
+      case 'TEXT':
+        return (
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="text-content">Contenido</Label>
+              <Textarea
+                id="text-content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Escribe tu texto aquí..."
+                className="min-h-[200px] mt-1"
+              />
+            </div>
+          </div>
+        );
+
+      case 'VIDEO':
+        return (
+          <div className="space-y-4">
+            <div className="border rounded-lg p-3">
+              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Fuente del video</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={videoSource === 'url' ? 'default' : 'outline'}
+                  className="h-10"
+                  onClick={() => setVideoSource('url')}
+                >
+                  <Youtube className="h-4 w-4 mr-2" />
+                  URL
+                </Button>
+                <Button
+                  type="button"
+                  variant={videoSource === 'upload' ? 'default' : 'outline'}
+                  className="h-10"
+                  onClick={() => setVideoSource('upload')}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Subir
+                </Button>
+              </div>
+            </div>
+
+            {videoSource === 'url' ? (
+              <div>
+                <Label htmlFor="video-url">URL del video</Label>
+                <Input
+                  id="video-url"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="mt-1"
+                />
+              </div>
+            ) : (
+              <div>
+                <Label htmlFor="video-upload">Subir archivo de video</Label>
+                <FileUploader
+                  type="video"
+                  onUploadComplete={(url, fileData) => {
+                    setContent(url);
+                  }}
+                  className="mt-2"
+                />
+              </div>
+            )}
+          </div>
+        );
+
+      case 'IMAGE':
+        return (
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="image-upload">Subir imagen</Label>
+              <FileUploader
+                type="image"
+                onUploadComplete={(url, fileData) => {
+                  setContent(url);
+                }}
+                className="mt-2"
+              />
+            </div>
+          </div>
+        );
+
+      case 'FILE':
+        return (
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="file-upload">Subir archivo</Label>
+              <FileUploader
+                type="file"
+                onUploadComplete={(url, fileData) => {
+                  setContent(url);
+                }}
+                className="mt-2"
+              />
+            </div>
+          </div>
+        );
+
+      case 'QUIZ':
+        return (
+          <div className="space-y-4">
+            <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-gray-700 dark:text-gray-300">Configurar Quiz</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Crea preguntas, establece puntuación y configura opciones
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const quizData = {
+                      id: generateUniqueId('quiz'),
+                      title: title || 'Nuevo Quiz',
+                      questions: [],
+                      passingScore: 70,
+                      timeLimit: null,
+                      attempts: 3,
+                      showResults: true,
+                      randomizeQuestions: false,
+                    };
+                    onSave({
+                      type: 'QUIZ',
+                      title: title.trim(),
+                      content: '',
+                      quizData,
+                      openQuizEditor: true
+                    });
+                  }}
+                >
+                  <Settings2 className="h-4 w-4 mr-2" />
+                  Configurar Quiz
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'ACCORDION':
+      case 'TABS':
+      case 'FLIP_CARDS':
+        return (
+          <div className="space-y-4">
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-gray-700 dark:text-gray-300">Elementos</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={addItem}
+                  className="h-8"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Añadir elemento
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                {items.map((item, index) => (
+                  <div key={item.id} className="p-3 border rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Elemento {index + 1}
+                      </span>
+                      {items.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeItem(item.id)}
+                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor={`item-title-${item.id}`} className="text-xs">Título</Label>
+                        <Input
+                          id={`item-title-${item.id}`}
+                          value={item.title}
+                          onChange={(e) => updateItem(item.id, 'title', e.target.value)}
+                          placeholder="Título del elemento"
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`item-content-${item.id}`} className="text-xs">Contenido</Label>
+                        <Textarea
+                          id={`item-content-${item.id}`}
+                          value={item.content}
+                          onChange={(e) => updateItem(item.id, 'content', e.target.value)}
+                          placeholder="Contenido del elemento"
+                          className="min-h-[80px] text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`item-image-${item.id}`} className="text-xs">Imagen (opcional)</Label>
+                        <FileUploader
+                          type="image"
+                          onUploadComplete={(url) => {
+                            setItems(items.map(i => 
+                              i.id === item.id ? { ...i, imageUrl: url } : i
+                            ));
+                          }}
+                          className="mt-1"
+                        >
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                          >
+                            <ImagePlus className="h-3.5 w-3.5 mr-1" />
+                            Seleccionar imagen
+                          </Button>
+                        </FileUploader>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-3">Configuración</h4>
+              <div className="space-y-3">
+                {type === 'ACCORDION' && (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">Múltiples abiertos</p>
+                      <p className="text-xs text-gray-500">Permitir abrir varios elementos a la vez</p>
+                    </div>
+                    <Switch
+                      checked={settings.allowMultipleOpen}
+                      onCheckedChange={(checked) => setSettings({...settings, allowMultipleOpen: checked})}
+                    />
+                  </div>
+                )}
+                
+                {type === 'FLIP_CARDS' && (
+                  <div>
+                    <Label htmlFor="flip-direction" className="text-sm">Dirección del volteo</Label>
+                    <Select
+                      value={settings.flipDirection}
+                      onValueChange={(value: 'horizontal' | 'vertical') => setSettings({...settings, flipDirection: value})}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="horizontal">Horizontal</SelectItem>
+                        <SelectItem value="vertical">Vertical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                {type === 'TABS' && (
+                  <div>
+                    <Label htmlFor="tab-position" className="text-sm">Posición de pestañas</Label>
+                    <Select
+                      value={settings.tabPosition}
+                      onValueChange={(value: 'top' | 'left' | 'right' | 'bottom') => setSettings({...settings, tabPosition: value})}
+                    >
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="top">Superior</SelectItem>
+                        <SelectItem value="left">Izquierda</SelectItem>
+                        <SelectItem value="right">Derecha</SelectItem>
+                        <SelectItem value="bottom">Inferior</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div>
+            <Label htmlFor="content-value">Contenido</Label>
+            <Input
+              id="content-value"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Ingresa el contenido"
+              className="mt-1"
+            />
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg border shadow-lg p-4 w-full max-w-2xl mx-auto">
+      <div className="flex items-center gap-3 mb-4">
+        <div className={`p-2 rounded-lg ${config.bg}`}>
+          <Icon className={`h-5 w-5 ${config.color}`} />
+        </div>
+        <div>
+          <h3 className="font-semibold text-gray-900 dark:text-white">{config.title}</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{config.description}</p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="content-title">Título *</Label>
+          <Input
+            id="content-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={`Título del ${config.title.toLowerCase()}`}
+            className="mt-1"
+          />
+        </div>
+
+        {renderContentFields()}
+
+        <div className="flex justify-end gap-2 pt-4 border-t">
+          <Button variant="outline" size="sm" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button size="sm" onClick={handleSave} disabled={isUploading}>
+            {isUploading ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
+                Subiendo...
+              </>
+            ) : (
+              <>
+                <Save className="h-3.5 w-3.5 mr-2" />
+                Guardar
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// === COMPONENTES PRINCIPALES ===
+
+const ModuleCard = React.forwardRef<HTMLDivElement, {
+  module: AppModule;
+  index: number;
+  onEdit: () => void;
+  onDelete: () => void;
+  onDuplicate: () => void;
+  onAddLesson: () => void;
+  onUpdateTitle: (title: string) => void;
+  isExpanded: boolean;
+  onToggle: () => void;
+  dragHandleProps: any;
+}>(({ module, index, onEdit, onDelete, onDuplicate, onAddLesson, onUpdateTitle, isExpanded, onToggle, dragHandleProps }, ref) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(module.title);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleTitleClick = () => {
+    setIsEditing(true);
+    setEditingTitle(module.title);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 10);
+  };
+
+  const handleTitleSave = () => {
+    if (editingTitle.trim() !== '' && editingTitle !== module.title) {
+      onUpdateTitle(editingTitle.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTitleSave();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+      setEditingTitle(module.title);
+    }
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="group relative"
+    >
+      <Card className="overflow-hidden border-2 hover:border-primary/20 transition-all duration-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-primary to-primary/60" />
+        
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="flex flex-col items-center">
+                <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                  <GripVertical className="h-4 w-4 text-gray-400" />
+                </div>
+                <Badge variant="secondary" className="mt-2 text-xs font-bold">
+                  MÓDULO {index + 1}
+                </Badge>
+              </div>
+              
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <Layers3 className="h-4 w-4 text-primary hidden sm:block" />
+                  {isEditing ? (
+                    <div className="flex-1">
+                      <Input
+                        ref={inputRef}
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onBlur={handleTitleSave}
+                        onKeyDown={handleKeyDown}
+                        className="text-lg font-semibold h-9 px-3"
+                        placeholder="Nombre del módulo"
+                      />
+                    </div>
+                  ) : (
+                    <h3 
+                      className="text-lg font-semibold text-gray-800 dark:text-white truncate cursor-pointer hover:text-primary transition-colors"
+                      onClick={handleTitleClick}
+                      title="Haz clic para editar"
+                    >
+                      {module.title}
+                    </h3>
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <Badge variant="outline" className="text-xs">
+                    {module.lessons.length} {module.lessons.length === 1 ? 'lección' : 'lecciones'}
+                  </Badge>
+                  <span className="text-xs text-gray-500">
+                    {module.lessons.reduce((acc, lesson) => acc + lesson.contentBlocks.length, 0)} elementos
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-1 self-end sm:self-auto">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle();
+                }}
+                className="h-8 w-8"
+              >
+                {isExpanded ? 
+                  <ChevronDown className="h-4 w-4 rotate-180" /> : 
+                  <ChevronDown className="h-4 w-4" />
+                }
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDuplicate();
+                }}
+                className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        
+        {isExpanded && (
+          <CardContent className="pt-0">
+            <div className="space-y-3 mt-4">
+              {module.lessons.map((lesson, lessonIndex) => (
+                <LessonCard
+                  key={lesson.id}
+                  lesson={lesson}
+                  index={lessonIndex}
+                  moduleId={module.id}
+                />
+              ))}
+            </div>
+            
+            <div className="mt-6 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddLesson();
+                }}
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Añadir lección
+              </Button>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+    </motion.div>
+  );
+});
+
+ModuleCard.displayName = 'ModuleCard';
+
+const LessonCard = ({ lesson, index, moduleId }: { lesson: AppLesson; index: number; moduleId: string }) => {
+  const { toast } = useToast();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(lesson.title);
+  const [showContentMenu, setShowContentMenu] = useState(false);
+  const [editingContent, setEditingContent] = useState<{
+    type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS';
+    isEditing: boolean;
+  } | null>(null);
+  const [quizToEdit, setQuizToEdit] = useState<AppQuiz | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleTitleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditing(true);
+    setEditingTitle(lesson.title);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 10);
+  };
+
+  const handleTitleSave = () => {
+    if (editingTitle.trim() !== '' && editingTitle !== lesson.title) {
+      console.log('Actualizar título de lección:', editingTitle);
+      toast({
+        title: "Título actualizado",
+        description: "El título de la lección se ha actualizado.",
+      });
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTitleSave();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+      setEditingTitle(lesson.title);
+    }
+  };
+
+  const handleAddContent = (type: 'TEXT' | 'VIDEO' | 'FILE' | 'IMAGE' | 'QUIZ' | 'ACCORDION' | 'TABS' | 'FLIP_CARDS') => {
+    console.log('Añadir contenido tipo:', type, 'a lección:', lesson.id);
+    setEditingContent({ type, isEditing: true });
+    setShowContentMenu(false);
+  };
+
+  const handleSaveContent = (contentData: any) => {
+    console.log('Guardar contenido:', contentData);
+    
+    if (contentData.type === 'QUIZ' && contentData.openQuizEditor) {
+      setQuizToEdit(contentData.quizData);
+      setEditingContent(null);
+    } else {
+      toast({
+        title: "Contenido añadido",
+        description: `Se ha añadido un elemento de tipo ${contentData.type} a la lección.`,
+      });
+      setEditingContent(null);
+    }
+  };
+
+  const handleCancelContent = () => {
+    setEditingContent(null);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowContentMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3" ref={menuRef}>
+      {editingContent ? (
+        <div className="mb-4">
+          <ContentEditor
+            type={editingContent.type}
+            onSave={handleSaveContent}
+            onCancel={handleCancelContent}
+          />
+        </div>
+      ) : null}
+      
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-1">
+          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded">
+            <BookOpenText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge variant="outline" className="text-xs">
+                Lección {index + 1}
+              </Badge>
+              {isEditing ? (
+                <div className="flex-1 max-w-md min-w-[200px]">
+                  <Input
+                    ref={inputRef}
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    onBlur={handleTitleSave}
+                    onKeyDown={handleKeyDown}
+                    className="h-7 text-sm px-2"
+                    placeholder="Nombre de la lección"
+                  />
+                </div>
+              ) : (
+                <h4 
+                  className="font-medium truncate cursor-pointer hover:text-primary transition-colors"
+                  onClick={handleTitleClick}
+                  title="Haz clic para editar"
+                >
+                  {lesson.title}
+                </h4>
+              )}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {lesson.contentBlocks.length} elementos
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          <Popover open={showContentMenu} onOpenChange={setShowContentMenu}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowContentMenu(!showContentMenu);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                <span className="hidden sm:inline">Contenido</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-0" align="end">
+              <ContentTypeMenu 
+                onSelect={handleAddContent} 
+                onClose={() => setShowContentMenu(false)} 
+              />
+            </PopoverContent>
+          </Popover>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(!isExpanded);
+            }}
+            className="h-7 w-7"
+          >
+            {isExpanded ? 
+              <ChevronDown className="h-3.5 w-3.5 rotate-180" /> : 
+              <ChevronDown className="h-3.5 w-3.5" />
+            }
+          </Button>
+        </div>
+      </div>
+      
+      {isExpanded && lesson.contentBlocks.length > 0 && (
+        <div className="mt-3 space-y-2 pl-11">
+          {lesson.contentBlocks.map((block, blockIndex) => (
+            <ContentBlockPreview key={block.id} block={block} index={blockIndex} />
+          ))}
+        </div>
+      )}
+      
+      {isExpanded && lesson.contentBlocks.length === 0 && !editingContent && (
+        <div className="mt-3 pl-11">
+          <div className="p-4 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-center">
+            <FilePlus2 className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+              Esta lección no tiene contenido aún
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowContentMenu(true)}
+            >
+              <Plus className="h-3 w-3 mr-2" />
+              Añadir primer elemento
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {quizToEdit && (
+        <Dialog open={!!quizToEdit} onOpenChange={() => setQuizToEdit(null)}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Editor de Quiz</DialogTitle>
+              <DialogDescription>
+                El editor de quiz no está disponible temporalmente.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="p-4 text-center">
+              <p className="text-muted-foreground mb-4">
+                La funcionalidad del editor de quiz estará disponible próximamente.
+              </p>
+              <Button onClick={() => setQuizToEdit(null)}>
+                Cerrar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+};
+
+const ContentBlockPreview = ({ block, index }: { block: ContentBlock; index: number }) => {
+  const getBlockInfo = () => {
+    switch(block.type) {
+      case 'TEXT': return { icon: FileText, color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/30' };
+      case 'VIDEO': return { icon: Video, color: 'text-red-600', bg: 'bg-red-100 dark:bg-red-900/30' };
+      case 'FILE': return { icon: FileGenericIcon, color: 'text-amber-600', bg: 'bg-amber-100 dark:bg-amber-900/30' };
+      case 'IMAGE': return { icon: ImagePlus, color: 'text-green-600', bg: 'bg-green-100 dark:bg-green-900/30' };
+      case 'QUIZ': return { icon: Pencil, color: 'text-purple-600', bg: 'bg-purple-100 dark:bg-purple-900/30' };
+      case 'ACCORDION': return { icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-100 dark:bg-indigo-900/30' };
+      case 'TABS': return { icon: SquareStack, color: 'text-pink-600', bg: 'bg-pink-100 dark:bg-pink-900/30' };
+      case 'FLIP_CARDS': return { icon: FlipHorizontal2, color: 'text-teal-600', bg: 'bg-teal-100 dark:bg-teal-900/30' };
+      default: return { icon: FileText, color: 'text-gray-600', bg: 'bg-gray-100 dark:bg-gray-800' };
+    }
+  };
+
+  const info = getBlockInfo();
+  const Icon = info.icon;
+
+  return (
+    <div className="flex items-center gap-2 p-2 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <div className={`p-1.5 rounded ${info.bg}`}>
+        <Icon className={`h-3.5 w-3.5 ${info.color}`} />
+      </div>
+      <span className="text-sm font-medium flex-1 truncate">
+        {block.type === 'QUIZ' ? block.quiz?.title || 'Quiz' : 
+         block.type === 'ACCORDION' ? 'Acordeón' :
+         block.type === 'TABS' ? 'Pestañas' :
+         block.type === 'FLIP_CARDS' ? 'Tarjetas de volteo' : `${block.type}`}
+      </span>
+      <Badge variant="outline" className="text-xs">
+        #{index + 1}
+      </Badge>
+    </div>
+  );
+};
+
+// === COMPONENTE PRINCIPAL REDISEÑADO ===
+
+export function CourseEditor({ courseId }: { courseId: string }) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const { user, settings, isLoading: isAuthLoading } = useAuth();
+  const { setPageTitle } = useTitle();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const [course, setCourse] = useState<AppCourse | null>(null);
+  const [allCoursesForPrereq, setAllCoursesForPrereq] = useState<AppCourse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [activeTab, setActiveTab] = useState('basics');
+
+  const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [templates, setTemplates] = useState<ApiTemplate[]>([]);
+  const [certificateTemplates, setCertificateTemplates] = useState<PrismaCertificateTemplate[]>([]);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
+  
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
+
+  const handleUploadImage = async (file: File): Promise<string | null> => {
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/upload?type=course-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Error ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success && result.url) {
+        return result.url;
+      } else {
+        throw new Error('No se recibió URL de la imagen');
+      }
+    } catch (err) {
+      console.error('Error al subir imagen:', err);
+      toast({ 
+        title: '❌ Error', 
+        description: (err as Error).message || 'No se pudo subir la imagen.', 
+        variant: 'destructive' 
+      });
+      return null;
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  // Data fetching
+  useEffect(() => {
+    const fetchAllData = async () => {
+      if (!user) return;
+
+      try {
+        setIsLoading(true);
+
+        if (courseId === 'new') {
+          setCourse({
+            id: generateUniqueId('course'),
+            title: 'Nuevo Curso sin Título',
+            description: 'Añade una descripción aquí.',
+            instructor: user as any,
+            instructorId: user?.id,
+            status: 'DRAFT',
+            category: '',
+            modules: [],
+            modulesCount: 0,
+            prerequisiteId: null,
+            isMandatory: false,
+            certificateTemplateId: null,
+            imageUrl: null,
+          });
+          setPageTitle('Crear Nuevo Curso');
+          return;
+        }
+
+        const [courseRes, templatesRes, certificatesRes, coursesRes] = await Promise.all([
+          fetch(`/api/courses/${courseId}`),
+          fetch('/api/templates'),
+          fetch('/api/certificates/templates'),
+          fetch('/api/courses?simple=true')
+        ]);
+
+        if (!courseRes.ok) throw new Error("Curso no encontrado");
+
+        const courseData: AppCourse = await courseRes.json();
+        setCourse(courseData);
+
+        if (templatesRes.ok) setTemplates(await templatesRes.json());
+        if (certificatesRes.ok) setCertificateTemplates(await certificatesRes.json());
+        if (coursesRes.ok) {
+          const data = await coursesRes.json();
+          setAllCoursesForPrereq((data.courses || []).filter((c: AppCourse) => c.id !== courseId));
+        }
+
+      } catch (err) {
+        toast({ 
+          title: "Error", 
+          description: "No se pudo cargar el curso para editar.", 
+          variant: "destructive" 
+        });
+        router.push('/manage-courses');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAllData();
+  }, [courseId, user, router, toast, setPageTitle]);
+
+  const handleSaveCourse = useCallback(async () => {
+    if (!course) return;
+    setIsSaving(true);
+
+    const payload = { ...course };
+    (payload.modules || []).forEach((mod, mIdx) => {
+      mod.order = mIdx;
+      (mod.lessons || []).forEach((les, lIdx) => {
+        les.order = lIdx;
+        (les.contentBlocks || []).forEach((block, bIdx) => {
+          block.order = bIdx;
+        });
+      });
+    });
+
+    try {
+      const endpoint = courseId === 'new' ? '/api/courses' : `/api/courses/${courseId}`;
+      const method = courseId === 'new' ? 'POST' : 'PUT';
+
+      const response = await fetch(endpoint, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) throw new Error((await response.json()).message || 'Error al guardar el curso.');
+
+      const savedCourse = await response.json();
+
+      toast({ 
+        title: "✅ Curso Guardado", 
+        description: "La información del curso se ha guardado correctamente.",
+        duration: 3000
+      });
+
+      setCourse(savedCourse);
+      setIsDirty(false);
+
+      if (courseId === 'new') {
+        router.replace(`/manage-courses/${savedCourse.id}/edit`, { scroll: false });
+      }
+
+      return savedCourse;
+
+    } catch (error: any) {
+      console.error('Error al guardar el curso:', error);
+      toast({ 
+        title: "❌ Error al Guardar", 
+        description: error.message || "No se pudo guardar. Intenta nuevamente.", 
+        variant: "destructive",
+        duration: 5000
+      });
+      return null;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [course, courseId, router, toast]);
+
+  const handleStateUpdate = useCallback((updater: (prev: AppCourse) => AppCourse) => {
+    setCourse(prev => {
+      if (!prev) return null;
+      const newCourse = JSON.parse(JSON.stringify(prev));
+      return updater(newCourse);
+    });
+    setIsDirty(true);
+  }, []);
+
+  const updateCourseField = (field: keyof AppCourse, value: any) => {
+    handleStateUpdate(prev => {
+      prev[field] = value;
+      return prev;
+    });
+  };
+
+  const handleAddModule = () => {
+    handleStateUpdate(prev => {
+      const newModule: AppModule = {
+        id: generateUniqueId('module'),
+        title: 'Nuevo Módulo',
+        order: (prev.modules || []).length,
+        lessons: [],
+      };
+      if (!prev.modules) prev.modules = [];
+      prev.modules.push(newModule);
+      return prev;
+    });
+  };
+
+  const handleDeleteModule = (moduleId: string) => {
+    const module = course?.modules.find(m => m.id === moduleId);
+    setItemToDelete({
+      type: 'module',
+      name: module?.title,
+      onConfirm: () => {
+        handleStateUpdate(prev => {
+          const updatedModules = prev.modules.filter(m => m.id !== moduleId);
+          updatedModules.forEach((mod, index) => {
+            mod.order = index;
+          });
+          prev.modules = updatedModules;
+          return prev;
+        });
+        
+        setExpandedModules(prev => {
+          const next = new Set(prev);
+          next.delete(moduleId);
+          return next;
+        });
+        
+        toast({ 
+          title: "Módulo eliminado", 
+          description: "El módulo se ha eliminado y el resto ha sido re-indexado." 
+        });
+      }
+    });
+  };
+
+  const handleDuplicateModule = (moduleId: string) => {
+    const module = course?.modules.find(m => m.id === moduleId);
+    if (!module) return;
+
+    const duplicate = JSON.parse(JSON.stringify(module));
+    duplicate.id = generateUniqueId('module');
+    duplicate.title = `${module.title} (Copia)`;
+    duplicate.order = course.modules.length;
+
+    handleStateUpdate(prev => {
+      const index = prev.modules.findIndex(m => m.id === moduleId);
+      prev.modules.splice(index + 1, 0, duplicate);
+      
+      prev.modules.forEach((mod, idx) => {
+        mod.order = idx;
+      });
+      
+      return prev;
+    });
+
+    toast({ 
+      title: "✅ Módulo duplicado", 
+      description: "El módulo se ha duplicado correctamente." 
+    });
+  };
+
+  const handleUpdateModuleTitle = (moduleId: string, newTitle: string) => {
+    handleStateUpdate(prev => {
+      const moduleIndex = prev.modules.findIndex(m => m.id === moduleId);
+      if (moduleIndex !== -1) {
+        prev.modules[moduleIndex].title = newTitle;
+      }
+      return prev;
+    });
+  };
+
+  const handleAddLesson = (moduleId: string) => {
+    handleStateUpdate(prev => {
+      const moduleIndex = prev.modules.findIndex(m => m.id === moduleId);
+      if (moduleIndex === -1) return prev;
+
+      const newLesson: AppLesson = {
+        id: generateUniqueId('lesson'),
+        title: 'Nueva Lección',
+        description: '',
+        order: prev.modules[moduleIndex].lessons.length,
+        contentBlocks: [],
+      };
+
+      prev.modules[moduleIndex].lessons.push(newLesson);
+      return prev;
+    });
+
+    setExpandedModules(prev => new Set(prev).add(moduleId));
+
+    toast({
+      title: "Lección añadida",
+      description: "Se ha añadido una nueva lección al módulo.",
+    });
+  };
+
+  const toggleModuleExpansion = (moduleId: string) => {
+    setExpandedModules(prev => {
+      const next = new Set(prev);
+      if (next.has(moduleId)) {
+        next.delete(moduleId);
+      } else {
+        next.add(moduleId);
+      }
+      return next;
+    });
+  };
+
+  const calculateStats = () => {
+    if (!course) return null;
+    
+    return {
+      modules: course.modules?.length || 0,
+      lessons: course.modules?.reduce((acc, mod) => acc + (mod.lessons?.length || 0), 0) || 0,
+      blocks: course.modules?.reduce((acc, mod) => 
+        acc + mod.lessons?.reduce((acc2, les) => acc2 + (les.contentBlocks?.length || 0), 0), 0) || 0,
+      hasCertificate: !!course.certificateTemplateId,
+      isMandatory: course.isMandatory,
+      hasPrerequisite: !!course.prerequisiteId,
+    };
+  };
+
+  const stats = calculateStats();
+
+  if (isLoading || isAuthLoading || !course) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+            <Loader2 className="h-12 w-12 animate-spin text-primary relative" />
+          </div>
+          <p className="text-lg font-medium text-muted-foreground animate-pulse">
+            {courseId === 'new' ? 'Creando curso...' : 'Cargando editor...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn(
+      "min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 transition-all duration-300",
+      isFullscreen && "fixed inset-0 z-50 bg-white dark:bg-gray-950"
+    )}>
+      {/* Header */}
+      <header className={cn(
+        "sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b",
+        isFullscreen && "bg-white dark:bg-gray-900"
+      )}>
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col py-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" asChild className="sm:hidden">
+                    <Link href="/manage-courses">
+                      <ArrowLeft className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                  
+                  <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                    <SheetTrigger asChild>
+                      <Button variant="ghost" size="icon" className="sm:hidden">
+                        <Menu className="h-5 w-5" />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-80">
+                      <div className="py-6">
+                        <div className="flex items-center gap-3 mb-8">
+                          <Button variant="ghost" size="icon" asChild>
+                            <Link href="/manage-courses">
+                              <ArrowLeft className="h-5 w-5" />
+                            </Link>
+                          </Button>
+                          <div>
+                            <h2 className="font-bold">{course.title}</h2>
+                            <StatusBadge status={course.status} />
+                          </div>
+                        </div>
+                        
+                        <nav className="space-y-1">
+                          {['basics', 'curriculum', 'settings', 'publish'].map((tab) => (
+                            <Button
+                              key={tab}
+                              variant={activeTab === tab ? 'default' : 'ghost'}
+                              className="w-full justify-start"
+                              onClick={() => {
+                                setActiveTab(tab);
+                                setIsMobileMenuOpen(false);
+                              }}
+                            >
+                              {tab === 'basics' && <Layout className="h-4 w-4 mr-3" />}
+                              {tab === 'curriculum' && <BookOpen className="h-4 w-4 mr-3" />}
+                              {tab === 'settings' && <Settings2 className="h-4 w-4 mr-3" />}
+                              {tab === 'publish' && <GlobeIcon className="h-4 w-4 mr-3" />}
+                              {tab === 'basics' && 'Información básica'}
+                              {tab === 'curriculum' && 'Plan de estudios'}
+                              {tab === 'settings' && 'Configuración'}
+                              {tab === 'publish' && 'Publicación'}
+                            </Button>
+                          ))}
+                        </nav>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </div>
+                
+                <div className="max-w-2xl">
+                  <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">
+                    {course.title}
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1">
+                    <StatusBadge status={course.status} />
+                    <span className="text-sm text-muted-foreground hidden sm:inline">
+                      {courseId === 'new' ? 'Nuevo curso' : 'Editando'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsFullscreen(!isFullscreen)}
+                  className="hidden sm:flex"
+                >
+                  {isFullscreen ? (
+                    <Minimize2 className="h-4 w-4 mr-2" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4 mr-2" />
+                  )}
+                  {isFullscreen ? 'Salir' : 'Pantalla completa'}
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(`/courses/${courseId}?preview=true`, '_blank')}
+                  disabled={courseId === 'new'}
+                  className="gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  <span className="hidden sm:inline">Vista previa</span>
+                </Button>
+                
+                <Button
+                  onClick={handleSaveCourse}
+                  disabled={isSaving || !isDirty}
+                  className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  size="sm"
+                >
+                  {isSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {isSaving ? 'Guardando...' : 'Guardar cambios'}
+                  </span>
+                  <span className="sm:hidden">Guardar</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar - Oculto en móviles */}
+          <aside className="hidden lg:block space-y-6">
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="relative aspect-video">
+                  {course.imageUrl ? (
+                    <Image
+                      src={course.imageUrl}
+                      alt={course.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 400px"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center">
+                      <ImagePlus className="h-12 w-12 text-gray-400" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <FileUploader
+                      type="course-image"
+                      onUploadComplete={(url) => {
+                        updateCourseField('imageUrl', url);
+                        toast({ 
+                          title: '✅ Imagen actualizada', 
+                          description: 'La imagen de portada se ha actualizado correctamente.' 
+                        });
+                      }}
+                    >
+                      <Button 
+                        variant="secondary" 
+                        size="sm" 
+                        className="gap-2"
+                        disabled={isUploadingImage}
+                      >
+                        {isUploadingImage ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Replace className="h-4 w-4" />
+                        )}
+                        Cambiar imagen
+                      </Button>
+                    </FileUploader>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <nav className="space-y-1">
+                  <Button
+                    variant={activeTab === 'basics' ? 'default' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('basics')}
+                  >
+                    <Layout className="h-4 w-4 mr-3" />
+                    Información básica
+                  </Button>
+                  <Button
+                    variant={activeTab === 'curriculum' ? 'default' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('curriculum')}
+                  >
+                    <BookOpen className="h-4 w-4 mr-3" />
+                    Plan de estudios
+                  </Button>
+                  <Button
+                    variant={activeTab === 'settings' ? 'default' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('settings')}
+                  >
+                    <Settings2 className="h-4 w-4 mr-3" />
+                    Configuración
+                  </Button>
+                  <Button
+                    variant={activeTab === 'publish' ? 'default' : 'ghost'}
+                    className="w-full justify-start"
+                    onClick={() => setActiveTab('publish')}
+                  >
+                    <GlobeIcon className="h-4 w-4 mr-3" />
+                    Publicación
+                  </Button>
+                </nav>
+              </CardContent>
+            </Card>
+
+            {/* Stats */}
+            {stats && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Estadísticas</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Módulos</span>
+                    <span className="font-semibold">{stats.modules}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Lecciones</span>
+                    <span className="font-semibold">{stats.lessons}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Elementos</span>
+                    <span className="font-semibold">{stats.blocks}</span>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Certificado</span>
+                      {stats.hasCertificate ? (
+                        <Badge variant="outline" className="text-green-600 border-green-200">
+                          Sí
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-gray-500">
+                          No
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Obligatorio</span>
+                      {stats.isMandatory ? (
+                        <Badge variant="outline" className="text-amber-600 border-amber-200">
+                          Sí
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-gray-500">
+                          No
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </aside>
+
+          {/* Main Content Area */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Mobile Tabs */}
+            <div className="lg:hidden">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid grid-cols-2 w-full">
+                  <TabsTrigger value="basics">Básico</TabsTrigger>
+                  <TabsTrigger value="curriculum">Contenido</TabsTrigger>
+                  <TabsTrigger value="settings">Config</TabsTrigger>
+                  <TabsTrigger value="publish">Publicar</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === 'basics' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Información del curso</CardTitle>
+                    <CardDescription>
+                      Configura los detalles principales de tu curso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Título del curso *</Label>
+                      <Input
+                        id="title"
+                        value={course.title}
+                        onChange={(e) => updateCourseField('title', e.target.value)}
+                        placeholder="Ej: Introducción al Desarrollo Web"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Descripción</Label>
+                      <RichTextEditor
+                        value={course.description || ''}
+                        onChange={(value) => updateCourseField('description', value)}
+                        placeholder="Describe qué aprenderán los estudiantes..."
+                        className="min-h-[200px]"
+                      />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="category">Categoría</Label>
+                        <Select
+                          value={course.category || ''}
+                          onValueChange={(value) => updateCourseField('category', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccionar categoría" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(settings?.resourceCategories || []).map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="status">Estado</Label>
+                        <Select
+                          value={course.status}
+                          onValueChange={(value) => updateCourseField('status', value as CourseStatus)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="DRAFT">Borrador</SelectItem>
+                            <SelectItem value="PUBLISHED">Publicado</SelectItem>
+                            <SelectItem value="ARCHIVED">Archivado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {activeTab === 'curriculum' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                      Plan de estudios
+                    </h2>
+                    <p className="text-muted-foreground">
+                      Organiza los módulos y lecciones de tu curso
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowTemplateModal(true)}
+                      className="gap-2"
+                      size="sm"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      <span className="hidden sm:inline">Plantillas</span>
+                    </Button>
+                    <Button
+                      onClick={handleAddModule}
+                      className="gap-2 bg-gradient-to-r from-primary to-primary/80"
+                      size="sm"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      <span className="hidden sm:inline">Nuevo módulo</span>
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg w-fit">
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="gap-2"
+                  >
+                    <List className="h-4 w-4" />
+                    <span className="hidden sm:inline">Lista</span>
+                  </Button>
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="gap-2"
+                  >
+                    <Grid3x3 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Cuadrícula</span>
+                  </Button>
+                </div>
+
+                {course.modules.length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="py-12 text-center">
+                      <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                        <FolderOpen className="h-8 w-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Comienza a estructurar tu curso</h3>
+                      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                        Crea módulos para organizar el contenido de manera lógica y progresiva
+                      </p>
+                      <Button onClick={handleAddModule} className="gap-2">
+                        <PlusCircle className="h-4 w-4" />
+                        Crear primer módulo
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : viewMode === 'grid' ? (
+                  <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+                    {course.modules.map((module, index) => (
+                      <Card key={module.id} className="hover:shadow-lg transition-shadow">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline">Módulo {index + 1}</Badge>
+                            <div className="flex items-center gap-1">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7"
+                                onClick={() => handleDuplicateModule(module.id)}
+                              >
+                                <Copy className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7"
+                                onClick={() => handleDeleteModule(module.id)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                          <CardTitle className="mt-2 text-base sm:text-lg truncate">{module.title}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">Lecciones:</span>
+                              <span className="font-semibold">{module.lessons.length}</span>
+                            </div>
+                            {module.lessons.slice(0, 2).map((lesson) => (
+                              <div key={lesson.id} className="flex items-center gap-2 p-2 rounded bg-gray-50 dark:bg-gray-800">
+                                <BookOpenText className="h-4 w-4 text-blue-500" />
+                                <span className="text-sm truncate">{lesson.title}</span>
+                              </div>
+                            ))}
+                            {module.lessons.length > 2 && (
+                              <div className="text-center text-sm text-muted-foreground">
+                                +{module.lessons.length - 2} más
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <DragDropContext onDragEnd={() => {}}>
+                      <Droppable droppableId="modules" type="MODULES">
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                            className="space-y-4"
+                          >
+                            {course.modules.map((module, index) => (
+                              <Draggable key={module.id} draggableId={module.id} index={index}>
+                                {(provided) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                  >
+                                    <ModuleCard
+                                      module={module}
+                                      index={index}
+                                      isExpanded={expandedModules.has(module.id)}
+                                      onToggle={() => toggleModuleExpansion(module.id)}
+                                      onAddLesson={() => handleAddLesson(module.id)}
+                                      onUpdateTitle={(title) => handleUpdateModuleTitle(module.id, title)}
+                                      onDelete={() => handleDeleteModule(module.id)}
+                                      onDuplicate={() => handleDuplicateModule(module.id)}
+                                      dragHandleProps={provided.dragHandleProps}
+                                    />
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'settings' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                        <Award className="h-5 w-5 text-primary" />
+                        Certificado
+                      </CardTitle>
+                      <CardDescription>
+                        Configura el certificado del curso
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Select
+                        value={course.certificateTemplateId || 'none'}
+                        onValueChange={(value) => updateCourseField('certificateTemplateId', value === 'none' ? null : value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sin certificado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Sin certificado</SelectItem>
+                          {certificateTemplates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                        <Target className="h-5 w-5 text-primary" />
+                        Prerrequisitos
+                      </CardTitle>
+                      <CardDescription>
+                        Establece cursos previos requeridos
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Select
+                        value={course.prerequisiteId || 'none'}
+                        onValueChange={(value) => updateCourseField('prerequisiteId', value === 'none' ? null : value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sin prerrequisito" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Sin prerrequisito</SelectItem>
+                          {allCoursesForPrereq.map((courseItem) => (
+                            <SelectItem key={courseItem.id} value={courseItem.id}>
+                              {courseItem.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base sm:text-lg">Configuración avanzada</CardTitle>
+                    <CardDescription>
+                      Opciones adicionales para el curso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-3 sm:p-4 border rounded-lg">
+                      <div>
+                        <p className="font-medium text-sm sm:text-base">Curso obligatorio</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          Los estudiantes deben completar este curso
+                        </p>
+                      </div>
+                      <Switch
+                        checked={course.isMandatory}
+                        onCheckedChange={(checked) => {
+                          updateCourseField('isMandatory', checked);
+                          if (checked) {
+                            setTimeout(() => setIsAssignmentModalOpen(true), 300);
+                          }
+                        }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {activeTab === 'publish' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base sm:text-lg">Disponibilidad</CardTitle>
+                    <CardDescription>
+                      Define cuándo estará disponible el curso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <DateRangePicker
+                      date={{
+                        from: course.startDate ? new Date(course.startDate) : undefined,
+                        to: course.endDate ? new Date(course.endDate) : undefined
+                      }}
+                      onDateChange={(range) => {
+                        updateCourseField('startDate', range?.from?.toISOString());
+                        updateCourseField('endDate', range?.to?.toISOString());
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base sm:text-lg">Publicación</CardTitle>
+                    <CardDescription>
+                      Configura cómo se publicará el curso
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Visibilidad</Label>
+                      <Select
+                        value={course.status}
+                        onValueChange={(value) => updateCourseField('status', value as CourseStatus)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="DRAFT">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                              Borrador
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="PUBLISHED">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full" />
+                              Publicado
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <Alert>
+                      <Info className="h-4 w-4" />
+                      <AlertTitle>Listo para publicar</AlertTitle>
+                      <AlertDescription>
+                        Una vez publicado, el curso estará disponible para los estudiantes asignados.
+                      </AlertDescription>
+                    </Alert>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Save Indicator */}
+      {isDirty && (
+        <motion.div
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          className="fixed bottom-4 right-4 z-50"
+        >
+          <Card className="shadow-2xl border-primary/20">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <div>
+                    <p className="font-medium text-sm sm:text-base">Cambios sin guardar</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Guarda tu progreso</p>
+                  </div>
+                </div>
+                <Button onClick={handleSaveCourse} disabled={isSaving} size="sm">
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                      <span className="hidden sm:inline">Guardando...</span>
+                    </>
+                  ) : (
+                    'Guardar'
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Dialogs */}
+      <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar {itemToDelete?.type}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará "{itemToDelete?.name}" permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                itemToDelete?.onConfirm();
+                setItemToDelete(null);
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
+        <DialogContent className="max-w-2xl w-[95vw] sm:w-full">
+          <DialogHeader>
+            <DialogTitle>Plantillas de lección</DialogTitle>
+            <DialogDescription>
+              Selecciona una plantilla para crear una lección rápidamente
+            </DialogDescription>
+          </DialogHeader>
+          
+          <ScrollArea className="h-[60vh]">
+            <div className="grid gap-3 p-1">
+              {templates.length === 0 ? (
+                <div className="text-center py-8">
+                  <Sparkles className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No hay plantillas disponibles</p>
+                </div>
+              ) : (
+                templates.map((template) => (
+                  <Card key={template.id} className="hover:border-primary cursor-pointer">
+                    <CardContent className="p-4">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{template.name}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {template.description}
+                          </p>
+                          <div className="flex flex-wrap gap-1 mt-3">
+                            {template.templateBlocks.slice(0, 3).map((block, i) => (
+                              <Badge key={i} variant="secondary" className="text-xs">
+                                {block.type.toLowerCase()}
+                              </Badge>
+                            ))}
+                            {template.templateBlocks.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{template.templateBlocks.length - 3} más
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          Usar plantilla
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {isAssignmentModalOpen && (
+        <CourseAssignmentModal
+          isOpen={isAssignmentModalOpen}
+          onClose={() => setIsAssignmentModalOpen(false)}
+          courseId={course.id}
+          courseTitle={course.title}
+        />
+      )}
+    </div>
+  );
 }
