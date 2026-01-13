@@ -5,17 +5,22 @@ import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-// UPDATE user (ADMIN only)
+// UPDATE user
 export async function PUT(
     req: NextRequest,
     { params }: { params: { id: string } }
 ) {
     const session = await getCurrentUser();
-    if (!session || session.role !== 'ADMINISTRATOR') {
-        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
+    if (!session) {
+        return NextResponse.json({ message: 'No autorizado' }, { status: 401 });
     }
 
     const { id } = params;
+    const isSelfUpdate = session.id === id;
+
+    if (!isSelfUpdate && session.role !== 'ADMINISTRATOR') {
+        return NextResponse.json({ message: 'No autorizado' }, { status: 403 });
+    }
 
     try {
         const body = await req.json();
@@ -27,6 +32,7 @@ export async function PUT(
             processId,
             isActive,
             avatar,
+            theme,
             customPermissions
         } = body;
 
@@ -39,32 +45,31 @@ export async function PUT(
             return NextResponse.json({ message: 'Usuario no encontrado' }, { status: 404 });
         }
 
-        /*
-         - [x] Colorize KPI Metrics with dynamic colors & gradients
-         - [x] Translate all Table/UI elements to Spanish
-         - [x] Implement View Toggle (Grid / Table)
-         - [x] Integrate "Estructura Organizacional" (Process Tree) Sidebar
-         - [x] Implement Premium "Editar Colaborador" Modal
-             - [x] Basic Info Section (Profile Image Upload, Name, Email, Role, Process)
-             - [x] Categorized Granular Permissions (Dashboard, Competencia, etc.)
-         - [x] Implement backend endpoints for user updates & permissions
-         - [x] Verify functionality and responsiveness
-        */
-
         // Prepare data for update
-        const updateData: any = {
-            name,
-            email: email?.toLowerCase(),
-            role,
-            processId: processId === 'unassigned' ? null : processId,
-            isActive,
-            avatar,
-            customPermissions: customPermissions || existingUser.customPermissions
-        };
+        const updateData: any = {};
+
+        // Users can always update these fields for themselves
+        if (isSelfUpdate || session.role === 'ADMINISTRATOR') {
+            if (name !== undefined) updateData.name = name;
+            if (avatar !== undefined) updateData.avatar = avatar;
+            if (theme !== undefined) updateData.theme = theme;
+        }
+
+        // Only administrators can update these fields
+        if (session.role === 'ADMINISTRATOR') {
+            if (email !== undefined) updateData.email = email.toLowerCase();
+            if (role !== undefined) updateData.role = role;
+            if (processId !== undefined) updateData.processId = processId === 'unassigned' ? null : processId;
+            if (isActive !== undefined) updateData.isActive = isActive;
+            if (customPermissions !== undefined) updateData.customPermissions = customPermissions;
+        }
 
         // Hash password if provided
         if (password && password.trim() !== '') {
-            updateData.password = await bcrypt.hash(password, 10);
+            // Only admins or self can change password
+            if (isSelfUpdate || session.role === 'ADMINISTRATOR') {
+                updateData.password = await bcrypt.hash(password, 10);
+            }
         }
 
         const updatedUser = await prisma.user.update({
@@ -78,6 +83,7 @@ export async function PUT(
                 avatar: true,
                 isActive: true,
                 processId: true,
+                theme: true,
                 customPermissions: true,
             }
         });

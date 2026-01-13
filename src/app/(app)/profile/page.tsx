@@ -32,6 +32,7 @@ import { AVAILABLE_THEMES } from '@/components/theme-provider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { UploadArea } from '@/components/ui/upload-area';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 
 
 // Gamification Level Calculation
@@ -59,7 +60,7 @@ const InfoCard = ({ user, updateUser }: { user: AppUser, updateUser: (data: Part
     const { toast } = useToast();
 
     useEffect(() => {
-        if(user?.name) setName(user.name);
+        if (user?.name) setName(user.name);
     }, [user?.name]);
 
     const handleInfoSubmit = async (e: FormEvent) => {
@@ -146,7 +147,7 @@ const PrivacyCard = ({ user, updateUser }: { user: AppUser, updateUser: (data: P
                         <Label htmlFor="show-leaderboard" className="text-base font-medium">Visibilidad en Ranking</Label>
                         <p className="text-sm text-muted-foreground">Controla si tu nombre y puntuación aparecen en la tabla de clasificación.</p>
                     </div>
-                     <Switch
+                    <Switch
                         id="show-leaderboard"
                         checked={showInLeaderboard}
                         onCheckedChange={handlePrivacyChange}
@@ -159,8 +160,8 @@ const PrivacyCard = ({ user, updateUser }: { user: AppUser, updateUser: (data: P
 };
 
 
-const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setConfirmPassword, currentPassword, setCurrentPassword }: 
-{ user: AppUser, newPassword: any, setNewPassword: any, confirmPassword: any, setConfirmPassword: any, currentPassword: any, setCurrentPassword: any }) => {
+const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setConfirmPassword, currentPassword, setCurrentPassword }:
+    { user: AppUser, newPassword: any, setNewPassword: any, confirmPassword: any, setConfirmPassword: any, currentPassword: any, setCurrentPassword: any }) => {
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -192,7 +193,7 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
             setIsSavingPassword(false);
         }
     };
-    
+
     return (
         <Card>
             <CardHeader>
@@ -205,26 +206,26 @@ const SecurityCard = ({ user, newPassword, setNewPassword, confirmPassword, setC
                         <div className="relative">
                             <Input id="current-password" type={showCurrentPassword ? "text" : "password"} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="current-password" />
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
-                                {showCurrentPassword ? <Eye className="h-5 w-5"/> : <EyeOff className="h-5 w-5"/>}
+                                {showCurrentPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                             </Button>
                         </div>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="new-password">Nueva Contraseña</Label>
                         <div className="relative">
-                             <Input id="new-password" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="new-password"/>
-                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowNewPassword(!showNewPassword)}>
-                                {showNewPassword ? <Eye className="h-5 w-5"/> : <EyeOff className="h-5 w-5"/>}
+                            <Input id="new-password" type={showNewPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="new-password" />
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowNewPassword(!showNewPassword)}>
+                                {showNewPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                             </Button>
                         </div>
                     </div>
-                     <PasswordStrengthIndicator password={newPassword} isVisible={true} />
+                    <PasswordStrengthIndicator password={newPassword} isVisible={true} />
                     <div className="space-y-2">
                         <Label htmlFor="confirm-password">Confirmar Nueva Contraseña</Label>
-                         <div className="relative">
-                            <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="new-password"/>
+                        <div className="relative">
+                            <Input id="confirm-password" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required disabled={isSavingPassword} autoComplete="new-password" />
                             <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                                {showConfirmPassword ? <Eye className="h-5 w-5"/> : <EyeOff className="h-5 w-5"/>}
+                                {showConfirmPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                             </Button>
                         </div>
                     </div>
@@ -248,7 +249,7 @@ const TwoFactorCard = ({ user, updateUser }: { user: AppUser, updateUser: (data:
     const [isDisabling2FA, setIsDisabling2FA] = useState(false);
     const { toast } = useToast();
 
-     const handleEnable2FA = async () => {
+    const handleEnable2FA = async () => {
         if (!user) return;
         setIsActivating2FA(true);
         try {
@@ -288,7 +289,7 @@ const TwoFactorCard = ({ user, updateUser }: { user: AppUser, updateUser: (data:
             setIsActivating2FA(false);
         }
     };
-    
+
     const handleDisable2FA = async () => {
         if (!user || !passwordForDisable) {
             toast({ description: "Por favor, ingresa tu contraseña.", variant: 'destructive' });
@@ -314,7 +315,7 @@ const TwoFactorCard = ({ user, updateUser }: { user: AppUser, updateUser: (data:
     };
 
     return (
-         <Card id="card-2fa-desktop">
+        <Card id="card-2fa-desktop">
             <CardHeader>
                 <CardTitle>Autenticación de Dos Factores (2FA)</CardTitle>
             </CardHeader>
@@ -328,21 +329,21 @@ const TwoFactorCard = ({ user, updateUser }: { user: AppUser, updateUser: (data:
                         <Label htmlFor="password-disable-2fa">Contraseña</Label>
                         <Input id="password-disable-2fa" type="password" value={passwordForDisable} onChange={e => setPasswordForDisable2FA(e.target.value)} placeholder="Ingresa tu contraseña para desactivar" />
                         <Button variant="destructive" onClick={handleDisable2FA} disabled={isDisabling2FA || !passwordForDisable}>
-                            {isDisabling2FA ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Shield className="mr-2 h-4 w-4"/>}
+                            {isDisabling2FA ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}
                             Desactivar 2FA
                         </Button>
                     </div>
                 </CardContent>
             ) : qrCode ? (
-                 <CardContent className="space-y-4 text-center">
+                <CardContent className="space-y-4 text-center">
                     <p className="text-sm text-muted-foreground">Escanea este código QR con tu aplicación de autenticación (ej. Google Authenticator).</p>
                     <Image src={qrCode} alt="Código QR para 2FA" width={200} height={200} className="mx-auto" quality={100} />
                     <div className="space-y-2">
                         <Label htmlFor="verification-code">Código de Verificación</Label>
-                        <Input id="verification-code" value={verificationCode} onChange={e => setVerificationCode(e.target.value)} placeholder="123456" maxLength={6}/>
+                        <Input id="verification-code" value={verificationCode} onChange={e => setVerificationCode(e.target.value)} placeholder="123456" maxLength={6} />
                     </div>
                     <Button onClick={handleVerify2FA} disabled={isActivating2FA || verificationCode.length < 6}>
-                        {isActivating2FA ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4"/>}
+                        {isActivating2FA ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}
                         Activar y Verificar
                     </Button>
                 </CardContent>
@@ -350,81 +351,82 @@ const TwoFactorCard = ({ user, updateUser }: { user: AppUser, updateUser: (data:
                 <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground">Añade una capa extra de seguridad a tu cuenta. Se te pedirá un código de verificación al iniciar sesión.</p>
                     <Button onClick={handleEnable2FA} disabled={isActivating2FA}>
-                        {isActivating2FA ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4"/>}
+                        {isActivating2FA ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}
                         Habilitar 2FA
                     </Button>
                 </CardContent>
             )}
-            
+
         </Card>
     );
 };
 
-const ProfileCard = ({ user, onAvatarChange, onAvatarRemove, isUploading, uploadProgress }: { user: AppUser, onAvatarChange: (file: File | null) => void, onAvatarRemove: () => void, isUploading: boolean, uploadProgress: number }) => {
+const ProfileCard = ({ user, onAvatarChange, onAvatarRemove, isUploading, uploadProgress }: { user: AppUser, onAvatarChange: (files: FileList | null) => void, onAvatarRemove: () => void, isUploading: boolean, uploadProgress: number }) => {
     const { level, currentXPInLevel, xpForNextLevel, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
     const { user: currentUser } = useAuth();
-    
+
     const canSeeProcess = user.role !== 'STUDENT' || currentUser?.role === 'ADMINISTRATOR';
 
     return (
-     <Card className="profile-card" id="profile-card-display">
-        <div className="card__img">
-            <div className="card__img--gradient" />
-        </div>
-        <div className="card__avatar group">
-           <UploadArea
-                onFileSelect={onAvatarChange}
-                className="w-32 h-32 rounded-full border-4 border-background p-0"
-                inputId="avatar-upload-dnd"
-                disabled={isUploading}
-            >
-                <Avatar className="h-full w-full">
-                     <AvatarImage src={user.avatar || undefined} />
-                     <AvatarFallback><Identicon userId={user.id}/></AvatarFallback>
-                </Avatar>
-            </UploadArea>
-            {user.avatar && (
-                 <button onClick={onAvatarRemove} className="absolute top-1 right-1 z-20 bg-destructive text-destructive-foreground rounded-full p-1.5 cursor-pointer hover:bg-destructive/80 transition-colors shadow-md opacity-0 group-hover:opacity-100">
-                    <XCircle className="h-5 w-5" />
-                </button>
-            )}
-        </div>
-         <CardContent className="px-6 pb-6 pt-4">
-            <CardTitle className="text-2xl font-bold font-headline flex items-center justify-center gap-2">
-                {user.name}
-                <VerifiedBadge role={user.role} />
-            </CardTitle>
-            <CardDescription className="card__subtitle">
-                {user.email}
-            </CardDescription>
-            {canSeeProcess && (user as any).process && (
-                <div className="mt-2 flex justify-center">
-                    <Badge variant="secondary" className="gap-1.5 text-xs"><Briefcase className="h-3 w-3"/> {(user as any).process.name}</Badge>
-                </div>
-            )}
-             <div className="mt-6">
-                <div className="flex justify-between items-end mb-1">
-                    <p className="font-semibold text-primary">Nivel {level}</p>
-                    <p className="text-sm text-muted-foreground">{user.xp || 0} XP</p>
-                </div>
-                <Progress value={progressPercentage} className="h-2"/>
-                <p className="text-xs text-right text-muted-foreground mt-1">
-                    {xpForNextLevel - currentXPInLevel} XP para el siguiente nivel
-                </p>
+        <Card className="profile-card" id="profile-card-display">
+            <div className="card__img">
+                <div className="card__img--gradient" />
             </div>
-             <Button asChild variant="outline" className="w-full mt-4">
-                <Link href="/leaderboard"><Trophy className="mr-2 h-4 w-4"/> Ver Ranking</Link>
-             </Button>
-        </CardContent>
-        <CardFooter className="p-0">
-            {isUploading && (
-                <div className="w-full">
-                    <UploadProgress value={uploadProgress} className="h-1 rounded-none" />
+            <div className="card__avatar group">
+                <UploadArea
+                    onFileSelect={onAvatarChange}
+                    className="w-32 h-32 rounded-full border-4 border-background p-0"
+                    inputId="avatar-upload-dnd"
+                    disabled={isUploading}
+                >
+                    <Avatar className="h-full w-full">
+                        <AvatarImage src={user.avatar || undefined} />
+                        <AvatarFallback><Identicon userId={user.id} /></AvatarFallback>
+                    </Avatar>
+                </UploadArea>
+                {user.avatar && (
+                    <button onClick={onAvatarRemove} className="absolute top-1 right-1 z-20 bg-destructive text-destructive-foreground rounded-full p-1.5 cursor-pointer hover:bg-destructive/80 transition-colors shadow-md opacity-0 group-hover:opacity-100">
+                        <XCircle className="h-5 w-5" />
+                    </button>
+                )}
+            </div>
+            <CardContent className="px-6 pb-6 pt-4">
+                <CardTitle className="text-2xl font-bold font-headline flex items-center justify-center gap-2">
+                    {user.name}
+                    <VerifiedBadge role={user.role} />
+                </CardTitle>
+                <CardDescription className="card__subtitle">
+                    {user.email}
+                </CardDescription>
+                {canSeeProcess && (user as any).process && (
+                    <div className="mt-2 flex justify-center">
+                        <Badge variant="secondary" className="gap-1.5 text-xs"><Briefcase className="h-3 w-3" /> {(user as any).process.name}</Badge>
+                    </div>
+                )}
+                <div className="mt-6">
+                    <div className="flex justify-between items-end mb-1">
+                        <p className="font-semibold text-primary">Nivel {level}</p>
+                        <p className="text-sm text-muted-foreground">{user.xp || 0} XP</p>
+                    </div>
+                    <Progress value={progressPercentage} className="h-2" />
+                    <p className="text-xs text-right text-muted-foreground mt-1">
+                        {xpForNextLevel - currentXPInLevel} XP para el siguiente nivel
+                    </p>
                 </div>
-            )}
-        </CardFooter>
-    </Card>
-)};
+                <Button asChild variant="outline" className="w-full mt-4">
+                    <Link href="/leaderboard"><Trophy className="mr-2 h-4 w-4" /> Ver Ranking</Link>
+                </Button>
+            </CardContent>
+            <CardFooter className="p-0">
+                {isUploading && (
+                    <div className="w-full">
+                        <UploadProgress value={uploadProgress} className="h-1 rounded-none" />
+                    </div>
+                )}
+            </CardFooter>
+        </Card>
+    )
+};
 
 const ThemeSelectorCard = ({ className }: { className?: string }) => {
     const { theme, setTheme } = useTheme();
@@ -447,39 +449,39 @@ const ThemeSelectorCard = ({ className }: { className?: string }) => {
     };
 
     return (
-      <Card className={cn(className)}>
-        <CardHeader>
-          <CardTitle>Tema de la Interfaz</CardTitle>
-          <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-              {AVAILABLE_THEMES.map((t) => (
-                <TooltipProvider key={t.value} delayDuration={100}>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                             <div onClick={() => handleThemeChange(t.value)} className="cursor-pointer group flex flex-col items-center gap-2">
-                                <div
-                                    className={cn(
-                                        'h-16 w-full rounded-lg flex items-center justify-center border-2 transition-all',
-                                        theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/70'
-                                    )}
-                                >
-                                    <div className="flex items-center gap-1">
-                                        <div className="h-10 w-5 rounded" style={{backgroundColor: t.colors[0]}}/>
-                                        <div className="h-10 w-5 rounded" style={{backgroundColor: t.colors[1]}}/>
+        <Card className={cn(className)}>
+            <CardHeader>
+                <CardTitle>Tema de la Interfaz</CardTitle>
+                <CardDescription>Elige tu paleta de colores preferida.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+                    {AVAILABLE_THEMES.map((t) => (
+                        <TooltipProvider key={t.value} delayDuration={100}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div onClick={() => handleThemeChange(t.value)} className="cursor-pointer group flex flex-col items-center gap-2">
+                                        <div
+                                            className={cn(
+                                                'h-16 w-full rounded-lg flex items-center justify-center border-2 transition-all',
+                                                theme === t.value ? 'border-primary ring-2 ring-primary/50' : 'border-border group-hover:border-primary/70'
+                                            )}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                <div className="h-10 w-5 rounded" style={{ backgroundColor: t.colors[0] }} />
+                                                <div className="h-10 w-5 rounded" style={{ backgroundColor: t.colors[1] }} />
+                                            </div>
+                                        </div>
+                                        <p className="text-xs font-medium text-muted-foreground">{t.label}</p>
                                     </div>
-                                </div>
-                                <p className="text-xs font-medium text-muted-foreground">{t.label}</p>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent><p>{t.label}</p></TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-              ))}
-            </div>
-        </CardContent>
-      </Card>
+                                </TooltipTrigger>
+                                <TooltipContent><p>{t.label}</p></TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
     );
 };
 
@@ -503,14 +505,15 @@ function ProfilePageContent() {
         startTour('profile', profileTour);
     }, [setPageTitle, startTour]);
 
-    const handleAvatarChange = async (file: File | null) => {
+    const handleAvatarChange = async (files: FileList | null) => {
+        const file = files ? files[0] : null;
         if (file && user) {
             setIsUploading(true);
             setUploadProgress(0);
 
             try {
                 const result = await uploadWithProgress('/api/upload/avatar', file, setUploadProgress);
-                
+
                 const updateUserResponse = await fetch(`/api/users/${user.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -520,7 +523,7 @@ function ProfilePageContent() {
                 if (!updateUserResponse.ok) throw new Error('No se pudo guardar la nueva imagen de perfil.');
 
                 const updatedUser = await updateUserResponse.json();
-                updateUser(updatedUser); 
+                updateUser(updatedUser);
                 toast({ title: "Avatar Actualizado", description: "Tu nueva foto de perfil ha sido guardada." });
 
             } catch (error) {
@@ -530,12 +533,12 @@ function ProfilePageContent() {
             }
         }
     };
-    
+
     const handleAvatarRemove = async () => {
         if (!user) return;
         setIsUploading(true);
         try {
-             const updateUserResponse = await fetch(`/api/users/${user.id}`, {
+            const updateUserResponse = await fetch(`/api/users/${user.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ avatar: null }),
@@ -545,35 +548,35 @@ function ProfilePageContent() {
             updateUser(updatedUser);
             toast({ title: "Avatar Eliminado" });
         } catch (error) {
-             toast({ title: 'Error', description: (error as Error).message, variant: 'destructive' });
+            toast({ title: 'Error', description: (error as Error).message, variant: 'destructive' });
         } finally {
-             setIsUploading(false);
+            setIsUploading(false);
         }
     }
-    
+
     if (!user) return <Loader2 className="h-8 w-8 animate-spin" />;
-    
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-1">
                     <p className="text-muted-foreground">Gestiona tu información personal, seguridad y logros.</p>
                 </div>
-                 <Button variant="outline" size="sm" onClick={() => forceStartTour('profile', profileTour)}>
+                <Button variant="outline" size="sm" onClick={() => forceStartTour('profile', profileTour)}>
                     <HelpCircle className="mr-2 h-4 w-4" /> Ver Guía
                 </Button>
             </div>
-            
-             <Tabs defaultValue="profile">
+
+            <Tabs defaultValue="profile">
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="profile">Perfil y Seguridad</TabsTrigger>
                     <TabsTrigger value="achievements">Mis Logros</TabsTrigger>
                 </TabsList>
                 <TabsContent value="profile" className="mt-6">
-                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                         <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
                             <ProfileCard user={user} onAvatarChange={handleAvatarChange} onAvatarRemove={handleAvatarRemove} isUploading={isUploading} uploadProgress={uploadProgress} />
-                             <PrivacyCard user={user} updateUser={updateUser} />
+                            <PrivacyCard user={user} updateUser={updateUser} />
                         </div>
                         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                             <div className="space-y-6">
@@ -582,8 +585,8 @@ function ProfilePageContent() {
                             </div>
                             <div className="space-y-6">
                                 <TwoFactorCard user={user} updateUser={updateUser} />
-                                <SecurityCard 
-                                    user={user} 
+                                <SecurityCard
+                                    user={user}
                                     newPassword={newPassword}
                                     setNewPassword={setNewPassword}
                                     confirmPassword={confirmPassword}
@@ -606,7 +609,7 @@ function ProfilePageContent() {
 export default function ProfilePage() {
     const { isLoading, user } = useAuth();
     if (isLoading || !user) {
-        return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div>;
+        return <div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
     }
     return <ProfilePageContent />;
 }
