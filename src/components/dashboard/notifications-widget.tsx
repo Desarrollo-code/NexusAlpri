@@ -16,40 +16,33 @@ const getIconForNotification = (title: string) => {
 }
 
 export function NotificationsWidget({ notifications }: { notifications?: Notification[] }) {
+    if (!notifications || notifications.length === 0) {
+        return (
+            <div className="text-center py-8 text-xs text-muted-foreground">
+                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-2 text-emerald-500">
+                    <Check className="h-5 w-5" />
+                </div>
+                <p>Todo en orden</p>
+            </div>
+        );
+    }
+
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-lg flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <BellRing className="h-5 w-5 text-primary"/>
-                        Alertas y Notificaciones
-                    </div>
-                    <Link href="/notifications" className="text-sm font-medium text-primary hover:underline">Ver todas</Link>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-                {notifications && notifications.length > 0 ? notifications.map(notif => (
-                    <Link key={notif.id} href={notif.link || '#'} className="block p-3 rounded-lg border bg-background hover:bg-muted transition-colors">
-                        <div className="flex items-start gap-3">
-                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                {getIconForNotification(notif.title)}
-                            </div>
-                            <div className="min-w-0 flex-grow">
-                                <p className="font-semibold text-sm line-clamp-1">{notif.title}</p>
-                                <p className="text-xs text-muted-foreground line-clamp-2">{notif.description}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(new Date(notif.date), { addSuffix: true, locale: es })}</p>
-                            </div>
+        <div className="divide-y divide-slate-100">
+            {notifications.map(notif => (
+                <Link key={notif.id} href={notif.link || '#'} className="block p-2.5 hover:bg-slate-50/50 transition-colors">
+                    <div className="flex items-start gap-2.5">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600">
+                            {notif.title.toLowerCase().includes('expirar') ? <FileWarning className="h-3.5 w-3.5" /> : <Info className="h-3.5 w-3.5" />}
                         </div>
-                    </Link>
-                )) : (
-                    <div className="text-center py-6 text-sm text-muted-foreground">
-                        <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center mx-auto mb-2 text-green-500">
-                           <Check className="h-7 w-7"/>
+                        <div className="min-w-0 flex-grow">
+                            <p className="font-bold text-[11px] line-clamp-1 truncate">{notif.title}</p>
+                            <p className="text-[10px] text-muted-foreground line-clamp-1">{notif.description}</p>
+                            <p className="text-[9px] text-muted-foreground/60 mt-0.5">{formatDistanceToNow(new Date(notif.date), { addSuffix: true, locale: es })}</p>
                         </div>
-                       <p>Todo en orden. No hay alertas.</p>
                     </div>
-                )}
-            </CardContent>
-        </Card>
+                </Link>
+            ))}
+        </div>
     )
 }

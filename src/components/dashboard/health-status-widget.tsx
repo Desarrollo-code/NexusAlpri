@@ -18,9 +18,9 @@ const StatusIndicator = ({ status }: { status: Status }) => {
             )} />
             <span className={cn(
                 "font-semibold",
-                 status === 'healthy' && "text-green-600",
-                 status === 'error' && "text-red-600",
-                 status === 'loading' && "text-yellow-600"
+                status === 'healthy' && "text-green-600",
+                status === 'error' && "text-red-600",
+                status === 'loading' && "text-yellow-600"
             )}>
                 {status === 'healthy' ? 'Operacional' : status === 'error' ? 'Error' : 'Verificando...'}
             </span>
@@ -52,22 +52,22 @@ export function HealthStatusWidget() {
     }, []);
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-base">Salud de la Plataforma</CardTitle>
+        <Card className="border-[#E2E8F0] shadow-sm bg-white overflow-hidden">
+            <CardHeader className="p-3 border-b border-[#E2E8F0] bg-slate-50/50">
+                <CardTitle className="text-sm font-bold">Salud de la Plataforma</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-                 <div className="flex items-center justify-between">
+            <CardContent className="p-3 space-y-2">
+                <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Server className="h-5 w-5 text-muted-foreground"/>
-                        <span className="font-medium">API del Servidor</span>
+                        <Server className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs font-medium">Servidor API</span>
                     </div>
                     <StatusIndicator status={apiStatus} />
                 </div>
-                 <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Database className="h-5 w-5 text-muted-foreground"/>
-                        <span className="font-medium">Base de Datos</span>
+                        <Database className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs font-medium">Base de Datos</span>
                     </div>
                     <StatusIndicator status={dbStatus} />
                 </div>

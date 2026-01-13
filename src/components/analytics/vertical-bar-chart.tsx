@@ -37,35 +37,29 @@ export function VerticalBarChart({ title = 'Distribución', data = [] as Row[] }
   };
 
   return (
-    <Card className="bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/20 dark:border-white/10 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-bold">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="h-64 p-4">
-        <ChartContainer className="w-full h-full" config={config}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
-              <defs>
-                {/* small gradient for bars */}
-                <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.95} />
-                  <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.06} />
-              <XAxis dataKey="label" axisLine={false} tickLine={false} fontSize={12} />
-              <YAxis allowDecimals={false} width={36} axisLine={false} tickLine={false} />
-              <Tooltip wrapperStyle={{ outline: 'none' }} cursor={{ fill: 'rgba(0,0,0,0.03)' }} contentStyle={{ borderRadius: 8 }} formatter={tooltipFormatter} />
-              <Bar dataKey="count" name="Usuarios" radius={[6,6,0,0]} barSize={28}>
-                {data.map((entry, idx) => (
-                  <Cell key={`cell-${idx}`} fill={entry.fill || 'url(#barGrad)'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <div className="w-full h-full">
+      <ChartContainer className="w-full h-full" config={config}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+            <defs>
+              <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.9} />
+                <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.1} />
+            <XAxis dataKey="label" axisLine={false} tickLine={false} fontSize={10} fontWeight="bold" />
+            <YAxis allowDecimals={false} width={40} axisLine={false} tickLine={false} fontSize={10} />
+            <Tooltip wrapperStyle={{ outline: 'none' }} cursor={{ fill: 'rgba(0,0,0,0.02)' }} contentStyle={{ borderRadius: 6, fontSize: '10px' }} formatter={tooltipFormatter} />
+            <Bar dataKey="count" name="Usuarios" radius={[4, 4, 0, 0]} barSize={24}>
+              {data.map((entry, idx) => (
+                <Cell key={`cell-${idx}`} fill={entry.fill || 'url(#barGrad)'} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartContainer>
+    </div>
   );
 }
 

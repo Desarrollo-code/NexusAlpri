@@ -97,36 +97,90 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
          animate="show"
          className="min-h-screen pb-12"
       >
-         {/* Metrics Grid - Compact Row */}
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <MetricCard
-               title="Usuarios"
-               value={adminStats?.totalUsers || 0}
-               icon={IconUsersTotal}
-               index={0}
-               onClick={() => router.push('/users')}
-            />
-            <MetricCard
-               title="Cursos Pub."
-               value={adminStats?.totalPublishedCourses || 0}
-               icon={IconBookMarked}
-               index={1}
-               onClick={() => router.push('/manage-courses?tab=PUBLISHED')}
-            />
-            <MetricCard
-               title="Inscripciones"
-               value={adminStats?.totalEnrollments || 0}
-               icon={IconGraduationCap}
-               index={2}
-               onClick={() => router.push('/enrollments')}
-            />
-            <MetricCard
-               title="Biblioteca"
-               value={adminStats?.totalResources || 0}
-               icon={IconFolderYellow}
-               index={3}
-               onClick={() => router.push('/resources')}
-            />
+         {/* Top Section: Banner (8) + Metrics (4) */}
+         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
+            {/* Banner - 8 Columns */}
+            <motion.div variants={item} className="lg:col-span-8">
+               <div className="relative h-full overflow-hidden rounded-2xl p-6 md:p-8 flex items-center"
+                  style={{
+                     background: `linear-gradient(135deg, #FF9D6C 0%, #FFB088 100%)`
+                  }}>
+                  <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 w-full">
+                     <div className="text-white">
+                        <motion.div
+                           initial={{ scale: 0 }}
+                           animate={{ scale: 1 }}
+                           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md mb-3"
+                        >
+                           <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                           <span className="text-[10px] font-bold uppercase tracking-wider">Sistema Online</span>
+                        </motion.div>
+
+                        <h1 className="text-3xl md:text-4xl font-black mb-2 tracking-tight">
+                           ¡Hola, {user?.name}!
+                        </h1>
+                        <p className="text-sm text-white/90 max-w-md font-medium leading-relaxed">
+                           Panel de control administrativo. Supervisa, gestiona y optimiza toda la plataforma desde aquí.
+                        </p>
+
+                        {/* Quick Stats Pills */}
+                        <div className="flex flex-wrap gap-2 mt-4">
+                           <div className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md">
+                              <span className="text-[11px] font-bold">{adminStats?.totalUsers || 0} usuarios</span>
+                           </div>
+                           <div className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md">
+                              <span className="text-[11px] font-bold">{adminStats?.totalPublishedCourses || 0} cursos</span>
+                           </div>
+                           <div className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md">
+                              <span className="text-[11px] font-bold">{adminStats?.totalEnrollments || 0} inscripciones</span>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="hidden md:block relative w-48 h-48 lg:w-56 lg:h-56">
+                        <Image
+                           src="/images/dashboard-illustration.png" // Placeholder, if settings doesn't have it
+                           alt="Dashboard"
+                           width={256}
+                           height={256}
+                           className="object-contain drop-shadow-2xl"
+                        />
+                     </div>
+                  </div>
+               </div>
+            </motion.div>
+
+            {/* Metrics Grid - 4 Columns (2x2) */}
+            <div className="lg:col-span-4 grid grid-cols-2 gap-3">
+               <MetricCard
+                  title="Usuarios"
+                  value={adminStats?.totalUsers || 0}
+                  icon={IconUsersTotal}
+                  index={0}
+                  onClick={() => router.push('/users')}
+               />
+               <MetricCard
+                  title="Cursos Pub."
+                  value={adminStats?.totalPublishedCourses || 0}
+                  icon={IconBookMarked}
+                  index={1}
+                  onClick={() => router.push('/manage-courses?tab=PUBLISHED')}
+               />
+               <MetricCard
+                  title="Inscripciones"
+                  value={adminStats?.totalEnrollments || 0}
+                  icon={IconGraduationCap}
+                  index={2}
+                  onClick={() => router.push('/enrollments')}
+               />
+               <MetricCard
+                  title="Biblioteca"
+                  value={adminStats?.totalResources || 0}
+                  icon={IconFolderYellow}
+                  index={3}
+                  onClick={() => router.push('/resources')}
+               />
+            </div>
          </div>
 
          {/* Main Content - 70/30 Grid */}

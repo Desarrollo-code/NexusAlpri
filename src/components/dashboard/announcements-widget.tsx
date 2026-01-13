@@ -7,35 +7,30 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 
 export function AnnouncementsWidget({ announcements }: { announcements?: Announcement[] }) {
-    if (!announcements || announcements.length === 0) return null;
+    if (!announcements || announcements.length === 0) return (
+        <div className="p-6 text-center text-xs text-muted-foreground">No hay anuncios recientes</div>
+    );
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-lg flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Megaphone className="h-5 w-5 text-primary"/>
-                        Anuncios Recientes
-                    </div>
-                    <Link href="/messages" className="text-sm font-medium text-primary hover:underline">Ver todos</Link>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {announcements.map(ann => (
-                    <div key={ann.id} className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <Megaphone className="h-5 w-5" />
+        <div className="divide-y divide-slate-100">
+            {announcements.map(ann => (
+                <div key={ann.id} className="p-3 hover:bg-slate-50/50 transition-colors">
+                    <div className="flex items-start gap-2.5">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                            <Megaphone className="h-3.5 w-3.5" />
                         </div>
-                        <div>
-                            <p className="font-semibold text-sm flex items-center gap-2">
-                                {ann.title}
-                                {ann.isPinned && <Pin className="h-3.5 w-3.5 text-blue-500 fill-current" />}
-                            </p>
-                            <p className="text-sm text-muted-foreground line-clamp-2" dangerouslySetInnerHTML={{ __html: ann.content.replace(/<[^>]+>/g, '') }} />
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2">
+                                <p className="font-bold text-[12px] truncate">
+                                    {ann.title}
+                                </p>
+                                {ann.isPinned && <Pin className="h-3 w-3 text-emerald-500 fill-current shrink-0" />}
+                            </div>
+                            <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5" dangerouslySetInnerHTML={{ __html: ann.content.replace(/<[^>]+>/g, '') }} />
                         </div>
                     </div>
-                ))}
-            </CardContent>
-        </Card>
+                </div>
+            ))}
+        </div>
     )
 }
