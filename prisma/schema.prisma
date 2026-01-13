@@ -762,6 +762,7 @@ model TemplateBlock {
   template     LessonTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
   templateId   String
   type         LessonType
+  content      String?        @db.Text
   order        Int
 
   @@map("template_blocks")

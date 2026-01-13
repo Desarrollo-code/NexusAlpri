@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
                 ],
             },
             include: {
-                creator: { 
+                creator: {
                     select: { name: true }
                 },
                 templateBlocks: { orderBy: { order: 'asc' } },
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         if (!name || !lessonId) {
             return NextResponse.json({ message: 'Nombre y ID de lección son requeridos' }, { status: 400 });
         }
-        
+
         const lesson = await prisma.lesson.findUnique({
             where: { id: lessonId },
             include: { contentBlocks: { orderBy: { order: 'asc' } } },
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
         if (!lesson) {
             return NextResponse.json({ message: 'Lección original no encontrada' }, { status: 404 });
         }
-        
+
         const newTemplate = await prisma.lessonTemplate.create({
             data: {
                 name,
@@ -69,6 +69,7 @@ export async function POST(req: NextRequest) {
                     create: lesson.contentBlocks.map(block => ({
                         type: block.type,
                         order: block.order,
+                        content: block.content,
                     })),
                 },
             },

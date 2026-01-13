@@ -44,7 +44,6 @@ import { useTitle } from '@/contexts/title-context';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Toggle } from '@/components/ui/toggle';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 // === NUEVAS INTERFACES PARA COMPONENTES INTERACTIVOS ===
@@ -91,26 +90,26 @@ const generateUniqueId = (prefix: string): string => {
 
 // === COMPONENTES DE INTERFAZ ===
 
-const ModuleItem = React.forwardRef<HTMLDivElement, { 
-  module: AppModule; 
+const ModuleItem = React.forwardRef<HTMLDivElement, {
+  module: AppModule;
   moduleIndex: number;
-  onUpdate: (field: keyof AppModule, value: any) => void; 
-  onAddLesson: (type: 'blank' | 'template') => void; 
-  onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void; 
-  onLessonDelete: (lessonIndex: number) => void; 
-  onSaveLessonAsTemplate: (lessonIndex: number) => void; 
-  onAddBlock: (lessonIndex: number, type: LessonType) => void; 
-  onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void; 
-  onBlockDelete: (lessonIndex: number, blockIndex: number) => void; 
-  onEditQuiz: (quiz: AppQuiz) => void; 
-  isSaving: boolean; 
-  onDelete: () => void; 
+  onUpdate: (field: keyof AppModule, value: any) => void;
+  onAddLesson: (type: 'blank' | 'template') => void;
+  onLessonUpdate: (lessonIndex: number, field: keyof AppLesson, value: any) => void;
+  onLessonDelete: (lessonIndex: number) => void;
+  onSaveLessonAsTemplate: (lessonIndex: number) => void;
+  onAddBlock: (lessonIndex: number, type: LessonType) => void;
+  onBlockUpdate: (lessonIndex: number, blockIndex: number, field: string, value: any) => void;
+  onBlockDelete: (lessonIndex: number, blockIndex: number) => void;
+  onEditQuiz: (quiz: AppQuiz) => void;
+  isSaving: boolean;
+  onDelete: () => void;
   onDuplicate: () => void;
-  provided: any 
+  provided: any
 }>(
   ({ module, moduleIndex, onUpdate, onAddLesson, onLessonUpdate, onLessonDelete, onSaveLessonAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onEditQuiz, isSaving, onDelete, onDuplicate, provided }, ref) => {
     const [isExpanded, setIsExpanded] = useState(true);
-    
+
     return (
       <motion.div
         ref={ref}
@@ -128,14 +127,14 @@ const ModuleItem = React.forwardRef<HTMLDivElement, {
                   <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-2 hover:bg-primary/10 rounded-lg transition-all text-gray-400 hover:text-primary">
                     <GripVertical className="h-4 w-4" />
                   </div>
-                  <Badge 
-                    variant="outline" 
+                  <Badge
+                    variant="outline"
                     className="text-[10px] font-bold bg-primary/5 text-primary border-primary/20"
                   >
                     M{moduleIndex + 1}
                   </Badge>
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <div className="p-1.5 bg-primary/10 rounded-lg">
@@ -145,7 +144,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, {
                       MÓDULO
                     </span>
                   </div>
-                  
+
                   <Input
                     value={module.title}
                     onChange={e => onUpdate('title', e.target.value)}
@@ -154,7 +153,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, {
                     onClick={(e) => e.stopPropagation()}
                     disabled={isSaving}
                   />
-                  
+
                   <div className="flex items-center gap-3 mt-2">
                     <Badge variant="secondary" className="text-xs">
                       {module.lessons.length} {module.lessons.length === 1 ? 'lección' : 'lecciones'}
@@ -168,22 +167,22 @@ const ModuleItem = React.forwardRef<HTMLDivElement, {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-1">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-8 w-8 text-gray-400 hover:text-primary"
                   onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
                   disabled={isSaving}
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 text-gray-400 hover:text-destructive hover:bg-destructive/10" 
-                  onClick={(e) => { e.stopPropagation(); onDelete(); }} 
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-gray-400 hover:text-destructive hover:bg-destructive/10"
+                  onClick={(e) => { e.stopPropagation(); onDelete(); }}
                   disabled={isSaving}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -191,7 +190,7 @@ const ModuleItem = React.forwardRef<HTMLDivElement, {
               </div>
             </div>
           </CardHeader>
-          
+
           <AnimatePresence>
             {isExpanded && (
               <motion.div
@@ -235,26 +234,26 @@ const ModuleItem = React.forwardRef<HTMLDivElement, {
                       </div>
                     )}
                   </Droppable>
-                  
+
                   <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
                         Añadir lección
                       </span>
                       <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => onAddLesson('blank')} 
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onAddLesson('blank')}
                           className="h-8 rounded-lg gap-1"
                         >
                           <FilePlus2 className="h-3.5 w-3.5" />
                           Nueva
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => onAddLesson('template')} 
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onAddLesson('template')}
                           className="h-8 rounded-lg gap-1"
                         >
                           <Sparkles className="h-3.5 w-3.5" />
@@ -274,22 +273,22 @@ const ModuleItem = React.forwardRef<HTMLDivElement, {
 );
 ModuleItem.displayName = 'ModuleItem';
 
-const LessonItem = React.forwardRef<HTMLDivElement, { 
-  lesson: AppLesson; 
+const LessonItem = React.forwardRef<HTMLDivElement, {
+  lesson: AppLesson;
   lessonIndex: number;
-  onUpdate: (field: keyof AppLesson, value: any) => void; 
-  onSaveAsTemplate: () => void; 
-  onAddBlock: (type: LessonType) => void; 
-  onBlockUpdate: (blockIndex: number, field: string, value: any) => void; 
-  onBlockDelete: (blockIndex: number) => void; 
-  onEditQuiz: (quiz: AppQuiz) => void; 
-  isSaving: boolean; 
-  onDelete: () => void; 
+  onUpdate: (field: keyof AppLesson, value: any) => void;
+  onSaveAsTemplate: () => void;
+  onAddBlock: (type: LessonType) => void;
+  onBlockUpdate: (blockIndex: number, field: string, value: any) => void;
+  onBlockDelete: (blockIndex: number) => void;
+  onEditQuiz: (quiz: AppQuiz) => void;
+  isSaving: boolean;
+  onDelete: () => void;
   onDuplicate: () => void;
 }>(
   ({ lesson, lessonIndex, onUpdate, onSaveAsTemplate, onAddBlock, onBlockUpdate, onBlockDelete, onEditQuiz, isSaving, onDelete, onDuplicate, ...rest }, ref) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    
+
     return (
       <motion.div
         ref={ref}
@@ -302,7 +301,7 @@ const LessonItem = React.forwardRef<HTMLDivElement, {
               <GripVertical className="h-3.5 w-3.5 text-gray-400" />
             </div>
           </div>
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2 flex-1">
@@ -324,41 +323,41 @@ const LessonItem = React.forwardRef<HTMLDivElement, {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-1">
                 <Badge variant="secondary" className="text-[10px]">
                   {lesson.contentBlocks.length} bloques
                 </Badge>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-7 w-7"
                   onClick={() => setIsExpanded(!isExpanded)}
                 >
-                  {isExpanded ? 
-                    <ChevronDown className="h-3.5 w-3.5 rotate-180" /> : 
+                  {isExpanded ?
+                    <ChevronDown className="h-3.5 w-3.5 rotate-180" /> :
                     <ChevronDown className="h-3.5 w-3.5" />
                   }
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-7 w-7 text-gray-400 hover:text-primary"
                   onClick={onDuplicate}
                 >
                   <Copy className="h-3.5 w-3.5" />
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-7 w-7 text-gray-400 hover:text-primary"
                   onClick={onSaveAsTemplate}
                 >
                   <Sparkles className="h-3.5 w-3.5" />
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-7 w-7 text-gray-400 hover:text-destructive"
                   onClick={onDelete}
                 >
@@ -366,7 +365,7 @@ const LessonItem = React.forwardRef<HTMLDivElement, {
                 </Button>
               </div>
             </div>
-            
+
             <AnimatePresence>
               {isExpanded && (
                 <motion.div
@@ -400,7 +399,7 @@ const LessonItem = React.forwardRef<HTMLDivElement, {
                       </div>
                     )}
                   </Droppable>
-                  
+
                   <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                     <BlockTypeSelector onSelect={onAddBlock} />
                   </div>
@@ -441,7 +440,7 @@ const AccordionEditor: React.FC<{
   const updateItem = (itemId: string, field: keyof InteractiveItem, value: string) => {
     onChange({
       ...data,
-      items: data.items.map(item => 
+      items: data.items.map(item =>
         item.id === itemId ? { ...item, [field]: value } : item
       )
     });
@@ -524,7 +523,7 @@ const AccordionEditor: React.FC<{
                 </Button>
               </div>
             </div>
-            
+
             <CollapsibleContent className="p-4 space-y-4 border-t">
               {/* Subida de imagen */}
               <div className="space-y-2">
@@ -624,7 +623,7 @@ const FlipCardsEditor: React.FC<{
   const updateCard = (cardId: string, field: keyof InteractiveItem, value: string) => {
     onChange({
       ...data,
-      items: data.items.map(item => 
+      items: data.items.map(item =>
         item.id === cardId ? { ...item, [field]: value } : item
       )
     });
@@ -702,7 +701,7 @@ const FlipCardsEditor: React.FC<{
                 </div>
                 <div className="text-sm text-gray-500">Tarjeta {index + 1}</div>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
                 {/* Imagen frontal */}
                 <div className="space-y-2">
@@ -796,7 +795,7 @@ const TabsEditor: React.FC<{
   const updateTab = (tabId: string, field: keyof InteractiveItem, value: string) => {
     onChange({
       ...data,
-      items: data.items.map(item => 
+      items: data.items.map(item =>
         item.id === tabId ? { ...item, [field]: value } : item
       )
     });
@@ -965,14 +964,14 @@ const TabsEditor: React.FC<{
 };
 
 // Componente principal de ContentBlockItem actualizado
-const ContentBlockItem = React.forwardRef<HTMLDivElement, { 
-  block: ContentBlock; 
+const ContentBlockItem = React.forwardRef<HTMLDivElement, {
+  block: ContentBlock;
   blockIndex: number;
-  onUpdate: (field: string, value: any) => void; 
-  onEditQuiz: () => void; 
-  isSaving: boolean; 
-  onDelete: () => void; 
-  dragHandleProps: any; 
+  onUpdate: (field: string, value: any) => void;
+  onEditQuiz: () => void;
+  isSaving: boolean;
+  onDelete: () => void;
+  dragHandleProps: any;
 }>(
   ({ block, blockIndex, onUpdate, onEditQuiz, isSaving, onDelete, dragHandleProps, ...rest }, ref) => {
     const [isFileUploading, setIsFileUploading] = useState(false);
@@ -981,16 +980,34 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
     const [selectedComponent, setSelectedComponent] = useState<'text' | 'accordion' | 'flipCards' | 'tabs'>('text');
     const { toast } = useToast();
 
-    useEffect(() => {
-      return () => { if (localPreview) URL.revokeObjectURL(localPreview); };
-    }, [localPreview]);
-
-    // Parsear datos del componente interactivo
-    const interactiveData: InteractiveComponentData = block.content ? JSON.parse(block.content) : {
-      type: 'accordion',
-      items: [],
-      settings: {}
+    // Parsear datos del componente interactivo de forma segura
+    const getInteractiveData = (): InteractiveComponentData => {
+      const defaultData: InteractiveComponentData = { type: 'accordion', items: [], settings: {} };
+      if (!block.content) return defaultData;
+      try {
+        if (block.content.trim().startsWith('{')) {
+          return JSON.parse(block.content) as InteractiveComponentData;
+        }
+      } catch (e) {
+        // No es JSON
+      }
+      return defaultData;
     };
+
+    const interactiveData = getInteractiveData();
+
+    useEffect(() => {
+      if (block.content && block.content.trim().startsWith('{')) {
+        try {
+          const data = JSON.parse(block.content);
+          if (data.type && (data.type === 'accordion' || data.type === 'flipCards' || data.type === 'tabs')) {
+            setSelectedComponent(data.type);
+          }
+        } catch (e) { }
+      } else if (block.type === 'TEXT') {
+        setSelectedComponent('text');
+      }
+    }, [block.id]); // Solo al cambiar de bloque o al cargar inicialmente
 
     const handleFileSelect = async (file: File | null) => {
       if (!file) return;
@@ -1021,24 +1038,24 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
       const newData: InteractiveComponentData = {
         type,
         items: [],
-        settings: type === 'accordion' ? { allowMultipleOpen: false } : 
-                 type === 'flipCards' ? { flipDirection: 'horizontal' } :
-                 { tabPosition: 'top' }
+        settings: type === 'accordion' ? { allowMultipleOpen: false } :
+          type === 'flipCards' ? { flipDirection: 'horizontal' } :
+            { tabPosition: 'top' }
       };
       onUpdate('content', JSON.stringify(newData));
       setSelectedComponent(type);
     };
 
     const handleImageUploadForInteractive = async (itemId: string, file: File): Promise<string> => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const base64 = e.target?.result as string;
-          resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      try {
+        const result = await uploadWithProgress('/api/upload/lesson-file', file, (progress) => {
+          // Opcional: manejar progreso localmente en el componente si fuera necesario
+        });
+        return result.url;
+      } catch (err) {
+        toast({ title: 'Error de Subida', description: (err as Error).message, variant: 'destructive' });
+        throw err;
+      }
     };
 
     const renderBlockContent = () => {
@@ -1077,12 +1094,12 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <RichTextEditor 
-                value={block.content || ''} 
-                onChange={value => onUpdate('content', value)} 
-                placeholder="Escribe aquí el contenido de la lección..." 
-                className="min-h-[200px] border rounded-lg" 
-                disabled={isSaving} 
+              <RichTextEditor
+                value={block.content || ''}
+                onChange={value => onUpdate('content', value)}
+                placeholder="Escribe aquí el contenido de la lección..."
+                className="min-h-[200px] border rounded-lg"
+                disabled={isSaving}
               />
               <p className="text-xs text-gray-500">Usa el editor para añadir formato, imágenes, enlaces, etc.</p>
             </div>
@@ -1113,8 +1130,9 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
                     size="sm"
                     onClick={() => {
                       const newData: InteractiveComponentData = {
-                        ...interactiveData,
-                        items: []
+                        type: selectedComponent !== 'text' ? selectedComponent : 'accordion',
+                        items: [],
+                        settings: interactiveData.settings
                       };
                       handleInteractiveComponentChange(newData);
                     }}
@@ -1168,7 +1186,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
           );
         }
       }
-      
+
       if (block.type === 'VIDEO') return (
         <div className="space-y-2">
           <Label className="text-sm font-medium">URL del Video</Label>
@@ -1176,18 +1194,18 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
               <Video className="h-4 w-4" />
             </div>
-            <Input 
-              value={block.content || ''} 
-              onChange={e => onUpdate('content', e.target.value)} 
-              placeholder="URL del video (YouTube, Vimeo, etc.)" 
-              className="pl-10 h-10" 
-              disabled={isSaving} 
+            <Input
+              value={block.content || ''}
+              onChange={e => onUpdate('content', e.target.value)}
+              placeholder="URL del video (YouTube, Vimeo, etc.)"
+              className="pl-10 h-10"
+              disabled={isSaving}
             />
           </div>
           <p className="text-xs text-gray-500">Pega la URL completa del video. Ej: https://www.youtube.com/watch?v=...</p>
         </div>
       );
-      
+
       if (block.type === 'FILE') {
         const displayUrl = localPreview || block.content;
         const isImage = displayUrl?.match(/\.(jpeg|jpg|gif|png|webp)$/) != null || localPreview?.startsWith('blob:');
@@ -1212,9 +1230,9 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
                   <p className="text-xs text-gray-500">Haz clic en los botones para previsualizar o eliminar</p>
                 </div>
                 <div className="flex gap-1">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     size="sm"
                     className="h-8"
                     onClick={() => window.open(displayUrl, '_blank')}
@@ -1222,9 +1240,9 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
                     <Eye className="h-3.5 w-3.5 mr-1" />
                     Ver
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     size="sm"
                     className="h-8 text-destructive hover:text-destructive"
                     onClick={() => { onUpdate('content', ''); setLocalPreview(null); }}
@@ -1237,14 +1255,14 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
             </div>
           );
         }
-        
+
         return (
           <div className="space-y-3">
             <Label className="text-sm font-medium">Subir Archivo</Label>
-            <UploadArea 
-              onFileSelect={handleFileSelect} 
+            <UploadArea
+              onFileSelect={handleFileSelect}
               accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
-              disabled={isSaving || isFileUploading} 
+              disabled={isSaving || isFileUploading}
               className="py-6 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg hover:border-primary transition-colors"
             >
               <div className="text-center">
@@ -1266,7 +1284,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
           </div>
         );
       }
-      
+
       if (block.type === 'QUIZ') return (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -1274,10 +1292,10 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
               <Label className="text-sm font-medium">Configuración del Quiz</Label>
               <p className="text-xs text-gray-500">Añade preguntas y configura las opciones del quiz</p>
             </div>
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
               onClick={onEditQuiz}
               className="h-8"
             >
@@ -1286,25 +1304,25 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
           </div>
           <div className="space-y-2">
             <Label htmlFor="quiz-title">Título del Quiz</Label>
-            <Input 
+            <Input
               id="quiz-title"
-              value={block.quiz?.title || ''} 
-              onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })} 
-              placeholder="Título del Quiz" 
-              className="h-9" 
-              disabled={isSaving} 
+              value={block.quiz?.title || ''}
+              onChange={e => onUpdate('quiz', { ...block.quiz, title: e.target.value })}
+              placeholder="Título del Quiz"
+              className="h-9"
+              disabled={isSaving}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="quiz-description">Descripción</Label>
-            <Textarea 
+            <Textarea
               id="quiz-description"
-              value={block.quiz?.description || ''} 
-              onChange={e => onUpdate('quiz', { ...block.quiz, description: e.target.value })} 
-              placeholder="Descripción del quiz..." 
+              value={block.quiz?.description || ''}
+              onChange={e => onUpdate('quiz', { ...block.quiz, description: e.target.value })}
+              placeholder="Descripción del quiz..."
               rows={2}
               className="text-sm"
-              disabled={isSaving} 
+              disabled={isSaving}
             />
           </div>
           <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded">
@@ -1315,13 +1333,13 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
           </div>
         </div>
       );
-      
+
       return null;
     };
 
     const getBlockIcon = () => {
-      switch(block.type) {
-        case 'TEXT': 
+      switch (block.type) {
+        case 'TEXT':
           if (selectedComponent === 'accordion') return <ChevronDown className="h-4 w-4" />;
           if (selectedComponent === 'flipCards') return <FlipVertical className="h-4 w-4" />;
           if (selectedComponent === 'tabs') return <SquareStack className="h-4 w-4" />;
@@ -1334,8 +1352,8 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
     };
 
     const getBlockColor = () => {
-      switch(block.type) {
-        case 'TEXT': 
+      switch (block.type) {
+        case 'TEXT':
           if (selectedComponent === 'accordion') return 'bg-green-500/10 text-green-600';
           if (selectedComponent === 'flipCards') return 'bg-purple-500/10 text-purple-600';
           if (selectedComponent === 'tabs') return 'bg-amber-500/10 text-amber-600';
@@ -1371,7 +1389,7 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
             {getBlockIcon()}
           </div>
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -1380,12 +1398,12 @@ const ContentBlockItem = React.forwardRef<HTMLDivElement, {
               </Badge>
               <span className="text-xs text-gray-500">Elemento #{blockIndex + 1}</span>
             </div>
-            <Button 
-              type="button" 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               className="h-7 w-7 hover:text-destructive"
-              onClick={onDelete} 
+              onClick={onDelete}
               disabled={isSaving}
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -1425,7 +1443,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
   const [lessonToSaveAsTemplate, setLessonToSaveAsTemplate] = useState<AppLesson | null>(null);
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [quizToEdit, setQuizToEdit] = useState<{ quiz: AppQuiz; onSave: (updatedQuiz: AppQuiz) => void } | null>(null);
-  
+
   // Nuevos estados para funcionalidades
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [isExporting, setIsExporting] = useState(false);
@@ -1478,10 +1496,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         }
 
       } catch (err) {
-        toast({ 
-          title: "Error", 
-          description: "No se pudo cargar el curso para editar.", 
-          variant: "destructive" 
+        toast({
+          title: "Error",
+          description: "No se pudo cargar el curso para editar.",
+          variant: "destructive"
         });
         router.push('/manage-courses');
       } finally {
@@ -1516,13 +1534,13 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      
+
       if (!response.ok) throw new Error((await response.json()).message || 'Error al guardar el curso.');
 
       const savedCourse = await response.json();
 
-      toast({ 
-        title: "✅ Curso Guardado", 
+      toast({
+        title: "✅ Curso Guardado",
         description: "La información del curso se ha guardado correctamente.",
         duration: 3000
       });
@@ -1538,9 +1556,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
     } catch (error: any) {
       console.error('Error al guardar el curso:', error);
-      toast({ 
-        title: "❌ Error al Guardar", 
-        description: error.message || "No se pudo guardar. Intenta nuevamente.", 
+      toast({
+        title: "❌ Error al Guardar",
+        description: error.message || "No se pudo guardar. Intenta nuevamente.",
         variant: "destructive",
         duration: 5000
       });
@@ -1619,7 +1637,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
   // Función para duplicar módulo
   const handleDuplicateModule = (moduleId: string) => {
     if (!course) return;
-    
+
     const moduleToDuplicate = course.modules.find(m => m.id === moduleId);
     if (!moduleToDuplicate) return;
 
@@ -1652,12 +1670,12 @@ export function CourseEditor({ courseId }: { courseId: string }) {
       const index = prev.modules.findIndex(m => m.id === moduleId);
       const duplicatedModule = duplicateModule(moduleToDuplicate);
       prev.modules.splice(index + 1, 0, duplicatedModule);
-      
+
       // Reordenar todos los módulos
       prev.modules.forEach((mod, idx) => {
         mod.order = idx;
       });
-      
+
       return prev;
     });
 
@@ -1675,7 +1693,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         newBlocks = template.templateBlocks.map(tb => ({
           id: generateUniqueId('block'),
           type: tb.type as LessonType,
-          content: '',
+          content: tb.content || '',
           order: tb.order,
           quiz: tb.type === 'QUIZ' ? {
             id: generateUniqueId('quiz'),
@@ -1705,12 +1723,12 @@ export function CourseEditor({ courseId }: { courseId: string }) {
   // Función para duplicar lección
   const handleDuplicateLesson = (moduleId: string, lessonIndex: number) => {
     if (!course) return;
-    
+
     const module = course.modules.find(m => m.id === moduleId);
     if (!module || !module.lessons[lessonIndex]) return;
 
     const lessonToDuplicate = module.lessons[lessonIndex];
-    
+
     const duplicateLesson = (lesson: AppLesson): AppLesson => {
       return {
         ...JSON.parse(JSON.stringify(lesson)),
@@ -1732,7 +1750,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
       if (moduleIndex !== -1) {
         const duplicatedLesson = duplicateLesson(lessonToDuplicate);
         prev.modules[moduleIndex].lessons.splice(lessonIndex + 1, 0, duplicatedLesson);
-        
+
         // Reordenar lecciones
         prev.modules[moduleIndex].lessons.forEach((les, idx) => {
           les.order = idx;
@@ -1750,7 +1768,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
   const handleRemoveModule = useCallback((moduleId: string) => {
     if (!course) return;
-    
+
     const moduleToDelete = course.modules.find(m => m.id === moduleId);
     setItemToDeleteDetails({
       name: moduleToDelete?.title,
@@ -1769,9 +1787,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
   // Función para exportar plan de estudios
   const handleExportPlan = async () => {
     if (!course) return;
-    
+
     setIsExporting(true);
-    
+
     try {
       const exportData = {
         courseTitle: course.title,
@@ -1796,7 +1814,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
       // Crear Blob con los datos
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      
+
       // Crear enlace de descarga
       const a = document.createElement('a');
       a.href = url;
@@ -1848,15 +1866,15 @@ export function CourseEditor({ courseId }: { courseId: string }) {
       try {
         const result = await uploadWithProgress('/api/upload/course-image', file, setUploadProgress);
         updateCourseField('imageUrl', result.url);
-        toast({ 
-          title: '✅ Imagen Subida', 
+        toast({
+          title: '✅ Imagen Subida',
           description: 'La imagen de portada se ha actualizado correctamente.',
           duration: 3000
         });
       } catch (err) {
-        toast({ 
-          title: '❌ Error de Subida', 
-          description: (err as Error).message, 
+        toast({
+          title: '❌ Error de Subida',
+          description: (err as Error).message,
           variant: "destructive",
           duration: 5000
         });
@@ -1881,15 +1899,15 @@ export function CourseEditor({ courseId }: { courseId: string }) {
       const res = await fetch('/api/templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name: templateName, 
-          description: templateDescription, 
-          lessonId: lessonToSaveAsTemplate.id 
+        body: JSON.stringify({
+          name: templateName,
+          description: templateDescription,
+          lessonId: lessonToSaveAsTemplate.id
         })
       });
       if (!res.ok) throw new Error('No se pudo guardar la plantilla');
-      toast({ 
-        title: '✅ Plantilla Guardada', 
+      toast({
+        title: '✅ Plantilla Guardada',
         description: `La plantilla "${templateName}" se ha guardado correctamente.`,
         duration: 3000
       });
@@ -1897,9 +1915,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
       setTemplates(prev => [...prev, newTemplate]);
       setLessonToSaveAsTemplate(null);
     } catch (err) {
-      toast({ 
-        title: "❌ Error", 
-        description: (err as Error).message, 
+      toast({
+        title: "❌ Error",
+        description: (err as Error).message,
         variant: "destructive",
         duration: 5000
       });
@@ -1955,8 +1973,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
   const courseStats = {
     totalModules: course?.modules?.length || 0,
     totalLessons: course?.modules?.reduce((acc, mod) => acc + (mod.lessons?.length || 0), 0) || 0,
-    totalBlocks: course?.modules?.reduce((acc, mod) => 
-      acc + (mod.lessons?.reduce((lessonAcc, lesson) => 
+    totalBlocks: course?.modules?.reduce((acc, mod) =>
+      acc + (mod.lessons?.reduce((lessonAcc, lesson) =>
         lessonAcc + (lesson.contentBlocks?.length || 0), 0) || 0), 0) || 0,
     hasCertificate: !!course?.certificateTemplateId,
     isMandatory: course?.isMandatory || false,
@@ -2001,9 +2019,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             )}
           </div>
           <div className="flex gap-2 pt-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="flex-1"
               onClick={() => {
                 const currentModuleIndex = course.modules.findIndex(m => m.id === module.id);
@@ -2015,8 +2033,8 @@ export function CourseEditor({ courseId }: { courseId: string }) {
               <PlusCircle className="h-3.5 w-3.5 mr-1" />
               Añadir
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               className="flex-1"
               onClick={() => handleDuplicateModule(module.id)}
@@ -2033,72 +2051,118 @@ export function CourseEditor({ courseId }: { courseId: string }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+      <div className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b transition-all duration-300">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-4">
-              <Link 
-                href="/manage-courses" 
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <div>
-                <h1 className="text-xl font-bold truncate max-w-md">
-                  {course.title}
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  {courseId === 'new' ? 'Creando nuevo curso' : 'Editando curso'}
-                </p>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href="/manage-courses"
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Volver a la gestión de cursos</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <div className="group flex items-center gap-2">
+                <div className="flex flex-col">
+                  <h1 className="text-sm font-bold truncate max-w-[200px] group-hover:max-w-md transition-all duration-500">
+                    {course.title}
+                  </h1>
+                </div>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 text-[10px] text-muted-foreground bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
+                  <Edit className="h-3 w-3" />
+                  {courseId === 'new' ? 'Creando' : 'Editando'}
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={handlePreviewCourse}
-              >
-                <Eye className="h-4 w-4" />
-                Vista previa
-              </Button>
-              
-              <Button
-                onClick={handleSaveCourse}
-                disabled={isSaving || !isDirty}
-                className="gap-2"
-              >
-                {isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                {isSaving ? 'Guardando...' : 'Guardar'}
-              </Button>
+            <div className="flex items-center gap-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9"
+                      onClick={handlePreviewCourse}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Vista previa del curso</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "h-9 w-9",
+                        isDirty && "text-primary bg-primary/5 animate-pulse"
+                      )}
+                      onClick={handleSaveCourse}
+                      disabled={isSaving || !isDirty}
+                    >
+                      {isSaving ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isSaving ? 'Guardando...' : 'Guardar cambios'}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <div className="h-4 w-[1px] bg-gray-200 dark:bg-gray-800 mx-1" />
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 text-destructive hover:bg-destructive/10"
+                      onClick={() => setShowDeleteDialog(true)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Eliminar curso</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </div>
       </div>
 
       {/* Contenido Principal */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 h-12">
-            <TabsTrigger value="basics" className="text-sm font-medium">
-              <Layout className="h-4 w-4 mr-2" />
+          <TabsList className="inline-flex w-auto p-1 bg-gray-100/50 dark:bg-gray-800/50 backdrop-blur rounded-xl h-11">
+            <TabsTrigger value="basics" className="text-xs font-semibold px-6 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm">
+              <Layout className="h-3.5 w-3.5 mr-2" />
               Básico
             </TabsTrigger>
-            <TabsTrigger value="curriculum" className="text-sm font-medium">
-              <BookOpen className="h-4 w-4 mr-2" />
+            <TabsTrigger value="curriculum" className="text-xs font-semibold px-6 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm">
+              <BookOpen className="h-3.5 w-3.5 mr-2" />
               Plan de Estudios
             </TabsTrigger>
-            <TabsTrigger value="advanced" className="text-sm font-medium">
-              <Settings2 className="h-4 w-4 mr-2" />
-              Configuración
+            <TabsTrigger value="advanced" className="text-xs font-semibold px-6 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm">
+              <Settings2 className="h-3.5 w-3.5 mr-2" />
+              Ajustes
             </TabsTrigger>
-            <TabsTrigger value="distribution" className="text-sm font-medium">
-              <GlobeIcon className="h-4 w-4 mr-2" />
+            <TabsTrigger value="distribution" className="text-xs font-semibold px-6 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm">
+              <GlobeIcon className="h-3.5 w-3.5 mr-2" />
               Publicación
             </TabsTrigger>
           </TabsList>
@@ -2106,123 +2170,90 @@ export function CourseEditor({ courseId }: { courseId: string }) {
           {/* Pestaña: Información Básica */}
           <TabsContent value="basics" className="space-y-6">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, scale: 0.99 }}
+              animate={{ opacity: 1, scale: 1 }}
               className="space-y-6"
             >
-              <div className="grid lg:grid-cols-3 gap-6">
+              <div className="grid lg:grid-cols-4 gap-6">
                 {/* Columna Principal */}
-                <div className="lg:col-span-2 space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Detalles del Curso</CardTitle>
+                <div className="lg:col-span-3 space-y-6">
+                  <Card className="border-none shadow-sm bg-white dark:bg-gray-900">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-lg font-bold">Detalles del Curso</CardTitle>
                       <CardDescription>
-                        Información principal que identifica tu curso
+                        Define la identidad y propósito de tu programa educativo
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-6">
                       <div className="space-y-2">
-                        <Label htmlFor="title">Título del Curso *</Label>
+                        <Label htmlFor="title" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Título del Curso</Label>
                         <Input
                           id="title"
                           value={course.title}
                           onChange={e => updateCourseField('title', e.target.value)}
-                          placeholder="Ej: Master en Desarrollo Web"
+                          placeholder="Ej: Master en Desarrollo Web Moderno"
+                          className="text-lg font-semibold h-12 bg-gray-50/50 border-gray-200 focus:bg-white transition-all"
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="description">Descripción</Label>
+                        <Label htmlFor="description" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Descripción Detallada</Label>
                         <RichTextEditor
                           value={course.description || ''}
                           onChange={v => updateCourseField('description', v)}
-                          placeholder="Describe tu curso..."
+                          placeholder="Describe qué aprenderán tus estudiantes..."
                         />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Estadísticas */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Resumen del Curso</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div className="space-y-1">
-                          <div className="text-xs text-gray-500">Estado</div>
-                          <Badge variant="outline" className="text-xs">
-                            {course.status === 'PUBLISHED' ? 'Publicado' :
-                             course.status === 'DRAFT' ? 'Borrador' : 'Archivado'}
-                          </Badge>
-                        </div>
-                        
-                        <div className="space-y-1">
-                          <div className="text-xs text-gray-500">Módulos</div>
-                          <div className="text-xl font-bold">{courseStats.totalModules}</div>
-                        </div>
-                        
-                        <div className="space-y-1">
-                          <div className="text-xs text-gray-500">Lecciones</div>
-                          <div className="text-xl font-bold">{courseStats.totalLessons}</div>
-                        </div>
-                        
-                        <div className="space-y-1">
-                          <div className="text-xs text-gray-500">Contenido</div>
-                          <div className="text-xl font-bold">{courseStats.totalBlocks} bloques</div>
-                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
 
                 {/* Columna Lateral - Imagen */}
-                <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Imagen de Portada</CardTitle>
-                      <CardDescription>
-                        Imagen principal del curso
-                      </CardDescription>
+                <div className="lg:col-span-1 space-y-6">
+                  <Card className="border-none shadow-sm bg-white dark:bg-gray-900">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-sm font-bold">Imagen de Portada</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="aspect-video rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 overflow-hidden group relative">
+                      <div className="aspect-[4/3] rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800 overflow-hidden group relative bg-gray-50 dark:bg-gray-800/50">
                         {isUploadingImage && (
-                          <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-10">
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10 backdrop-blur-sm">
                             <div className="text-center">
                               <Loader2 className="h-8 w-8 animate-spin text-white mx-auto mb-2" />
-                              <p className="text-sm text-white">{uploadProgress}%</p>
+                              <p className="text-xs text-white font-medium">{uploadProgress}%</p>
                             </div>
                           </div>
                         )}
-                        
+
                         {(localCoverImagePreview || course.imageUrl) ? (
                           <>
                             <Image
                               src={localCoverImagePreview || course.imageUrl!}
                               alt="Imagen del curso"
                               fill
-                              className="object-cover"
-                              sizes="(max-width: 768px) 100vw, 50vw"
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              sizes="(max-width: 768px) 100vw, 25vw"
                             />
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                               <Button
                                 size="sm"
                                 variant="secondary"
+                                className="h-8 text-xs"
                                 onClick={() => document.getElementById('cover-upload')?.click()}
                               >
-                                <Replace className="h-4 w-4 mr-2" />
+                                <Replace className="h-3.5 w-3.5 mr-1" />
                                 Cambiar
                               </Button>
                               <Button
                                 size="sm"
                                 variant="destructive"
+                                className="h-8 text-xs"
                                 onClick={() => {
                                   updateCourseField('imageUrl', null);
                                   setLocalCoverImagePreview(null);
                                 }}
                               >
-                                <Trash2 className="h-4 w-4 mr-2" />
+                                <Trash2 className="h-3.5 w-3.5 mr-1" />
                                 Eliminar
                               </Button>
                             </div>
@@ -2233,49 +2264,14 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                               if (file) handleFileChange({ target: { files: [file] } } as any);
                             }}
                             inputId="cover-upload"
-                            className="h-full"
+                            className="h-full flex flex-col items-center justify-center p-4 text-center cursor-pointer"
                           >
-                            <div className="text-center p-6">
-                              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4">
-                                <ImagePlus className="h-6 w-6 text-primary" />
-                              </div>
-                              <p className="font-medium mb-1">Sube una imagen</p>
-                              <p className="text-sm text-gray-500">Arrastra o haz clic</p>
+                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mb-3">
+                              <ImagePlus className="h-5 w-5 text-primary" />
                             </div>
+                            <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">Sube una portada</p>
+                            <p className="text-[10px] text-gray-400 mt-1">Recomendado: 1600x1200px</p>
                           </UploadArea>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Estado Rápido */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Estado Actual</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Certificado</span>
-                        {course.certificateTemplateId ? (
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <X className="h-5 w-5 text-gray-400" />
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Obligatorio</span>
-                        {course.isMandatory ? (
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <X className="h-5 w-5 text-gray-400" />
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Prerrequisito</span>
-                        {course.prerequisiteId ? (
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <X className="h-5 w-5 text-gray-400" />
                         )}
                       </div>
                     </CardContent>
@@ -2288,524 +2284,374 @@ export function CourseEditor({ courseId }: { courseId: string }) {
           {/* Pestaña: Plan de Estudios */}
           <TabsContent value="curriculum" className="space-y-6">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="space-y-8"
+              className="space-y-6"
             >
-              {/* Encabezado Premium */}
-              <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 dark:from-primary/10 dark:via-primary/20 dark:to-primary/10 rounded-2xl p-6 border border-primary/20">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 bg-primary/10 rounded-xl">
-                        <BookOpen className="h-7 w-7 text-primary" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                          Plan de Estudios
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-300">
-                          Diseña la estructura educativa de tu curso
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Pills de Estadísticas */}
-                    <div className="flex flex-wrap gap-3">
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700">
-                        <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-sm font-medium">{courseStats.totalModules} Módulos</span>
-                      </div>
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700">
-                        <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                        <span className="text-sm font-medium">{courseStats.totalLessons} Lecciones</span>
-                      </div>
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700">
-                        <div className="h-2 w-2 bg-purple-500 rounded-full"></div>
-                        <span className="text-sm font-medium">{courseStats.totalBlocks} Elementos</span>
-                      </div>
-                    </div>
+              {/* Encabezado Principal */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-primary/10 rounded-xl">
+                    <BookOpen className="h-6 w-6 text-primary" />
                   </div>
-                  
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div>
+                    <h2 className="text-xl font-bold tracking-tight">Estructura del Plan</h2>
+                    <p className="text-sm text-muted-foreground">Gestiona los módulos y lecciones de tu curso</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowTemplateModal(true)}
+                    className="h-9 gap-2 shadow-sm"
+                  >
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    Plantillas
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    onClick={handleAddModule}
+                    className="h-9 gap-2 bg-primary hover:bg-primary/90 shadow-md shadow-primary/20"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Nuevo Módulo
+                  </Button>
+                </div>
+              </div>
+
+              {/* Grid Simplificado: Solo el Panel Principal */}
+              <div className="w-full">
+                <Card className="border-none shadow-sm bg-gray-50/50 dark:bg-gray-900/50">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline" className="bg-white dark:bg-gray-800 px-3 py-1 font-bold">
+                          {course.modules.length} Módulos
+                        </Badge>
+                        <Badge variant="outline" className="bg-white dark:bg-gray-800 px-3 py-1 text-muted-foreground font-medium">
+                          {courseStats.totalLessons} Lecciones
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-1 rounded-lg border shadow-sm">
+                        <Button
+                          variant={viewMode === 'grid' ? "secondary" : "ghost"}
+                          size="sm"
+                          className="h-8 px-3"
+                          onClick={() => setViewMode('grid')}
+                        >
+                          <Grid3x3 className="h-3.5 w-3.5 mr-2" />
+                          Cuadrícula
+                        </Button>
+                        <Button
+                          variant={viewMode === 'list' ? "secondary" : "ghost"}
+                          size="sm"
+                          className="h-8 px-3"
+                          onClick={() => setViewMode('list')}
+                        >
+                          <List className="h-3.5 w-3.5 mr-2" />
+                          Lista
+                        </Button>
+                      </div>
+                    </div>
+                    <Separator orientation="vertical" className="h-6" />
+
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
                             variant="outline"
-                            onClick={() => setShowTemplateModal(true)}
-                            className="h-11 px-5 border-2 hover:border-primary/50 transition-all duration-300 group"
+                            size="icon"
+                            className="h-9 w-9"
+                            onClick={handlePreviewCourse}
                           >
-                            <Sparkles className="h-4 w-4 mr-2 text-primary group-hover:scale-110 transition-transform" />
-                            <span className="font-semibold">Plantillas</span>
+                            <EyeIcon className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Usa plantillas predefinidas para acelerar tu trabajo</p>
+                          <p>Vista previa del curso</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                    
+
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button 
-                            onClick={handleAddModule}
-                            className="h-11 px-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-primary/25 transition-all duration-300"
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-9 w-9"
+                            onClick={handleExportPlan}
+                            disabled={isExporting}
                           >
-                            <PlusCircle className="h-5 w-5 mr-2" />
-                            <span className="font-semibold">Nuevo Módulo</span>
+                            {isExporting ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Download className="h-4 w-4" />
+                            )}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Añadir un nuevo módulo al plan de estudios</p>
+                          <p>Exportar plan de estudios</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               </div>
 
-              {/* Panel de Vista General */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Panel Izquierdo - Vista General y Estadísticas */}
-                <div className="lg:col-span-1 space-y-6">
-                  {/* Tarjeta de Progreso */}
-                  <Card className="border-2 border-gray-100 dark:border-gray-800 shadow-lg overflow-hidden">
-                    <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg font-bold">Progreso del Plan</CardTitle>
-                        <Badge variant="outline" className="font-semibold">
-                          {((courseStats.totalLessons / (courseStats.totalLessons || 1)) * 100).toFixed(0)}%
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="font-medium">Completitud</span>
-                          <span className="text-primary font-bold">
-                            {courseStats.totalLessons > 0 ? 'En progreso' : 'Por comenzar'}
-                          </span>
-                        </div>
-                        <Progress 
-                          value={((courseStats.totalLessons / (courseStats.totalLessons + 1)) * 100)} 
-                          className="h-2"
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                            {courseStats.totalModules}
-                          </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">Módulos</div>
-                        </div>
-                        <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                            {courseStats.totalLessons}
-                          </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">Lecciones</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Tarjeta de Acciones Rápidas */}
-                  <Card className="border-2 border-gray-100 dark:border-gray-800 shadow-lg">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg font-bold">Acciones Rápidas</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start gap-3 hover:bg-primary/5 hover:text-primary"
-                        onClick={() => setShowTemplateModal(true)}
-                      >
-                        <Sparkles className="h-4 w-4" />
-                        <span>Usar Plantilla Existente</span>
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start gap-3 hover:bg-primary/5 hover:text-primary"
-                        onClick={() => {
-                          if (course.modules.length > 0) {
-                            const lastModule = course.modules[course.modules.length - 1];
-                            handleDuplicateModule(lastModule.id);
-                          }
-                        }}
-                      >
-                        <Copy className="h-4 w-4" />
-                        <span>Duplicar Último Módulo</span>
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start gap-3 hover:bg-primary/5 hover:text-primary"
-                        onClick={handleExportPlan}
-                        disabled={isExporting}
-                      >
-                        {isExporting ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Download className="h-4 w-4" />
-                        )}
-                        <span>Exportar Plan</span>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Panel Principal - Estructura del Curso */}
-                <div className="lg:col-span-2">
-                  {/* Barra de Herramientas */}
-                  <Card className="border-2 border-gray-100 dark:border-gray-800 shadow-lg mb-6">
-                    <CardContent className="p-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                            <Layers3 className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-lg">Estructura del Curso</h3>
-                            <p className="text-sm text-gray-500">Organiza módulos y lecciones</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant={viewMode === 'grid' ? "default" : "outline"}
-                                  size="icon"
-                                  className="h-9 w-9"
-                                  onClick={() => setViewMode('grid')}
-                                >
-                                  <Grid3x3 className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Vista de cuadrícula</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant={viewMode === 'list' ? "default" : "outline"}
-                                  size="icon"
-                                  className="h-9 w-9"
-                                  onClick={() => setViewMode('list')}
-                                >
-                                  <List className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Vista de lista</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          
-                          <Separator orientation="vertical" className="h-6" />
-                          
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant="outline" 
-                                  size="icon"
-                                  className="h-9 w-9"
-                                  onClick={handlePreviewCourse}
-                                >
-                                  <EyeIcon className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Vista previa del curso</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant="outline" 
-                                  size="icon"
-                                  className="h-9 w-9"
-                                  onClick={handleExportPlan}
-                                  disabled={isExporting}
-                                >
-                                  {isExporting ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Download className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Exportar plan de estudios</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Contenido según modo de vista */}
-                  {viewMode === 'grid' ? (
-                    // Vista en Cuadrícula
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {course.modules.length === 0 ? (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="col-span-2"
-                        >
-                          <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 shadow-lg">
-                            <CardContent className="py-12 text-center">
-                              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                                <FolderOpen className="h-8 w-8 text-primary" />
-                              </div>
-                              <h3 className="text-xl font-bold mb-2">Comienza tu viaje educativo</h3>
-                              <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                                Organiza tu conocimiento en módulos estructurados que guiarán a tus estudiantes paso a paso
-                              </p>
-                              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                <Button 
-                                  onClick={handleAddModule}
-                                  className="gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
-                                >
-                                  <PlusCircle className="h-4 w-4" />
-                                  Crear Primer Módulo
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  onClick={() => setShowTemplateModal(true)}
-                                  className="gap-2"
-                                >
-                                  <Sparkles className="h-4 w-4" />
-                                  Explorar Plantillas
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      ) : (
-                        course.modules.map((moduleItem, moduleIndex) => (
-                          <motion.div
-                            key={moduleItem.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <ModuleGridView module={moduleItem} index={moduleIndex} />
-                          </motion.div>
-                        ))
-                      )}
-                    </div>
-                  ) : (
-                    // Vista en Lista (Original con Drag & Drop)
-                    <DragDropContext onDragEnd={onDragEnd}>
-                      <Droppable droppableId="course-modules" type="MODULES">
-                        {(provided) => (
-                          <div 
-                            {...provided.droppableProps} 
-                            ref={provided.innerRef}
-                            className="space-y-4"
-                          >
-                            <AnimatePresence mode="popLayout">
-                              {course.modules.length === 0 ? (
-                                <motion.div
-                                  initial={{ opacity: 0, scale: 0.95 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  exit={{ opacity: 0, scale: 0.95 }}
-                                >
-                                  <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 shadow-lg">
-                                    <CardContent className="py-12 text-center">
-                                      <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                                        <FolderOpen className="h-8 w-8 text-primary" />
-                                      </div>
-                                      <h3 className="text-xl font-bold mb-2">Comienza tu viaje educativo</h3>
-                                      <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                                        Organiza tu conocimiento en módulos estructurados que guiarán a tus estudiantes paso a paso
-                                      </p>
-                                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                        <Button 
-                                          onClick={handleAddModule}
-                                          className="gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
-                                        >
-                                          <PlusCircle className="h-4 w-4" />
-                                          Crear Primer Módulo
-                                        </Button>
-                                        <Button
-                                          variant="outline"
-                                          onClick={() => setShowTemplateModal(true)}
-                                          className="gap-2"
-                                        >
-                                          <Sparkles className="h-4 w-4" />
-                                          Explorar Plantillas
-                                        </Button>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                </motion.div>
-                              ) : (
-                                course.modules.map((moduleItem, moduleIndex) => (
-                                  <Draggable 
-                                    key={moduleItem.id} 
-                                    draggableId={moduleItem.id} 
-                                    index={moduleIndex}
-                                  >
-                                    {(provided) => (
-                                      <motion.div
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        transition={{ duration: 0.3 }}
-                                      >
-                                        <ModuleItem
-                                          module={moduleItem}
-                                          moduleIndex={moduleIndex}
-                                          onUpdate={(field, value) => {
-                                            handleStateUpdate((prev) => {
-                                              const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
-                                              if (currentModuleIndex !== -1) {
-                                                prev.modules[currentModuleIndex][field] = value;
-                                              }
-                                              return prev;
-                                            });
-                                          }}
-                                          onAddLesson={(type) => {
-                                            const currentModuleIndex = course.modules.findIndex(m => m.id === moduleItem.id);
-                                            if (type === 'template') {
-                                              setActiveModuleIndexForTemplate(currentModuleIndex);
-                                              setShowTemplateModal(true);
-                                            } else {
-                                              handleAddLesson(currentModuleIndex);
-                                            }
-                                          }}
-                                          onLessonUpdate={(lessonIndex, field, value) => {
-                                            handleStateUpdate((prev) => {
-                                              const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
-                                              if (currentModuleIndex !== -1) {
-                                                prev.modules[currentModuleIndex].lessons[lessonIndex][field] = value;
-                                              }
-                                              return prev;
-                                            });
-                                          }}
-                                          onLessonDelete={(lessonIndex) => {
-                                            const currentModule = course.modules.find(m => m.id === moduleItem.id);
-                                            const lesson = currentModule?.lessons[lessonIndex];
-                                            
-                                            if (!lesson) return;
-                                            
-                                            setItemToDeleteDetails({
-                                              name: lesson.title,
-                                              onDelete: () => {
-                                                handleStateUpdate((prev) => {
-                                                  const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
-                                                  if (currentModuleIndex !== -1) {
-                                                    prev.modules[currentModuleIndex].lessons.splice(lessonIndex, 1);
-                                                  }
-                                                  return prev;
-                                                });
-                                              }
-                                            });
-                                          }}
-                                          onSaveLessonAsTemplate={(lessonIndex) => {
-                                            const currentModule = course.modules.find(m => m.id === moduleItem.id);
-                                            const lesson = currentModule?.lessons[lessonIndex];
-                                            if (lesson) {
-                                              setLessonToSaveAsTemplate(lesson);
-                                            }
-                                          }}
-                                          onAddBlock={(lessonIndex, type) => {
-                                            handleStateUpdate((prev) => {
-                                              const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
-                                              if (currentModuleIndex !== -1 && prev.modules[currentModuleIndex].lessons[lessonIndex]) {
-                                                const newBlock: ContentBlock = {
-                                                  id: generateUniqueId('block'),
-                                                  type,
-                                                  content: '',
-                                                  order: prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks.length,
-                                                  quiz: type === 'QUIZ' ? {
-                                                    id: generateUniqueId('quiz'),
-                                                    title: 'Nuevo Quiz',
-                                                    description: '',
-                                                    questions: [],
-                                                    maxAttempts: null,
-                                                  } : undefined
-                                                };
-                                                prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks.push(newBlock);
-                                              }
-                                              return prev;
-                                            });
-                                          }}
-                                          onBlockUpdate={(lessonIndex, blockIndex, field, value) => {
-                                            handleStateUpdate((prev) => {
-                                              const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
-                                              if (currentModuleIndex !== -1 && 
-                                                  prev.modules[currentModuleIndex].lessons[lessonIndex] &&
-                                                  prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks[blockIndex]) {
-                                                prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks[blockIndex][field] = value;
-                                              }
-                                              return prev;
-                                            });
-                                          }}
-                                          onBlockDelete={(lessonIndex, blockIndex) => {
-                                            handleStateUpdate((prev) => {
-                                              const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
-                                              if (currentModuleIndex !== -1 && 
-                                                  prev.modules[currentModuleIndex].lessons[lessonIndex]) {
-                                                prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks.splice(blockIndex, 1);
-                                              }
-                                              return prev;
-                                            });
-                                          }}
-                                          onEditQuiz={handleEditQuiz}
-                                          isSaving={isSaving}
-                                          onDelete={() => handleRemoveModule(moduleItem.id)}
-                                          onDuplicate={() => handleDuplicateModule(moduleItem.id)}
-                                          provided={provided}
-                                        />
-                                      </motion.div>
-                                    )}
-                                  </Draggable>
-                                ))
-                              )}
-                            </AnimatePresence>
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
-                    </DragDropContext>
-                  )}
-
-                  {/* Botón Flotante para Añadir Módulo */}
-                  {course.modules.length > 0 && (
+              {/* Contenido según modo de vista */}
+              {viewMode === 'grid' ? (
+                // Vista en Cuadrícula
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {course.modules.length === 0 ? (
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="fixed bottom-6 right-6 z-40"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="col-span-2"
                     >
-                      <Button
-                        onClick={handleAddModule}
-                        size="lg"
-                        className="rounded-full h-14 w-14 shadow-2xl hover:shadow-3xl transition-all duration-300 bg-gradient-to-r from-primary to-primary/80"
-                      >
-                        <PlusCircle className="h-6 w-6" />
-                      </Button>
+                      <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 shadow-lg">
+                        <CardContent className="py-12 text-center">
+                          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                            <FolderOpen className="h-8 w-8 text-primary" />
+                          </div>
+                          <h3 className="text-xl font-bold mb-2">Comienza tu viaje educativo</h3>
+                          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                            Organiza tu conocimiento en módulos estructurados que guiarán a tus estudiantes paso a paso
+                          </p>
+                          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                            <Button
+                              onClick={handleAddModule}
+                              className="gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
+                            >
+                              <PlusCircle className="h-4 w-4" />
+                              Crear Primer Módulo
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => setShowTemplateModal(true)}
+                              className="gap-2"
+                            >
+                              <Sparkles className="h-4 w-4" />
+                              Explorar Plantillas
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </motion.div>
+                  ) : (
+                    course.modules.map((moduleItem, moduleIndex) => (
+                      <motion.div
+                        key={moduleItem.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <ModuleGridView module={moduleItem} index={moduleIndex} />
+                      </motion.div>
+                    ))
                   )}
                 </div>
-              </div>
+              ) : (
+                // Vista en Lista (Original con Drag & Drop)
+                <DragDropContext onDragEnd={onDragEnd}>
+                  <Droppable droppableId="course-modules" type="MODULES">
+                    {(provided) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="space-y-4"
+                      >
+                        <AnimatePresence mode="popLayout">
+                          {course.modules.length === 0 ? (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                            >
+                              <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 shadow-lg">
+                                <CardContent className="py-12 text-center">
+                                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                                    <FolderOpen className="h-8 w-8 text-primary" />
+                                  </div>
+                                  <h3 className="text-xl font-bold mb-2">Comienza tu viaje educativo</h3>
+                                  <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                                    Organiza tu conocimiento en módulos estructurados que guiarán a tus estudiantes paso a paso
+                                  </p>
+                                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                    <Button
+                                      onClick={handleAddModule}
+                                      className="gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
+                                    >
+                                      <PlusCircle className="h-4 w-4" />
+                                      Crear Primer Módulo
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      onClick={() => setShowTemplateModal(true)}
+                                      className="gap-2"
+                                    >
+                                      <Sparkles className="h-4 w-4" />
+                                      Explorar Plantillas
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </motion.div>
+                          ) : (
+                            course.modules.map((moduleItem, moduleIndex) => (
+                              <Draggable
+                                key={moduleItem.id}
+                                draggableId={moduleItem.id}
+                                index={moduleIndex}
+                              >
+                                {(provided) => (
+                                  <motion.div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    transition={{ duration: 0.3 }}
+                                  >
+                                    <ModuleItem
+                                      module={moduleItem}
+                                      moduleIndex={moduleIndex}
+                                      onUpdate={(field, value) => {
+                                        handleStateUpdate((prev) => {
+                                          const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
+                                          if (currentModuleIndex !== -1) {
+                                            prev.modules[currentModuleIndex][field] = value;
+                                          }
+                                          return prev;
+                                        });
+                                      }}
+                                      onAddLesson={(type) => {
+                                        const currentModuleIndex = course.modules.findIndex(m => m.id === moduleItem.id);
+                                        if (type === 'template') {
+                                          setActiveModuleIndexForTemplate(currentModuleIndex);
+                                          setShowTemplateModal(true);
+                                        } else {
+                                          handleAddLesson(currentModuleIndex);
+                                        }
+                                      }}
+                                      onLessonUpdate={(lessonIndex, field, value) => {
+                                        handleStateUpdate((prev) => {
+                                          const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
+                                          if (currentModuleIndex !== -1) {
+                                            prev.modules[currentModuleIndex].lessons[lessonIndex][field] = value;
+                                          }
+                                          return prev;
+                                        });
+                                      }}
+                                      onLessonDelete={(lessonIndex) => {
+                                        const currentModule = course.modules.find(m => m.id === moduleItem.id);
+                                        const lesson = currentModule?.lessons[lessonIndex];
+
+                                        if (!lesson) return;
+
+                                        setItemToDeleteDetails({
+                                          name: lesson.title,
+                                          onDelete: () => {
+                                            handleStateUpdate((prev) => {
+                                              const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
+                                              if (currentModuleIndex !== -1) {
+                                                prev.modules[currentModuleIndex].lessons.splice(lessonIndex, 1);
+                                              }
+                                              return prev;
+                                            });
+                                          }
+                                        });
+                                      }}
+                                      onSaveLessonAsTemplate={(lessonIndex) => {
+                                        const currentModule = course.modules.find(m => m.id === moduleItem.id);
+                                        const lesson = currentModule?.lessons[lessonIndex];
+                                        if (lesson) {
+                                          setLessonToSaveAsTemplate(lesson);
+                                        }
+                                      }}
+                                      onAddBlock={(lessonIndex, type) => {
+                                        handleStateUpdate((prev) => {
+                                          const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
+                                          if (currentModuleIndex !== -1 && prev.modules[currentModuleIndex].lessons[lessonIndex]) {
+                                            const newBlock: ContentBlock = {
+                                              id: generateUniqueId('block'),
+                                              type,
+                                              content: '',
+                                              order: prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks.length,
+                                              quiz: type === 'QUIZ' ? {
+                                                id: generateUniqueId('quiz'),
+                                                title: 'Nuevo Quiz',
+                                                description: '',
+                                                questions: [],
+                                                maxAttempts: null,
+                                              } : undefined
+                                            };
+                                            prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks.push(newBlock);
+                                          }
+                                          return prev;
+                                        });
+                                      }}
+                                      onBlockUpdate={(lessonIndex, blockIndex, field, value) => {
+                                        handleStateUpdate((prev) => {
+                                          const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
+                                          if (currentModuleIndex !== -1 &&
+                                            prev.modules[currentModuleIndex].lessons[lessonIndex] &&
+                                            prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks[blockIndex]) {
+                                            prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks[blockIndex][field] = value;
+                                          }
+                                          return prev;
+                                        });
+                                      }}
+                                      onBlockDelete={(lessonIndex, blockIndex) => {
+                                        handleStateUpdate((prev) => {
+                                          const currentModuleIndex = prev.modules.findIndex(m => m.id === moduleItem.id);
+                                          if (currentModuleIndex !== -1 &&
+                                            prev.modules[currentModuleIndex].lessons[lessonIndex]) {
+                                            prev.modules[currentModuleIndex].lessons[lessonIndex].contentBlocks.splice(blockIndex, 1);
+                                          }
+                                          return prev;
+                                        });
+                                      }}
+                                      onEditQuiz={handleEditQuiz}
+                                      isSaving={isSaving}
+                                      onDelete={() => handleRemoveModule(moduleItem.id)}
+                                      onDuplicate={() => handleDuplicateModule(moduleItem.id)}
+                                      provided={provided}
+                                    />
+                                  </motion.div>
+                                )}
+                              </Draggable>
+                            ))
+                          )}
+                        </AnimatePresence>
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              )}
+
+              {/* Botón Flotante para Añadir Módulo */}
+              {course.modules.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="fixed bottom-6 right-6 z-40"
+                >
+                  <Button
+                    onClick={handleAddModule}
+                    size="lg"
+                    className="rounded-full h-14 w-14 shadow-2xl hover:shadow-3xl transition-all duration-300 bg-gradient-to-r from-primary to-primary/80"
+                  >
+                    <PlusCircle className="h-6 w-6" />
+                  </Button>
+                </motion.div>
+              )}
 
               {/* Alerta de Buenas Prácticas */}
               <Alert className="border-primary/20 bg-primary/5">
@@ -3031,36 +2877,38 @@ export function CourseEditor({ courseId }: { courseId: string }) {
       </div>
 
       {/* Barra de Cambios Sin Guardar */}
-      {isDirty && (
-        <motion.div
-          initial={{ y: 100 }}
-          animate={{ y: 0 }}
-          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-50"
-        >
-          <Card className="bg-white dark:bg-gray-900 border shadow-xl">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
-                  <div>
-                    <p className="font-medium">Cambios sin guardar</p>
-                    <p className="text-sm text-muted-foreground">
-                      Guarda tus cambios antes de salir
-                    </p>
+      {
+        isDirty && (
+          <motion.div
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-50"
+          >
+            <Card className="bg-white dark:bg-gray-900 border shadow-xl">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    <div>
+                      <p className="font-medium">Cambios sin guardar</p>
+                      <p className="text-sm text-muted-foreground">
+                        Guarda tus cambios antes de salir
+                      </p>
+                    </div>
                   </div>
+                  <Button
+                    onClick={handleSaveCourse}
+                    disabled={isSaving}
+                    size="sm"
+                  >
+                    {isSaving ? 'Guardando...' : 'Guardar'}
+                  </Button>
                 </div>
-                <Button
-                  onClick={handleSaveCourse}
-                  disabled={isSaving}
-                  size="sm"
-                >
-                  {isSaving ? 'Guardando...' : 'Guardar'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )
+      }
 
       {/* Modales y Diálogos */}
       <AlertDialog open={!!itemToDeleteDetails} onOpenChange={(open) => !open && setItemToDeleteDetails(null)}>
@@ -3075,12 +2923,14 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                itemToDeleteDetails.onDelete();
-                setItemToDeleteDetails(null);
-                toast({
-                  title: "Elemento eliminado",
-                  description: "Se ha eliminado correctamente.",
-                });
+                if (itemToDeleteDetails?.onDelete) {
+                  itemToDeleteDetails.onDelete();
+                  setItemToDeleteDetails(null);
+                  toast({
+                    title: "Elemento eliminado",
+                    description: "Se ha eliminado correctamente.",
+                  });
+                }
               }}
               className="bg-destructive text-destructive-foreground"
             >
@@ -3103,23 +2953,27 @@ export function CourseEditor({ courseId }: { courseId: string }) {
       />
 
       {/* Modal para Guardar Plantilla */}
-      {lessonToSaveAsTemplate && (
-        <SaveTemplateModal
-          isOpen={!!lessonToSaveAsTemplate}
-          onClose={() => setLessonToSaveAsTemplate(null)}
-          onSave={handleSaveTemplate}
-        />
-      )}
+      {
+        lessonToSaveAsTemplate && (
+          <SaveTemplateModal
+            isOpen={!!lessonToSaveAsTemplate}
+            onClose={() => setLessonToSaveAsTemplate(null)}
+            onSave={handleSaveTemplate}
+          />
+        )
+      }
 
       {/* Modal de Asignación */}
-      {isAssignmentModalOpen && (
-        <CourseAssignmentModal
-          isOpen={isAssignmentModalOpen}
-          onClose={() => setIsAssignmentModalOpen(false)}
-          courseId={course.id}
-          courseTitle={course.title}
-        />
-      )}
+      {
+        isAssignmentModalOpen && (
+          <CourseAssignmentModal
+            isOpen={isAssignmentModalOpen}
+            onClose={() => setIsAssignmentModalOpen(false)}
+            courseId={course.id}
+            courseTitle={course.title}
+          />
+        )
+      }
 
       {/* Editor de Quiz */}
       {quizToEdit && (
@@ -3134,48 +2988,116 @@ export function CourseEditor({ courseId }: { courseId: string }) {
   );
 }
 
-// Componente para Seleccionar Tipo de Bloque
+// Componentes Auxiliares
+const SaveTemplateModal = ({ isOpen, onClose, onSave }: any) => {
+  const [name, setName] = useState('');
+  const [desc, setDesc] = useState('');
+  if (!isOpen) return null;
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Guardar como Plantilla</DialogTitle>
+          <DialogDescription>Asigna un nombre para esta nueva plantilla.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>Nombre</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button onClick={() => onSave(name, desc)} disabled={!name}>Guardar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Componente para Seleccionar Tipo de Bloque - Rediseñado
 const BlockTypeSelector = ({ onSelect }: { onSelect: (type: LessonType) => void }) => {
   const blockTypes = [
-    { type: 'TEXT' as LessonType, label: 'Texto', icon: FileText, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
-    { type: 'VIDEO' as LessonType, label: 'Video', icon: Video, color: 'text-red-500', bgColor: 'bg-red-500/10' },
-    { type: 'FILE' as LessonType, label: 'Archivo', icon: FileGenericIcon, color: 'text-amber-500', bgColor: 'bg-amber-500/10' },
-    { type: 'QUIZ' as LessonType, label: 'Quiz', icon: Pencil, color: 'text-purple-500', bgColor: 'bg-purple-500/10' },
+    {
+      type: 'TEXT' as LessonType,
+      label: 'Contenido Enriquecido',
+      description: 'Texto, Acordeones, Flip Cards y Pestañas',
+      icon: FileText,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-500/10'
+    },
+    {
+      type: 'VIDEO' as LessonType,
+      label: 'Video',
+      description: 'YouTube, Vimeo o enlaces directos',
+      icon: Video,
+      color: 'text-red-500',
+      bgColor: 'bg-red-500/10'
+    },
+    {
+      type: 'FILE' as LessonType,
+      label: 'Recurso Descargable',
+      description: 'PDF, Word, Excel o Imágenes',
+      icon: FileGenericIcon,
+      color: 'text-amber-500',
+      bgColor: 'bg-amber-500/10'
+    },
+    {
+      type: 'QUIZ' as LessonType,
+      label: 'Evaluación / Quiz',
+      description: 'Preguntas de opción múltiple',
+      icon: Pencil,
+      color: 'text-purple-500',
+      bgColor: 'bg-purple-500/10'
+    },
   ];
 
   return (
-    <div className="p-3 border rounded-lg bg-gray-50 dark:bg-gray-800/50">
-      <p className="text-sm font-medium mb-2">Añadir bloque de contenido</p>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {blockTypes.map(({ type, label, icon: Icon, color, bgColor }) => (
+    <div className="flex justify-center">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
           <Button
-            key={type}
             variant="outline"
-            onClick={() => onSelect(type)}
-            className="flex-col h-auto py-3 gap-2 hover:scale-[1.02] transition-transform"
+            className="w-full max-w-sm py-6 border-dashed border-2 hover:border-primary hover:text-primary transition-all rounded-xl gap-2 group"
           >
-            <div className={`p-2 rounded-full ${bgColor}`}>
-              <Icon className={`h-4 w-4 ${color}`} />
-            </div>
-            <span className="text-xs">{label}</span>
+            <PlusCircle className="h-5 w-5 text-gray-400 group-hover:text-primary transition-colors" />
+            <span className="font-semibold">Añadir Nuevo Bloque de Contenido</span>
           </Button>
-        ))}
-      </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="center" className="w-80 p-2">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-2 mt-1">Selecciona el tipo</p>
+          {blockTypes.map(({ type, label, description, icon: Icon, color, bgColor }) => (
+            <DropdownMenuItem
+              key={type}
+              onClick={() => onSelect(type)}
+              className="flex items-start gap-3 p-3 cursor-pointer rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              <div className={`p-2 rounded-lg ${bgColor} shrink-0`}>
+                <Icon className={`h-5 w-5 ${color}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm leading-tight mb-0.5">{label}</p>
+                <p className="text-xs text-muted-foreground line-clamp-1">{description}</p>
+              </div>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };
 
 // Modal de Selección de Plantillas
-const TemplateSelectorModal = ({ 
-  isOpen, 
-  onClose, 
-  templates, 
-  onSelect 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  templates: ApiTemplate[]; 
-  onSelect: (template: ApiTemplate) => void; 
+const TemplateSelectorModal = ({
+  isOpen,
+  onClose,
+  templates,
+  onSelect
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  templates: ApiTemplate[];
+  onSelect: (template: ApiTemplate) => void;
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -3189,7 +3111,7 @@ const TemplateSelectorModal = ({
             Elige una plantilla para crear una lección rápidamente
           </DialogDescription>
         </DialogHeader>
-        
+
         <ScrollArea className="max-h-[60vh] mt-4">
           <div className="p-1">
             {templates.length === 0 ? (
@@ -3239,13 +3161,13 @@ const TemplateSelectorModal = ({
             )}
           </div>
         </ScrollArea>
-        
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => {
               // Acción adicional si es necesaria
               onClose();
