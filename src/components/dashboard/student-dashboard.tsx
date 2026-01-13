@@ -1,11 +1,10 @@
-// src/components/dashboard/student-dashboard.tsx
+
 'use client';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, CheckCircle, ArrowRight, BookOpen, Sparkles, Activity } from "lucide-react";
+import { GraduationCap, Trophy, History, BookOpen, Sparkles, Activity, PlusCircle, MessageSquare, Gamepad2, ArrowRight, CheckCircle } from "lucide-react";
 import type { EnrolledCourse, Course as AppCourse, Announcement as AnnouncementType, CalendarEvent } from '@/types';
 import Link from "next/link";
-import { CourseCarousel } from "../course-carousel";
 import { AnnouncementsWidget } from "./announcements-widget";
 import { CalendarWidget } from "./calendar-widget";
 import { useAuth } from "@/contexts/auth-context";
@@ -13,21 +12,8 @@ import Image from "next/image";
 import { useMemo } from "react";
 import { InteractiveEventsWidget } from "./interactive-events-widget";
 import { MetricCard } from "../analytics/metric-card";
-import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-
-const calculateLevel = (xp: number) => {
-  const baseXP = 250; const exponent = 1.5;
-  let level = 1; let requiredXP = baseXP;
-  while (xp >= requiredXP) {
-    level++;
-    xp -= requiredXP;
-    requiredXP = Math.floor(baseXP * Math.pow(level, exponent));
-  }
-  const xpForNextLevel = Math.floor(baseXP * Math.pow(level, exponent));
-  const progressPercentage = Math.max(0, Math.min(100, (xp / xpForNextLevel) * 100));
-  return { level, progressPercentage };
-};
+import { useRouter } from "next/navigation";
 
 const container = {
   hidden: { opacity: 0 },
@@ -42,8 +28,8 @@ const container = {
 
 const item = {
   hidden: { opacity: 0, y: 20 },
-  show: { 
-    opacity: 1, 
+  show: {
+    opacity: 1,
     y: 0,
     transition: {
       type: "spring",
@@ -65,10 +51,13 @@ interface StudentDashboardProps {
 
 export function StudentDashboard({ studentStats, myDashboardCourses, assignedCourses, recentAnnouncements, upcomingEvents, onEnrollmentChange, onParticipate }: StudentDashboardProps) {
   const { user, settings } = useAuth();
-  const { level, progressPercentage } = useMemo(() => calculateLevel(user?.xp || 0), [user?.xp]);
+  const router = useRouter();
 
-  const hasCourses = (myDashboardCourses && myDashboardCourses.length > 0) || (assignedCourses && assignedCourses.length > 0);
-  const hasInteractiveEvents = studentStats?.interactiveEventsToday && studentStats.interactiveEventsToday.length > 0;
+  const averageProgress = useMemo(() => {
+    if (!myDashboardCourses || myDashboardCourses.length === 0) return 0;
+    const total = myDashboardCourses.reduce((acc, course) => acc + (course.progressPercentage || 0), 0);
+    return Math.round(total / myDashboardCourses.length);
+  }, [myDashboardCourses]);
 
   return (
     <motion.div
@@ -77,250 +66,146 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
       animate="show"
       className="min-h-screen pb-12"
     >
-      {/* Hero Header - Banner dinámico usando variables CSS del tema */}
-      <motion.div variants={item} className="mb-8">
-        <div className="relative overflow-hidden rounded-3xl p-8 md:p-12"
-             style={{
-               background: `linear-gradient(135deg, 
-                  hsl(var(--primary) / 0.9) 0%, 
-                  hsl(var(--primary) / 0.7) 50%, 
-                  hsl(var(--accent) / 0.8) 100%)`
-             }}>
-          {/* Animated Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0" style={{ 
-              backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-              backgroundSize: '40px 40px'
-            }} />
-          </div>
-          
-          {/* Floating Orbs - usando colores del tema */}
-          <motion.div 
-            animate={{ 
-              x: [0, 30, 0],
-              y: [0, -20, 0],
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-10 right-20 w-64 h-64 rounded-full blur-3xl"
-            style={{ 
-              background: `hsl(var(--primary) / 0.15)`
-            }}
-          />
-          <motion.div 
-            animate={{ 
-              x: [0, -20, 0],
-              y: [0, 30, 0],
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-10 left-20 w-80 h-80 rounded-full blur-3xl"
-            style={{ 
-              background: `hsl(var(--accent) / 0.2)`
-            }}
-          />
-
-          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-            <div className="flex-1 text-white dark:text-white">
-              <motion.div
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md mb-4"
-              >
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                <span className="text-sm font-bold">Ruta de Aprendizaje</span>
-              </motion.div>
-
-              <h1 className="text-4xl md:text-6xl font-black mb-3 tracking-tight">
-                ¡Hola, {user?.name}!
-              </h1>
-              <p className="text-lg md:text-xl text-white/90 dark:text-white/90 max-w-2xl">
-                Tu progreso actual te acerca más a tu próxima meta. ¡Sigue así!
-              </p>
-
-              {/* XP Progress Bar */}
-              <div className="mt-6 space-y-3">
-                <div className="flex justify-between items-end">
-                  <div className="flex items-center gap-3">
-                    <Badge className="bg-white/20 backdrop-blur-md hover:bg-white/30 text-white border-white/30">
-                      <Sparkles className="h-3 w-3 mr-1" />
-                      Nivel {level}
-                    </Badge>
-                    <span className="text-sm font-bold text-white/80">
-                      {user?.xp || 0} XP
-                    </span>
-                  </div>
-                  <span className="text-xs font-bold text-white/80">
-                    {Math.round(progressPercentage)}% al siguiente nivel
-                  </span>
-                </div>
-                <div className="relative h-3 w-full bg-white/20 rounded-full overflow-hidden backdrop-blur-sm">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressPercentage}%` }}
-                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.4 }}
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-white via-white/80 to-white rounded-full"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {settings?.dashboardImageUrlStudent && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.3, type: "spring" }}
-                className="relative"
-              >
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 rounded-full blur-2xl opacity-50"
-                  style={{ 
-                    background: `linear-gradient(to right, 
-                       hsl(var(--primary)), 
-                       hsl(var(--accent)))`
-                  }}
-                />
-                <div className="relative w-48 h-48 md:w-64 md:h-64">
-                  <Image 
-                    src={settings.dashboardImageUrlStudent} 
-                    alt="Estudiante" 
-                    width={256} 
-                    height={256} 
-                    className="object-contain drop-shadow-2xl" 
-                  />
-                </div>
-              </motion.div>
-            )}
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Metrics Grid - Modern Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <MetricCard 
-          title="Cursos Inscritos" 
-          value={studentStats?.enrolled || 0} 
-          icon={GraduationCap} 
-          index={0} 
+      {/* Metrics Grid - Compact Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <MetricCard
+          title="Mi Progreso"
+          value={averageProgress}
+          icon={Activity}
+          suffix="%"
+          index={0}
         />
-        <MetricCard 
-          title="Completados" 
-          value={studentStats?.completed || 0} 
-          icon={CheckCircle} 
-          index={1} 
+        <MetricCard
+          title="Inscritos"
+          value={studentStats?.enrolled || 0}
+          icon={GraduationCap}
+          index={1}
+          onClick={() => router.push('/my-courses')}
         />
-        {hasInteractiveEvents && (
-          <div className="col-span-2">
-            <InteractiveEventsWidget events={studentStats.interactiveEventsToday} onParticipate={onParticipate} />
-          </div>
-        )}
+        <MetricCard
+          title="Completados"
+          value={studentStats?.completed || 0}
+          icon={CheckCircle}
+          index={2}
+        />
+        <MetricCard
+          title="Puntos XP"
+          value={user?.xp || 0}
+          icon={Trophy}
+          index={3}
+        />
       </div>
 
-      {/* Main Content - Bento Grid Layout */}
+      {/* Main Content - 70/30 Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Assigned Courses - Priority */}
-        {assignedCourses && assignedCourses.length > 0 && (
-          <motion.div variants={item} className="lg:col-span-8">
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-rose-50 to-white dark:from-rose-950 dark:to-slate-800">
-              <CardHeader>
+        {/* Left Side (70%) */}
+        <div className="lg:col-span-8 space-y-6">
+          <motion.div variants={item}>
+            <Card className="border-[#E2E8F0] shadow-sm bg-white overflow-hidden">
+              <CardHeader className="p-4 border-b border-[#E2E8F0] bg-slate-50/50">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 text-white">
-                      <Activity className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="text-lg font-bold">Cursos Obligatorios</div>
-                      <div className="text-xs text-muted-foreground font-normal">Completar estos cursos es prioritario</div>
-                    </div>
+                  <CardTitle className="text-sm font-bold flex items-center gap-2">
+                    <History className="h-4 w-4 text-primary" />
+                    Continuar Aprendiendo
                   </CardTitle>
-                  <Badge className="bg-rose-500 hover:bg-rose-600">
-                    {assignedCourses.length}
-                  </Badge>
+                  <Button variant="ghost" size="sm" asChild className="h-7 text-[11px] font-bold">
+                    <Link href="/my-courses">Ver todo</Link>
+                  </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {assignedCourses.map((course, idx) => (
-                    <motion.div
-                      key={course.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.1 }}
-                    >
-                      <Link 
-                        href={`/courses/${course.id}`}
-                        className="group flex flex-col p-4 rounded-xl bg-white dark:bg-slate-900 hover:bg-rose-50 dark:hover:bg-rose-950 transition-all border border-transparent hover:border-rose-200 dark:hover:border-rose-800"
+              <CardContent className="p-4">
+                {myDashboardCourses.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {myDashboardCourses.slice(0, 4).map((course, index) => (
+                      <motion.div
+                        key={course.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="group relative rounded-xl border border-[#E2E8F0] p-4 bg-slate-50/30 hover:bg-white transition-all cursor-pointer"
+                        onClick={() => router.push(`/courses/${course.id}`)}
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-bold text-sm">{course.title}</h3>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-rose-600 group-hover:translate-x-1 transition-all" />
+                        <div className="flex gap-4">
+                          <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
+                            <Image src={course.imageUrl || '/placeholder-course.jpg'} alt={course.title} fill className="object-cover" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="text-sm font-bold line-clamp-1">{course.title}</h4>
+                            <p className="text-[11px] text-muted-foreground mt-1">{course.instructor.name}</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              <div className="h-1.5 flex-1 bg-slate-200 rounded-full overflow-hidden">
+                                <div className="h-full bg-primary transition-all duration-500" style={{ width: `${course.progressPercentage}%` }} />
+                              </div>
+                              <span className="text-[10px] font-bold">{course.progressPercentage}%</span>
+                            </div>
+                          </div>
                         </div>
-                        <Badge variant="outline" className="w-fit text-xs border-rose-200 text-rose-600">
-                          Asignación Obligatoria
-                        </Badge>
-                      </Link>
-                    </motion.div>
-                  ))}
-                </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="h-12 w-12 rounded-full bg-slate-50 flex items-center justify-center mb-3">
+                      <Gamepad2 className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-bold text-muted-foreground">Explora nuevos horizontes</p>
+                    <p className="text-[11px] text-muted-foreground/60 mb-4">Aún no tienes cursos inscritos.</p>
+                    <Button asChild size="sm" className="h-8 text-[11px]">
+                      <Link href="/courses">Explorar Catálogo</Link>
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
-        )}
 
-        {/* Continue Learning */}
-        {myDashboardCourses && myDashboardCourses.length > 0 && (
-          <motion.div variants={item} className={assignedCourses && assignedCourses.length > 0 ? "lg:col-span-12" : "lg:col-span-8"}>
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
-                    <BookOpen className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold">Continuar Aprendiendo</div>
-                    <div className="text-xs text-muted-foreground font-normal">Tus cursos en progreso</div>
-                  </div>
+          <motion.div variants={item}>
+            <CalendarWidget events={upcomingEvents} />
+          </motion.div>
+        </div>
+
+        {/* Right Side (30%) */}
+        <div className="lg:col-span-4 space-y-6">
+          <motion.div variants={item}>
+            <InteractiveEventsWidget events={studentStats.interactiveEventsToday} onParticipate={onParticipate} compact />
+          </motion.div>
+
+          <motion.div variants={item}>
+            <Card className="border-[#E2E8F0] shadow-sm bg-white overflow-hidden">
+              <CardHeader className="p-4 border-b border-[#E2E8F0] bg-slate-50/50">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <PlusCircle className="h-4 w-4 text-primary" />
+                  Acciones Rápidas
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <CourseCarousel courses={myDashboardCourses} userRole="STUDENT" onEnrollmentChange={onEnrollmentChange} />
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {/* Empty State */}
-        {!hasCourses && (
-          <motion.div variants={item} className="lg:col-span-8">
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
-              <CardContent className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="h-20 w-20 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-4">
-                  <BookOpen className="h-10 w-10 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">¡Es hora de empezar!</h3>
-                <p className="text-muted-foreground mb-6 max-w-md">
-                  Explora nuestro catálogo y empieza a ganar XP hoy mismo.
-                </p>
-                <Button asChild size="lg">
-                  <Link href="/courses">
-                    Explorar Catálogo <Sparkles className="ml-2 h-4 w-4" />
-                  </Link>
+              <CardContent className="p-3 space-y-2">
+                <Button asChild variant="outline" size="sm" className="w-full justify-start h-9 text-[11px] font-medium border-slate-200">
+                  <Link href="/courses"><BookOpen className="h-3.5 w-3.5 mr-2" />Explorar Cursos</Link>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="w-full justify-start h-9 text-[11px] font-medium border-slate-200">
+                  <Link href="/my-courses"><History className="h-3.5 w-3.5 mr-2" />Mis Cursos</Link>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="w-full justify-start h-9 text-[11px] font-medium border-slate-200">
+                  <Link href="/resources"><Sparkles className="h-3.5 w-3.5 mr-2" />Recursos</Link>
                 </Button>
               </CardContent>
             </Card>
           </motion.div>
-        )}
 
-        {/* Calendar */}
-        <motion.div variants={item} className="lg:col-span-6">
-          <CalendarWidget events={upcomingEvents} />
-        </motion.div>
-
-        {/* Announcements */}
-        <motion.div variants={item} className="lg:col-span-6">
-          <AnnouncementsWidget announcements={recentAnnouncements} />
-        </motion.div>
+          <motion.div variants={item}>
+            <Card className="border-[#E2E8F0] shadow-sm bg-white overflow-hidden">
+              <CardHeader className="p-4 border-b border-[#E2E8F0] bg-slate-50/50">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-emerald-500" />
+                  Anuncios Recientes
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <AnnouncementsWidget announcements={recentAnnouncements} />
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
       </div>
     </motion.div>
   );

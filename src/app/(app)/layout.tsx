@@ -73,26 +73,19 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   }, [user, setTheme]);
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen bg-[#F8FAFC] text-foreground">
       <Sidebar>
         <SidebarHeader />
         <SidebarContent />
         <SidebarFooter />
       </Sidebar>
       <div className={cn(
-        "relative flex-1 flex flex-col transition-[margin-left] duration-300 ease-in-out bg-background",
+        "relative flex-1 flex flex-col transition-[margin-left] duration-300 ease-in-out",
         !isMobile && (isCollapsed ? "ml-20" : "ml-72")
       )}>
         <TopBar />
-        <main className="flex-1 overflow-y-auto relative" style={{ transform: 'translateZ(0px)' }}>
-          {/* Adornos de Fondo Premium */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-            <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px] animate-pulse" />
-            <div className="absolute top-[20%] right-[-5%] w-[30%] h-[40%] bg-primary/10 rounded-full blur-[100px] opacity-60" />
-            <div className="absolute bottom-[-10%] left-[20%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[110px]" />
-          </div>
-
-          <div className="relative z-10 p-4 md:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto relative bg-[#F8FAFC]">
+          <div className="relative z-10 p-4">
             {children}
           </div>
         </main>

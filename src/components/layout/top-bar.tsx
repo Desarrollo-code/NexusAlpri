@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
 import { useAuth } from "@/contexts/auth-context";
 import Link from "next/link";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import type { Notification as AppNotification, NavItem } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useTitle } from "@/contexts/title-context";
@@ -37,10 +37,10 @@ export const TopBar = () => {
     const { icon: currentPageIcon, title: currentPageTitle } = useMemo(() => {
         if (!user?.role) return { icon: null, title: pageTitle };
         const navItems = getNavItemsForRole(user.role);
-        
+
         const findItem = (items: NavItem[], path: string): NavItem | undefined => {
             for (const item of items) {
-                 if (item.path && path.startsWith(item.path) && (item.path !== '/dashboard' || path === '/dashboard')) {
+                if (item.path && path.startsWith(item.path) && (item.path !== '/dashboard' || path === '/dashboard')) {
                     return item;
                 }
                 if (item.children) {
@@ -49,7 +49,7 @@ export const TopBar = () => {
                 }
             }
         };
-        
+
         const currentItem = findItem(navItems, pathname);
 
         // Para rutas dinámicas, el `pageTitle` del contexto tiene prioridad.
@@ -71,7 +71,7 @@ export const TopBar = () => {
         } catch (error) {
             // Silently fail for polling
         } finally {
-          setIsLoading(false);
+            setIsLoading(false);
         }
     }, [user]);
 
@@ -83,16 +83,16 @@ export const TopBar = () => {
 
     const markAsRead = async (ids: string[] | 'all') => {
         if (unreadCount === 0 && ids === 'all') return;
-        
+
         const originalNotifications = [...notifications];
         const unreadIdsToMark = ids === 'all'
             ? originalNotifications.filter(n => !n.read).map(n => n.id)
             : ids;
-            
+
         // Optimistic update
-        setNotifications(prev => prev.map(n => unreadIdsToMark.includes(n.id) ? {...n, read: true} : n));
+        setNotifications(prev => prev.map(n => unreadIdsToMark.includes(n.id) ? { ...n, read: true } : n));
         setUnreadCount(prev => prev - unreadIdsToMark.length);
-        
+
         try {
             const res = await fetch('/api/notifications', {
                 method: 'PATCH',
@@ -100,99 +100,125 @@ export const TopBar = () => {
                 body: JSON.stringify({ ids: ids === 'all' ? 'all' : ids, read: true })
             });
             if (!res.ok) {
-                 throw new Error("No se pudieron marcar las notificaciones.");
+                throw new Error("No se pudieron marcar las notificaciones.");
             }
-        } catch(error) {
+        } catch (error) {
             // Revert on error
             setNotifications(originalNotifications);
             setUnreadCount(originalNotifications.filter(n => !n.read).length);
-            toast({ title: "Error", description: "No se pudieron marcar las notificaciones."})
+            toast({ title: "Error", description: "No se pudieron marcar las notificaciones." })
         }
     }
 
 
+    // --- LÓGICA PARA BREADCRUMBS ---
+    const breadcrumbs = useMemo(() => {
+        const paths = pathname.split('/').filter(p => p);
+        return paths.map((path, index) => {
+            const href = `/${paths.slice(0, index + 1).join('/')}`;
+            const label = path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
+            return { label, href, isLast: index === paths.length - 1 };
+        });
+    }, [pathname]);
+
     return (
         <div className={cn(
-            "flex items-center justify-between h-20 px-4 shrink-0 sticky top-0 z-30",
-            "bg-accent border-b"
+            "flex items-center justify-between h-[60px] px-4 shrink-0 sticky top-0 z-30",
+            "bg-white border-b border-[#E2E8F0] shadow-sm"
         )}>
             {/* Left side */}
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-                 {isMobile ? (
-                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-black/10">
-                        <PanelLeft className="h-5 w-5"/>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+                {isMobile ? (
+                    <Button onClick={toggleSidebar} variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-black/5">
+                        <PanelLeft className="h-5 w-5" />
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
-                 ) : showBackButton ? (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-black/10" onClick={() => router.back()}>
-                        <ArrowLeft className="h-4 w-4"/>
+                ) : showBackButton ? (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground hover:bg-black/5" onClick={() => router.back()}>
+                        <ArrowLeft className="h-4 w-4" />
                         <span className="sr-only">Volver</span>
                     </Button>
-                 ) : (
-                    <div className="w-8"/> // Placeholder to keep alignment
-                 )}
-                 <h1 className="text-xl font-bold truncate text-foreground">
-                    {currentPageTitle}
-                 </h1>
+                ) : null}
+
+                {/* Breadcrumbs */}
+                <nav className="flex items-center text-[12px] font-medium text-muted-foreground overflow-hidden whitespace-nowrap">
+                    <Link href="/dashboard" className="hover:text-primary transition-colors">
+                        Inicio
+                    </Link>
+                    {breadcrumbs.map((crumb, i) => (
+                        <React.Fragment key={crumb.href}>
+                            <span className="mx-2 text-muted-foreground/40">/</span>
+                            {crumb.isLast ? (
+                                <span className="text-foreground font-bold truncate">
+                                    {currentPageTitle || crumb.label}
+                                </span>
+                            ) : (
+                                <Link href={crumb.href} className="hover:text-primary transition-colors truncate">
+                                    {crumb.label}
+                                </Link>
+                            )}
+                        </React.Fragment>
+                    ))}
+                </nav>
             </div>
 
             {/* Right side */}
             <div className="flex items-center gap-3">
-                 {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
-                 <Popover onOpenChange={(open) => { if (open) fetchNotifications() }}>
+                {headerActions && <div className="hidden md:flex items-center gap-2">{headerActions}</div>}
+                <Popover onOpenChange={(open) => { if (open) fetchNotifications() }}>
                     <PopoverTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative text-foreground/70 hover:text-foreground hover:bg-black/10 transition-colors">
-                             {unreadCount > 0 ? (
+                            {unreadCount > 0 ? (
                                 <div className="relative">
                                     <Bell className="h-6 w-6 text-foreground fill-amber-400 animate-pulse" />
                                     <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-background"></span>
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-background"></span>
                                     </span>
                                 </div>
-                             ) : <Bell className="h-6 w-6"/>}
+                            ) : <Bell className="h-6 w-6" />}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-80 p-0" align="end">
-                         <div className="p-4">
+                        <div className="p-4">
                             <h4 className="font-medium text-sm">Notificaciones</h4>
-                         </div>
-                         <Separator />
-                          {isLoading ? <div className="flex justify-center p-4"><div className="w-6 h-6"><ColorfulLoader/></div></div> :
+                        </div>
+                        <Separator />
+                        {isLoading ? <div className="flex justify-center p-4"><div className="w-6 h-6"><ColorfulLoader /></div></div> :
                             notifications.length > 0 ? (
                                 <div className="max-h-80 overflow-y-auto">
                                     {notifications.map(n => (
                                         <Link key={n.id} href={n.link || '#'} onClick={() => !n.read && markAsRead([n.id])}>
-                                          <div className={cn(
-                                            "p-4 border-b hover:bg-muted/50",
-                                            !n.read && "bg-primary/5"
-                                          )}>
-                                            <p className="text-sm font-semibold">{n.title}</p>
-                                            <p className="text-sm text-muted-foreground">{n.description}</p>
-                                            <p className="text-xs text-muted-foreground mt-1">{timeSince(new Date(n.date))}</p>
-                                          </div>
+                                            <div className={cn(
+                                                "p-4 border-b hover:bg-muted/50",
+                                                !n.read && "bg-primary/5"
+                                            )}>
+                                                <p className="text-sm font-semibold">{n.title}</p>
+                                                <p className="text-sm text-muted-foreground">{n.description}</p>
+                                                <p className="text-xs text-muted-foreground mt-1">{timeSince(new Date(n.date))}</p>
+                                            </div>
                                         </Link>
                                     ))}
                                 </div>
                             ) : (
                                 <p className="p-4 text-center text-sm text-muted-foreground">No hay notificaciones.</p>
                             )}
-                         <Separator />
-                         <div className="p-2 flex justify-between items-center">
+                        <Separator />
+                        <div className="p-2 flex justify-between items-center">
                             <Button variant="ghost" size="sm" onClick={() => markAsRead('all')} disabled={unreadCount === 0}>Marcar todas leídas</Button>
                             <Button variant="link" size="sm" asChild>
                                 <Link href="/notifications">Ver todas</Link>
                             </Button>
-                         </div>
+                        </div>
                     </PopoverContent>
-                 </Popover>
+                </Popover>
                 <Separator orientation="vertical" className="h-8 bg-foreground/20" />
                 <UserAvatarDropdown />
             </div>
             {headerActions && isMobile && (
-              <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t p-2 flex justify-around gap-2 z-50">
-                {headerActions}
-              </div>
+                <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t p-2 flex justify-around gap-2 z-50">
+                    {headerActions}
+                </div>
             )}
         </div>
     );
