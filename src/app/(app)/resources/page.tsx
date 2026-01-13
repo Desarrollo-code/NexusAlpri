@@ -19,16 +19,8 @@ import {
 } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
-import { 
-  DndContext, 
-  type DragEndEvent, 
-  MouseSensor, 
-  PointerSensor, 
-  TouchSensor, 
-  useSensor, 
-  useSensors,
-  useDroppable 
-} from '@dnd-kit/core';
+import { DndContext, type DragEndEvent, MouseSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -37,15 +29,7 @@ import { FolderEditorModal } from '@/components/resources/folder-editor-modal';
 import { PlaylistCreatorModal } from '@/components/resources/playlist-creator-modal';
 import { FolderTree } from '@/components/resources/folder-tree';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuGroup,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator 
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -54,6 +38,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { type DateRange } from 'react-day-picker';
+import { useDroppable } from '@dnd-kit/core';
 import { ResourcePreviewModal } from '@/components/resources/resource-preview-modal';
 import { MoveResourceModal } from '@/components/resources/move-resource-modal';
 import { useRecentResources } from '@/hooks/use-recent-resources';
@@ -390,20 +375,17 @@ export default function ResourcesPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const params: any = {
+        await fetchResources({
           parentId: currentFolderId,
-          search: debouncedSearchTerm
-        };
-
-        if (dateRange?.from) params.startDate = dateRange.from.toISOString();
-        if (dateRange?.to) params.endDate = dateRange.to.toISOString();
-        if (fileType !== 'all') params.fileType = fileType;
-        if (hasPin) params.hasPin = 'true';
-        if (hasExpiry) params.hasExpiry = 'true';
-        params.sortBy = sortBy;
-        params.sortOrder = sortOrder;
-
-        await fetchResources(params);
+          search: debouncedSearchTerm,
+          filters: {
+            fileType: fileType !== 'all' ? fileType : undefined,
+            hasPin: hasPin ? 'true' : undefined,
+            hasExpiry: hasExpiry ? 'true' : undefined,
+            sortBy,
+            sortOrder
+          }
+        });
 
         if (currentFolderId) {
           const folderRes = await fetch(`/api/resources/${currentFolderId}`);
@@ -422,7 +404,7 @@ export default function ResourcesPage() {
     };
 
     loadData();
-  }, [currentFolderId, debouncedSearchTerm, dateRange, fileType, hasPin, hasExpiry, sortBy, sortOrder, fetchResources]);
+  }, [currentFolderId, debouncedSearchTerm, fileType, hasPin, hasExpiry, sortBy, sortOrder, fetchResources]);
 
   // Filtrado y ordenación optimizados
   const filteredResources = useMemo(() => {
@@ -1512,6 +1494,7 @@ export default function ResourcesPage() {
         resource={previewingResource}
         onClose={() => setPreviewingResource(null)}
         onNavigate={(direction) => {
+          // Implement navigation between resources
           const fileResources = allApiResources.filter(r => 
             r.type !== 'FOLDER' && r.type !== 'VIDEO_PLAYLIST'
           );
