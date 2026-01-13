@@ -575,6 +575,9 @@ model Notification {
   interactiveEventId String?
   interactiveEventOccurrence DateTime?
 
+  motivationalMessage   MotivationalMessage? @relation(fields: [motivationalMessageId], references: [id])
+  motivationalMessageId String?              // Esta es la llave foránea
+
   @@map("notifications")
 }
 
@@ -780,7 +783,7 @@ model MotivationalMessage {
   creator     User                           @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   createdAt   DateTime                       @default(now())
   updatedAt   DateTime                       @updatedAt
-
+  notifications Notification[]
   @@unique([triggerType, triggerId])
 }
 
