@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  PlusCircle, List, Grid, Filter, UserPlus, MoreVertical, 
-  Loader2, AlertTriangle, Trash2, Eye, Edit, Users, 
-  Search, Download, Upload, RefreshCw, BookOpen, 
+import {
+  PlusCircle, List, Grid, Filter, UserPlus, MoreVertical, HelpCircle,
+  Loader2, AlertTriangle, Trash2, Eye, Edit, Users,
+  Search, Download, Upload, RefreshCw, BookOpen,
   TrendingUp, Copy, ChevronDown, ChevronUp, BookMarked,
   LayoutGrid, LayoutList, X, SlidersHorizontal, Archive,
   CheckCircle2, Clock, FolderArchive, Sparkles,
@@ -105,30 +105,30 @@ interface ApiCourseForManage {
 const PAGE_SIZE = 10;
 
 const STATUS_CONFIG = {
-  all: { 
-    label: 'Todos', 
-    icon: LayoutGrid, 
+  all: {
+    label: 'Todos',
+    icon: LayoutGrid,
     color: 'text-gray-700 dark:text-gray-300',
     bgColor: 'bg-gray-100 dark:bg-gray-800',
     borderColor: 'border-gray-200 dark:border-gray-700'
   },
-  PUBLISHED: { 
-    label: 'Publicados', 
-    icon: CheckCircle2, 
+  PUBLISHED: {
+    label: 'Publicados',
+    icon: CheckCircle2,
     color: 'text-green-700 dark:text-green-400',
     bgColor: 'bg-green-50 dark:bg-green-950',
     borderColor: 'border-green-200 dark:border-green-800'
   },
-  DRAFT: { 
-    label: 'Borradores', 
-    icon: Clock, 
+  DRAFT: {
+    label: 'Borradores',
+    icon: Clock,
     color: 'text-amber-700 dark:text-amber-400',
     bgColor: 'bg-amber-50 dark:bg-amber-950',
     borderColor: 'border-amber-200 dark:border-amber-800'
   },
-  ARCHIVED: { 
-    label: 'Archivados', 
-    icon: FolderArchive, 
+  ARCHIVED: {
+    label: 'Archivados',
+    icon: FolderArchive,
     color: 'text-slate-600 dark:text-slate-400',
     bgColor: 'bg-slate-50 dark:bg-slate-900',
     borderColor: 'border-slate-200 dark:border-slate-800'
@@ -136,18 +136,18 @@ const STATUS_CONFIG = {
 };
 
 // Stats Card Component
-const StatsCard = ({ 
-  icon: Icon, 
-  label, 
-  value, 
-  subtitle, 
-  trend, 
-  color = "blue" 
-}: { 
-  icon: React.ElementType; 
-  label: string; 
-  value: string | number; 
-  subtitle?: string; 
+const StatsCard = ({
+  icon: Icon,
+  label,
+  value,
+  subtitle,
+  trend,
+  color = "blue"
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
+  subtitle?: string;
   trend?: string;
   color?: string;
 }) => {
@@ -184,15 +184,15 @@ const StatsCard = ({
 };
 
 // Enhanced Course Card for Grid View
-const EnhancedCourseCard = ({ 
-  course, 
-  onStatusChange, 
-  onDelete, 
+const EnhancedCourseCard = ({
+  course,
+  onStatusChange,
+  onDelete,
   onAssign,
   onDuplicate,
   onExport,
-  isProcessing 
-}: { 
+  isProcessing
+}: {
   course: AppCourseType;
   onStatusChange: (courseId: string, newStatus: CourseStatus) => void;
   onDelete: (course: AppCourseType) => void;
@@ -209,8 +209,8 @@ const EnhancedCourseCard = ({
       {/* Image Header */}
       <div className="relative h-40 bg-gradient-to-br from-primary/20 to-secondary/20 overflow-hidden">
         {course.imageUrl ? (
-          <img 
-            src={course.imageUrl} 
+          <img
+            src={course.imageUrl}
             alt={course.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
@@ -220,7 +220,7 @@ const EnhancedCourseCard = ({
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent dark:from-black/60" />
-        
+
         {/* Status Badge */}
         <div className="absolute top-3 left-3">
           <Badge className={cn("font-medium shadow-sm", statusConfig.bgColor, statusConfig.color, "backdrop-blur-sm")}>
@@ -243,8 +243,8 @@ const EnhancedCourseCard = ({
         <div className="absolute bottom-3 right-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 variant="secondary"
                 className="h-8 w-8 p-0 rounded-full shadow-md bg-background/90 hover:bg-background backdrop-blur-sm"
               >
@@ -265,7 +265,7 @@ const EnhancedCourseCard = ({
                   Vista previa
                 </Link>
               </DropdownMenuItem>
-              
+
               {/* Submenú para más acciones */}
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
@@ -310,10 +310,10 @@ const EnhancedCourseCard = ({
               </DropdownMenuSub>
 
               <DropdownMenuSeparator />
-              
+
               {/* Cambiar estado */}
               <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
-              <DropdownMenuRadioGroup 
+              <DropdownMenuRadioGroup
                 value={course.status}
                 onValueChange={(value) => onStatusChange(course.id, value as CourseStatus)}
               >
@@ -330,11 +330,11 @@ const EnhancedCourseCard = ({
                   Archivado
                 </DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
-              
+
               <DropdownMenuSeparator />
-              
+
               {/* Acción peligrosa */}
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => onDelete(course)}
                 className="text-destructive focus:text-destructive"
               >
@@ -484,7 +484,7 @@ function ManageCoursesPageComponent() {
       }
 
       const response = await fetch(`/api/courses?${params.toString()}`);
-      
+
       if (!response.ok) {
         throw new Error('Error al cargar cursos');
       }
@@ -525,8 +525,8 @@ function ManageCoursesPageComponent() {
       const query = searchQuery.toLowerCase();
       result = result.filter(course =>
         course.title.toLowerCase().includes(query) ||
-        course.description.toLowerCase().includes(query) ||
-        course.category.toLowerCase().includes(query)
+        (course.description || '').toLowerCase().includes(query) ||
+        (course.category || '').toLowerCase().includes(query)
       );
     }
 
@@ -538,7 +538,7 @@ function ManageCoursesPageComponent() {
       result = result.filter(course => course.isMandatory);
     }
 
-    result.sort((a, b) => 
+    result.sort((a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
@@ -638,7 +638,7 @@ function ManageCoursesPageComponent() {
     const publishedCount = allCourses.filter(c => c.status === 'PUBLISHED').length;
     const draftCount = allCourses.filter(c => c.status === 'DRAFT').length;
     const archivedCount = allCourses.filter(c => c.status === 'ARCHIVED').length;
-    const totalEnrollments = allCourses.reduce((sum, course) => sum + course.enrollmentsCount, 0);
+    const totalEnrollments = allCourses.reduce((sum, course) => sum + (course.enrollmentsCount || 0), 0);
     const totalModules = allCourses.reduce((sum, course) => sum + course.modulesCount, 0);
     const averageCompletion = allCourses.length > 0
       ? allCourses.reduce((sum, course) => sum + (course.averageCompletion || 0), 0) / allCourses.length
@@ -685,54 +685,39 @@ function ManageCoursesPageComponent() {
 
   return (
     <div className="space-y-8 pb-12">
-      {/* Hero Section - Mejorada sin título duplicado */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20 border border-border/50 p-6 sm:p-8 shadow-sm">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-pink-500/10" />
-        <div className="relative z-10 max-w-3xl">
-          <p className="text-xl font-medium text-foreground mb-2">Gestiona tu contenido educativo</p>
-          <p className="text-base text-foreground/80 dark:text-foreground/90">
-            Crea, organiza y gestiona todos los cursos de la plataforma y facilita el trabajo colaborativo en el mundo educativo.
-          </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="space-y-1">
+          <p className="text-muted-foreground">Crea, organiza y gestiona todos los cursos de la plataforma y facilita el trabajo colaborativo en el mundo educativo.</p>
         </div>
-        
-        {/* Ilustración moderna - SVG 3D mejorado */}
-        <div className="absolute bottom-0 right-0 opacity-15 dark:opacity-20">
-          <svg width="280" height="200" viewBox="0 0 280 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Fondo de gradiente */}
-            <defs>
-              <linearGradient id="bookGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#6366f1" />
-                <stop offset="50%" stopColor="#8b5cf6" />
-                <stop offset="100%" stopColor="#ec4899" />
-              </linearGradient>
-              <linearGradient id="pageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#f0f9ff" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="#e0f2fe" stopOpacity="0.4" />
-              </linearGradient>
-              <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#6366f1" floodOpacity="0.3" />
-              </filter>
-            </defs>
-            
-            {/* Libro principal */}
-            <g filter="url(#shadow)">
-              <path d="M180 60C180 40 200 30 220 40L240 50C260 60 260 80 240 90L220 100C200 110 180 100 180 80V60Z" fill="url(#bookGradient)" />
-              <path d="M180 60L220 40L240 50L200 70L180 60Z" fill="url(#bookGradient)" fillOpacity="0.8" />
-              <path d="M180 80L200 90L240 70L220 60L180 80Z" fill="url(#bookGradient)" fillOpacity="0.6" />
-            </g>
-            
-            {/* Páginas del libro */}
-            <g>
-              <path d="M185 65L225 45L235 50L195 70L185 65Z" fill="url(#pageGradient)" />
-              <path d="M185 75L205 85L235 65L215 55L185 75Z" fill="url(#pageGradient)" fillOpacity="0.7" />
-              <path d="M190 85L210 95L230 75L210 65L190 85Z" fill="url(#pageGradient)" fillOpacity="0.5" />
-            </g>
-            
-            {/* Elementos decorativos */}
-            <circle cx="195" cy="85" r="4" fill="#ffffff" opacity="0.8" />
-            <circle cx="205" cy="95" r="3" fill="#ffffff" opacity="0.6" />
-            <circle cx="215" cy="75" r="3" fill="#ffffff" opacity="0.6" />
-          </svg>
+        <div className="flex items-center gap-2">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar cursos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-9"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
+                onClick={() => setSearchQuery('')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <Button
+            onClick={() => forceStartTour('manageCourses', manageCoursesTour)}
+            variant="outline"
+            size="icon"
+            className="shrink-0"
+            id="manage-courses-help-button"
+          >
+            <HelpCircle className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
@@ -771,32 +756,34 @@ function ManageCoursesPageComponent() {
       {/* Controls Bar simplificada */}
       <Card className="shadow-sm border">
         <CardContent className="p-4 sm:p-6 space-y-4">
-          {/* Top Row: Search and Actions */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            {/* Search Bar */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar cursos por título, descripción o categoría..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-10"
-              />
-              {searchQuery && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
-                  onClick={() => setSearchQuery('')}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* Status Tabs */}
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full sm:w-auto">
+              <TabsList className="grid w-full grid-cols-4 sm:w-auto">
+                {Object.entries(STATUS_CONFIG).map(([key, config]) => {
+                  const Icon = config.icon;
+                  const count = key === 'all'
+                    ? allCourses.length
+                    : allCourses.filter(c => c.status === key).length;
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2">
+                  return (
+                    <TabsTrigger key={key} value={key} className="gap-2 text-xs sm:text-sm">
+                      <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">{config.label}</span>
+                      <span className="sm:hidden">{config.label.substring(0, 3)}</span>
+                      <Badge variant="secondary" className="ml-1 text-xs">
+                        {count}
+                      </Badge>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </Tabs>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3">
               <TooltipProvider>
+                {/* View Mode Toggle */}
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -817,52 +804,16 @@ function ManageCoursesPageComponent() {
                 </Tooltip>
               </TooltipProvider>
 
-              <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-                <PlusCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">Nuevo curso</span>
-                <span className="sm:hidden">Crear</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Bottom Row: Tabs and Quick Filters */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            {/* Status Tabs */}
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full sm:w-auto">
-              <TabsList className="grid w-full grid-cols-4 sm:w-auto">
-                {Object.entries(STATUS_CONFIG).map(([key, config]) => {
-                  const Icon = config.icon;
-                  const count = key === 'all' 
-                    ? allCourses.length 
-                    : allCourses.filter(c => c.status === key).length;
-                  
-                  return (
-                    <TabsTrigger key={key} value={key} className="gap-2 text-xs sm:text-sm">
-                      <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">{config.label}</span>
-                      <span className="sm:hidden">{config.label.substring(0, 3)}</span>
-                      <Badge variant="secondary" className="ml-1 text-xs">
-                        {count}
-                      </Badge>
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-            </Tabs>
-
-            {/* Quick Filters */}
-            <div className="flex items-center gap-3">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="outline"
-                      size="sm"
+                      size="icon"
                       onClick={() => setShowFilters(!showFilters)}
-                      className={cn("gap-2", showFilters && "bg-accent")}
+                      className={cn(showFilters && "bg-accent")}
                     >
                       <SlidersHorizontal className="h-4 w-4" />
-                      <span className="hidden sm:inline">Filtros</span>
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -882,6 +833,12 @@ function ManageCoursesPageComponent() {
                   Limpiar
                 </Button>
               )}
+
+              <Button onClick={() => setShowCreateModal(true)} className="gap-2">
+                <PlusCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Nuevo curso</span>
+                <span className="sm:hidden">Crear</span>
+              </Button>
             </div>
           </div>
 

@@ -171,89 +171,89 @@ export const calendarTour: TourStep[] = [
 ];
 
 export const resourcesTour: TourStep[] = [
-    {
-        target: '#resources-breadcrumbs',
-        content: {
-            title: 'Navegación por Carpetas',
-            description: 'Usa estas "migas de pan" para saber en qué carpeta te encuentras y para volver a las carpetas anteriores fácilmente.',
-        }
-    },
-    {
-        target: '#resources-controls',
-        content: {
-            title: 'Controles de la Biblioteca',
-            description: 'Busca, filtra, cambia la vista, y (si tienes permisos) crea carpetas o sube nuevos recursos.',
-        }
-    },
-    {
-        target: '#resources-folder-list',
-        content: {
-            title: 'Carpetas',
-            description: 'Las carpetas te ayudan a organizar el contenido. Haz clic en una para entrar y ver los archivos que contiene.',
-        }
-    },
-    {
-        target: '#resources-file-list',
-        content: {
-            title: 'Archivos',
-            description: 'Aquí están los documentos, videos y enlaces. Haz clic en uno para previsualizarlo o descargarlo.',
-        }
-    },
+  {
+    target: '#resources-breadcrumbs',
+    content: {
+      title: 'Navegación por Carpetas',
+      description: 'Usa estas "migas de pan" para saber en qué carpeta te encuentras y para volver a las carpetas anteriores fácilmente.',
+    }
+  },
+  {
+    target: '#resources-controls',
+    content: {
+      title: 'Controles de la Biblioteca',
+      description: 'Busca, filtra, cambia la vista, y (si tienes permisos) crea carpetas o sube nuevos recursos.',
+    }
+  },
+  {
+    target: '#resources-folder-list',
+    content: {
+      title: 'Carpetas',
+      description: 'Las carpetas te ayudan a organizar el contenido. Haz clic en una para entrar y ver los archivos que contiene.',
+    }
+  },
+  {
+    target: '#resources-file-list',
+    content: {
+      title: 'Archivos',
+      description: 'Aquí están los documentos, videos y enlaces. Haz clic en uno para previsualizarlo o descargarlo.',
+    }
+  },
 ];
 
 export const analyticsTour: TourStep[] = [
-    {
-        target: '#analytics-metric-cards',
-        content: {
-            title: 'Métricas Principales',
-            description: 'Un vistazo rápido a los números más importantes de tu plataforma en el rango de fechas seleccionado.'
-        }
-    },
-    {
-        target: '#analytics-course-rankings',
-        content: {
-            title: 'Ranking de Cursos',
-            description: 'Identifica qué cursos son los más populares y cuáles tienen el mejor (o peor) rendimiento.'
-        }
-    },
-    {
-        target: '#analytics-distribution-charts',
-        content: {
-            title: 'Distribución',
-            description: 'Estos gráficos te muestran cómo se distribuyen tus usuarios por rol y tus cursos por estado.'
-        }
-    },
-    {
-        target: '#analytics-user-rankings',
-        content: {
-            title: 'Ranking de Usuarios',
-            description: 'Descubre quiénes son los estudiantes e instructores más activos y destacados de la plataforma.'
-        }
+  {
+    target: '#analytics-metric-cards',
+    content: {
+      title: 'Métricas Principales',
+      description: 'Un vistazo rápido a los números más importantes de tu plataforma en el rango de fechas seleccionado.'
     }
+  },
+  {
+    target: '#analytics-course-rankings',
+    content: {
+      title: 'Ranking de Cursos',
+      description: 'Identifica qué cursos son los más populares y cuáles tienen el mejor (o peor) rendimiento.'
+    }
+  },
+  {
+    target: '#analytics-distribution-charts',
+    content: {
+      title: 'Distribución',
+      description: 'Estos gráficos te muestran cómo se distribuyen tus usuarios por rol y tus cursos por estado.'
+    }
+  },
+  {
+    target: '#analytics-user-rankings',
+    content: {
+      title: 'Ranking de Usuarios',
+      description: 'Descubre quiénes son los estudiantes e instructores más activos y destacados de la plataforma.'
+    }
+  }
 ];
 
 export const enrollmentsTour: TourStep[] = [
-    {
-        target: '#enrollments-course-selector',
-        content: {
-            title: 'Selecciona un Curso',
-            description: 'Elige el curso del que quieres ver las inscripciones y estadísticas de progreso. Si eres instructor, solo verás tus propios cursos.'
-        }
-    },
-    {
-        target: '#enrollments-stats-cards',
-        content: {
-            title: 'Estadísticas del Curso',
-            description: 'Un resumen clave: total de inscritos, el porcentaje de finalización promedio y la nota media de los quizzes para el curso seleccionado.'
-        }
-    },
-    {
-        target: '#enrollments-student-list',
-        content: {
-            title: 'Lista de Estudiantes',
-            description: 'Busca un estudiante específico o revisa el progreso individual de cada uno. Usa el menú de acciones para ver detalles o cancelar una inscripción.'
-        }
+  {
+    target: '#enrollments-course-selector',
+    content: {
+      title: 'Selecciona un Curso',
+      description: 'Elige el curso del que quieres ver las inscripciones y estadísticas de progreso. Si eres instructor, solo verás tus propios cursos.'
     }
+  },
+  {
+    target: '#enrollments-stats-cards',
+    content: {
+      title: 'Estadísticas del Curso',
+      description: 'Un resumen clave: total de inscritos, el porcentaje de finalización promedio y la nota media de los quizzes para el curso seleccionado.'
+    }
+  },
+  {
+    target: '#enrollments-student-list',
+    content: {
+      title: 'Lista de Estudiantes',
+      description: 'Busca un estudiante específico o revisa el progreso individual de cada uno. Usa el menú de acciones para ver detalles o cancelar una inscripción.'
+    }
+  }
 ];
 
 export const settingsTour: TourStep[] = [
@@ -282,20 +282,20 @@ export const settingsTour: TourStep[] = [
 ];
 
 export const myNotesTour: TourStep[] = [
-    {
-        target: '#my-notes-header',
-        content: {
-            title: 'Tus Apuntes',
-            description: 'Este es tu tablero personal. Todas las notas que tomes en las lecciones aparecerán aquí, organizadas por curso y módulo.'
-        }
-    },
-    {
-        target: '#my-notes-board',
-        content: {
-            title: 'Tablero de Notas',
-            description: 'Cada nota es como un post-it virtual. Puedes editarlas, cambiarles el color o eliminarlas. Haz clic en "Ir a lección" para volver al contenido original.'
-        }
+  {
+    target: '#my-notes-header',
+    content: {
+      title: 'Tus Apuntes',
+      description: 'Este es tu tablero personal. Todas las notas que tomes en las lecciones aparecerán aquí, organizadas por curso y módulo.'
     }
+  },
+  {
+    target: '#my-notes-board',
+    content: {
+      title: 'Tablero de Notas',
+      description: 'Cada nota es como un post-it virtual. Puedes editarlas, cambiarles el color o eliminarlas. Haz clic en "Ir a lección" para volver al contenido original.'
+    }
+  }
 ];
 
 export const securityAuditTour: TourStep[] = [
@@ -323,114 +323,105 @@ export const securityAuditTour: TourStep[] = [
   },
 ];
 
-export const myCoursesTour = {
-  id: 'myCourses',
-  steps: [
-    {
-      target: '#my-courses-hero',
-      content: '¡Bienvenido a tu espacio de aprendizaje! Aquí puedes ver todos los cursos en los que estás inscrito.',
-      placement: 'bottom',
-      title: 'Mis Cursos'
+export const myCoursesTour: TourStep[] = [
+  {
+    target: '#my-courses-hero',
+    content: {
+      title: 'Mis Cursos',
+      description: '¡Bienvenido a tu espacio de aprendizaje! Aquí puedes ver todos los cursos en los que estás inscrito.'
     },
-    {
-      target: '#my-courses-stats',
-      content: 'Mira tus estadísticas de aprendizaje: total de cursos, progreso, completados y más.',
-      placement: 'bottom',
-      title: 'Tus Estadísticas'
+    placement: 'bottom'
+  },
+  {
+    target: '#my-courses-stats',
+    content: {
+      title: 'Tus Estadísticas',
+      description: 'Mira tus estadísticas de aprendizaje: total de cursos, progreso, completados y más.'
     },
-    {
-      target: '#my-courses-controls',
-      content: 'Busca cursos específicos, filtra por estado (todos, en progreso, completados) y accede a la guía interactiva cuando lo necesites.',
-      placement: 'bottom',
-      title: 'Controles y Filtros'
+    placement: 'bottom'
+  },
+  {
+    target: '#my-courses-controls',
+    content: {
+      title: 'Controles y Filtros',
+      description: 'Busca cursos específicos, filtra por estado (todos, en progreso, completados) y accede a la guía interactiva cuando lo necesites.'
     },
-    {
-      target: '#my-courses-help-button',
-      content: 'Haz clic aquí para volver a ver esta guía en cualquier momento.',
-      placement: 'left',
-      title: 'Ayuda Rápida'
+    placement: 'bottom'
+  },
+  {
+    target: '#my-courses-help-button',
+    content: {
+      title: 'Ayuda Rápida',
+      description: 'Haz clic aquí para volver a ver esta guía en cualquier momento.'
     },
-    {
-      target: '#my-courses-in-progress',
-      content: 'Aquí verás los cursos que has comenzado pero aún no has completado. Continúa tu aprendizaje desde donde lo dejaste.',
-      placement: 'top',
-      title: 'Cursos en Progreso'
+    placement: 'left'
+  },
+  {
+    target: '#my-courses-in-progress',
+    content: {
+      title: 'Cursos en Progreso',
+      description: 'Aquí verás los cursos que has comenzado pero aún no has completado. Continúa tu aprendizaje desde donde lo dejaste.'
     },
-    {
-      target: '#my-courses-completed',
-      content: 'Revisa tus logros y certificados de los cursos que has completado exitosamente.',
-      placement: 'top',
-      title: 'Cursos Completados'
-    }
-  ],
-  options: {
-    highlight: true,
-    overlayColor: 'rgba(0,0,0,0.5)',
-    disableKeyboardNavigation: false,
-    closeButton: true,
-    showProgress: true,
-    showButtons: true,
-    showNavigation: true
+    placement: 'top'
+  },
+  {
+    target: '#my-courses-completed',
+    content: 'Revisa tus logros y certificados de los cursos que has completado exitosamente.',
+    placement: 'top',
+    title: 'Cursos Completados'
   }
-};
+];
 
-export const coursesTour: TourConfig = {
-  id: 'courses',
-  steps: [
-    {
-      target: '#courses-content',
+export const coursesTour: TourStep[] = [
+  {
+    target: '#courses-content',
+    content: {
       title: '🎓 Catálogo de Cursos',
-      content: 'Explora todos los cursos disponibles en NexusAlpri. Encuentra el aprendizaje perfecto para tus objetivos.',
-      placement: 'center',
-      order: 1
+      description: 'Explora todos los cursos disponibles en NexusAlpri. Encuentra el aprendizaje perfecto para tus objetivos.'
     },
-    {
-      target: '#courses-hero',
+    placement: 'center',
+  },
+  {
+    target: '#courses-hero',
+    content: {
       title: '🚀 Explora Oportunidades',
-      content: 'Esta sección te presenta las posibilidades de aprendizaje disponibles en nuestra plataforma.',
-      placement: 'bottom',
-      order: 2
+      description: 'Esta sección te presenta las posibilidades de aprendizaje disponibles en nuestra plataforma.'
     },
-    {
-      target: '#courses-stats',
+    placement: 'bottom',
+  },
+  {
+    target: '#courses-stats',
+    content: {
       title: '📊 Vista General',
-      content: 'Observa las estadísticas del catálogo: cursos disponibles, en progreso, completados y categorías.',
-      placement: 'bottom',
-      order: 3
+      description: 'Observa las estadísticas del catálogo: cursos disponibles, en progreso, completados y categorías.'
     },
-    {
-      target: '#courses-controls',
+    placement: 'bottom',
+  },
+  {
+    target: '#courses-controls',
+    content: {
       title: '🔧 Filtros Avanzados',
-      content: 'Usa estos controles para refinar tu búsqueda por categoría, dificultad, obligatoriedad y más.',
-      placement: 'bottom',
-      order: 4
+      description: 'Usa estos controles para refinar tu búsqueda por categoría, dificultad, obligatoriedad y más.'
     },
-    {
-      target: '#courses-help-button',
+    placement: 'bottom',
+  },
+  {
+    target: '#courses-help-button',
+    content: {
       title: '💡 Guía Interactiva',
-      content: '¿Necesitas ayuda para usar el catálogo? Haz clic aquí para reiniciar esta guía.',
-      placement: 'left',
-      order: 5
+      description: '¿Necesitas ayuda para usar el catálogo? Haz clic aquí para reiniciar esta guía.'
     },
-    {
-      target: '#courses-results',
+    placement: 'left',
+  },
+  {
+    target: '#courses-results',
+    content: {
       title: '📚 Resultados',
-      content: 'Aquí se muestran los cursos que coinciden con tus filtros. Puedes inscribirte directamente desde aquí.',
-      placement: 'top',
-      order: 6
-    }
-  ],
-  options: {
-    highlight: true,
-    overlayOpacity: 0.5,
-    closeOnClickOutside: true,
-    disableScroll: false,
-    showProgress: true,
-    showNavigation: true,
-    showCloseButton: true,
-    scrollPadding: 20
+      description: 'Aquí se muestran los cursos que coinciden con tus filtros. Puedes inscribirte directamente desde aquí.'
+    },
+    placement: 'top'
   }
-};
+];
 
 export const formsTour: TourStep[] = [
   {
@@ -527,7 +518,7 @@ export const processesTour: TourStep[] = [
       description: 'Organiza la estructura de tu empresa. Puedes crear nuevos procesos y subprocesos desde aquí.'
     },
   },
-   {
+  {
     target: '#processes-structure',
     content: {
       title: 'Estructura Organizacional',

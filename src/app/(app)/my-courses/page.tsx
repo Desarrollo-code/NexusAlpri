@@ -5,9 +5,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { CourseCard } from '@/components/course-card';
 import type { EnrolledCourse, UserRole, Course as AppCourseType } from '@/types';
-import { 
-  GraduationCap, Loader2, AlertTriangle, Info, Search, HelpCircle, 
-  BookOpen, TrendingUp, Award, Clock, ChevronRight, X, 
+import {
+  GraduationCap, Loader2, AlertTriangle, Info, Search, HelpCircle,
+  BookOpen, TrendingUp, Award, Clock, ChevronRight, X,
   PlayCircle, Target, BarChart3, Sparkles
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -31,18 +31,18 @@ import { Progress } from '@/components/ui/progress';
 type FilterStatus = 'all' | 'in-progress' | 'completed';
 
 // Stats Card Component
-const StatsCard = ({ 
-  icon: Icon, 
-  label, 
-  value, 
-  subtitle, 
-  trend, 
-  color = "blue" 
-}: { 
-  icon: React.ElementType; 
-  label: string; 
-  value: string | number; 
-  subtitle?: string; 
+const StatsCard = ({
+  icon: Icon,
+  label,
+  value,
+  subtitle,
+  trend,
+  color = "blue"
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
+  subtitle?: string;
   trend?: string;
   color?: string;
 }) => {
@@ -151,10 +151,10 @@ export default function MyCoursesPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar tus cursos inscritos');
       setMyEnrolledCourses([]);
-      toast({ 
-        title: "Error al cargar cursos", 
-        description: err instanceof Error ? err.message : 'No se pudieron cargar tus cursos inscritos.', 
-        variant: "destructive" 
+      toast({
+        title: "Error al cargar cursos",
+        description: err instanceof Error ? err.message : 'No se pudieron cargar tus cursos inscritos.',
+        variant: "destructive"
       });
     } finally {
       setIsFetchingPageData(false);
@@ -228,7 +228,7 @@ export default function MyCoursesPage() {
           <Skeleton className="h-8 w-64 mb-2" />
           <Skeleton className="h-4 w-3/4" />
         </div>
-        
+
         {/* Stats Skeleton */}
         <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
@@ -245,7 +245,7 @@ export default function MyCoursesPage() {
             </Card>
           ))}
         </div>
-        
+
         {/* Filters Skeleton */}
         <Card>
           <CardContent className="p-6 space-y-4">
@@ -256,7 +256,7 @@ export default function MyCoursesPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         {/* Courses Skeleton */}
         <div className="space-y-4">
           <Skeleton className="h-8 w-48" />
@@ -285,62 +285,63 @@ export default function MyCoursesPage() {
 
   return (
     <div className="space-y-8 pb-12" id="my-courses-content">
-      {/* Hero Section */}
-      <div 
-        className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 dark:from-primary/20 dark:via-primary/10 dark:to-secondary/20 border border-border/50 p-6 sm:p-8 shadow-sm"
-        id="my-courses-hero"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-pink-500/10" />
-        <div className="relative z-10 max-w-3xl">
-          <p className="text-xl font-medium text-foreground mb-2">Tu espacio de aprendizaje</p>
-          <p className="text-base text-foreground/80 dark:text-foreground/90">
-            Continúa tu aprendizaje y revisa tu progreso en los cursos a los que te has unido.
-          </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="space-y-1">
+          <p className="text-muted-foreground">Continúa tu aprendizaje y revisa tu progreso en los cursos a los que te has unido.</p>
         </div>
-        
-        {/* Ilustración SVG */}
-        <div className="absolute bottom-0 right-0 opacity-15 dark:opacity-20">
-          <svg width="280" height="200" viewBox="0 0 280 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="myCoursesGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#6366f1" />
-                <stop offset="50%" stopColor="#8b5cf6" />
-                <stop offset="100%" stopColor="#ec4899" />
-              </linearGradient>
-              <linearGradient id="myCoursesPageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#f0f9ff" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="#e0f2fe" stopOpacity="0.4" />
-              </linearGradient>
-              <filter id="myCoursesShadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#6366f1" floodOpacity="0.3" />
-              </filter>
-            </defs>
-            
-            {/* Libro con diploma */}
-            <g filter="url(#myCoursesShadow)">
-              <path d="M170 60C170 40 190 30 210 40L230 50C250 60 250 80 230 90L210 100C190 110 170 100 170 80V60Z" fill="url(#myCoursesGradient)" />
-              <path d="M170 60L210 40L230 50L190 70L170 60Z" fill="url(#myCoursesGradient)" fillOpacity="0.8" />
-              <path d="M170 80L190 90L230 70L210 60L170 80Z" fill="url(#myCoursesGradient)" fillOpacity="0.6" />
-            </g>
-            
-            {/* Páginas del libro */}
-            <g>
-              <path d="M175 65L215 45L225 50L185 70L175 65Z" fill="url(#myCoursesPageGradient)" />
-              <path d="M175 75L195 85L225 65L205 55L175 75Z" fill="url(#myCoursesPageGradient)" fillOpacity="0.7" />
-              <path d="M180 85L200 95L220 75L200 65L180 85Z" fill="url(#myCoursesPageGradient)" fillOpacity="0.5" />
-            </g>
-            
-            {/* Elementos decorativos */}
-            <path d="M210 110L230 120L240 115L220 105L210 110Z" fill="#fbbf24" fillOpacity="0.8" />
-            <circle cx="195" cy="85" r="4" fill="#ffffff" opacity="0.8" />
-            <circle cx="205" cy="95" r="3" fill="#ffffff" opacity="0.6" />
-          </svg>
+        <div className="flex items-center gap-2">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar en mis cursos..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-9"
+            />
+            {searchTerm && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
+                onClick={() => setSearchTerm('')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => window.open('/courses', '_blank')}
+                >
+                  <BookOpen className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Explorar más cursos</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <Button
+            onClick={() => forceStartTour('myCourses', myCoursesTour)}
+            variant="outline"
+            size="icon"
+            className="shrink-0"
+            id="my-courses-help-button"
+          >
+            <HelpCircle className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
       {/* Stats Dashboard */}
-      <div 
-        className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4" 
+      <div
+        className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4"
         id="my-courses-stats"
       >
         <StatsCard
@@ -374,66 +375,12 @@ export default function MyCoursesPage() {
       </div>
 
       {/* Controls Bar */}
-      <Card 
-        className="shadow-sm border" 
+      <Card
+        className="shadow-sm border"
         id="my-courses-controls"
       >
         <CardContent className="p-4 sm:p-6 space-y-4">
           {/* Top Row: Search and Actions */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            {/* Search Bar */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar en mis cursos..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-10"
-              />
-              {searchTerm && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
-                  onClick={() => setSearchTerm('')}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => window.open('/courses', '_blank')}
-                    >
-                      <BookOpen className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Explorar más cursos</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <Button 
-                onClick={() => forceStartTour('myCourses', myCoursesTour)} 
-                variant="outline" 
-                className="gap-2"
-                id="my-courses-help-button"
-              >
-                <HelpCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">Guía</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Bottom Row: Tabs and Filters */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             {/* Status Tabs */}
             <Tabs value={filterStatus} onValueChange={(v) => setFilterStatus(v as FilterStatus)} className="w-full sm:w-auto">
@@ -523,8 +470,8 @@ export default function MyCoursesPage() {
         <div className="space-y-8">
           {/* In Progress Courses */}
           {inProgressCourses.length > 0 && (
-            <section 
-              className="space-y-4" 
+            <section
+              className="space-y-4"
               id="my-courses-in-progress"
             >
               <div className="flex items-center justify-between">
@@ -538,7 +485,7 @@ export default function MyCoursesPage() {
                   Ver todos <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
                 {inProgressCourses.map((course, index) => (
                   <CourseCard
@@ -555,8 +502,8 @@ export default function MyCoursesPage() {
 
           {/* Completed Courses */}
           {completedCourses.length > 0 && (
-            <section 
-              className="space-y-4" 
+            <section
+              className="space-y-4"
               id="my-courses-completed"
             >
               <div className="flex items-center justify-between">
@@ -570,7 +517,7 @@ export default function MyCoursesPage() {
                   Ver certificados <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
                 {completedCourses.map((course, index) => (
                   <CourseCard
@@ -615,12 +562,13 @@ export default function MyCoursesPage() {
                   title="No se encontraron cursos"
                   description="Ninguno de tus cursos coincide con los filtros de búsqueda actuales."
                   imageUrl={settings?.emptyStateMyCoursesUrl}
-                >
-                  <Button onClick={clearFilters} variant="outline" className="mt-4">
+                />
+                <div className="flex justify-center mt-4">
+                  <Button onClick={clearFilters} variant="outline">
                     <X className="mr-2 h-4 w-4" />
                     Limpiar Filtros
                   </Button>
-                </EmptyState>
+                </div>
               </CardContent>
             </Card>
           ) : null}
