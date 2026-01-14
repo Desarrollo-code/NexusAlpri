@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, Grip, ArchiveRestore, Tag, Calendar, Pin } from 'lucide-react';
+import { MoreVertical, Edit, Trash2, Lock, Download, Globe, Users, Grip, ArchiveRestore, Tag, Calendar, Pin, MoreHorizontal, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { DownloadButton } from '../ui/download-button';
 import { Identicon } from '../ui/identicon';
@@ -28,12 +28,13 @@ interface ResourceListItemProps {
     onDelete: (resource: AppResourceType) => void;
     onRestore: (resource: AppResourceType) => void;
     onTogglePin: (resource: AppResourceType) => void;
+    onDetails: (resource: AppResourceType) => void;
     selectedIds: Set<string>;
     onSelectionChange: (id: string, checked: boolean) => void;
 }
 
 
-export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDelete, onRestore, onTogglePin, selectedIds, onSelectionChange }: ResourceListItemProps) => {
+export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDelete, onRestore, onTogglePin, onDetails, selectedIds, onSelectionChange }: ResourceListItemProps) => {
     const { user } = useAuth();
     const isMobile = useIsMobile();
     const isAllSelected = resources.length > 0 && resources.every(r => selectedIds.has(r.id));
@@ -52,32 +53,33 @@ export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDel
                             <CardHeader className="flex flex-row items-center gap-4 p-3 relative">
                                 {canManage && <Checkbox checked={selectedIds.has(resource.id)} onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} onClick={e => e.stopPropagation()} className="shrink-0" />}
                                 <div className="w-16 h-16 shrink-0 rounded-md overflow-hidden">
-                                  <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
+                                    <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
                                 </div>
                                 <div className="flex-grow min-w-0">
-                                   <p className="font-semibold truncate text-foreground">{resource.title}</p>
-                                   <p className="text-xs text-muted-foreground">{resource.description || 'Sin descripción'}</p>
+                                    <p className="font-semibold truncate text-foreground">{resource.title}</p>
+                                    <p className="text-xs text-muted-foreground">{resource.description || 'Sin descripción'}</p>
                                 </div>
                                 {canModify && (
                                     <div className="absolute top-1 right-1">
-                                         <DropdownMenu>
+                                        <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4"/></Button>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreVertical className="h-4 w-4" /></Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-                                                <DropdownMenuItem onSelect={() => onTogglePin(resource)}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => onDelete(resource)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => onTogglePin(resource)}><Pin className="mr-2 h-4 w-4" />{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => onDetails(resource)}><MoreHorizontal className="mr-2 h-4 w-4" />Detalles</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => onEdit(resource)}><Edit className="mr-2 h-4 w-4" />Editar</DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => onDelete(resource)} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Eliminar</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
                                 )}
                             </CardHeader>
                             <CardContent className="px-3 pb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                                <div className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground"/> <span>{resource.uploaderName}</span></div>
-                                <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground"/> <span>{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span></div>
-                                <div className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/> <Badge variant="outline">{resource.category}</Badge></div>
-                                <div className="flex items-center gap-2">{resource.ispublic ? <><Globe className="h-4 w-4 text-green-500"/><span>Público</span></> : <><Users className="h-4 w-4 text-blue-500"/><span>Compartido</span></>}</div>
+                                <div className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" /> <span>{resource.uploaderName}</span></div>
+                                <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" /> <span>{new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span></div>
+                                <div className="flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground" /> <Badge variant="outline">{resource.category}</Badge></div>
+                                <div className="flex items-center gap-2">{resource.sharingMode === 'PUBLIC' ? <><Globe className="h-4 w-4 text-green-500" /><span>Público</span></> : <><Users className="h-4 w-4 text-blue-500" /><span>Compartido</span></>}</div>
                             </CardContent>
                         </Card>
                     );
@@ -100,14 +102,14 @@ export const ResourceListItem = React.memo(({ resources, onSelect, onEdit, onDel
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {resources.map(resource => <SingleRowItem key={resource.id} resource={resource} onSelect={onSelect} onEdit={onEdit} onDelete={onDelete} onRestore={onRestore} onTogglePin={onTogglePin} isSelected={selectedIds.has(resource.id)} onSelectionChange={onSelectionChange} canManage={canManage} />)}
+                {resources.map(resource => <SingleRowItem key={resource.id} resource={resource} onSelect={onSelect} onEdit={onEdit} onDelete={onDelete} onRestore={onRestore} onTogglePin={onTogglePin} onDetails={onDetails} isSelected={selectedIds.has(resource.id)} onSelectionChange={onSelectionChange} canManage={canManage} />)}
             </TableBody>
         </Table>
     );
 });
 ResourceListItem.displayName = 'ResourceListItem';
 
-const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogglePin, isSelected, onSelectionChange, canManage }: Omit<ResourceListItemProps, 'resources' | 'selectedIds'> & { isSelected: boolean, canManage: boolean }) => {
+const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogglePin, onDetails, isSelected, onSelectionChange, canManage }: Omit<ResourceListItemProps, 'resources' | 'selectedIds'> & { isSelected: boolean, canManage: boolean }) => {
     const { user } = useAuth();
     const canModify = user && (user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && resource.uploaderId === user.id));
     const youtubeId = getYoutubeVideoId(resource.url);
@@ -126,12 +128,12 @@ const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogg
 
     return (
         <TableRow ref={setNodeRef} onClick={() => onSelect(resource)} className={cn("cursor-pointer", isDragging && 'opacity-50', isSelected && 'bg-primary/10')}>
-             {canManage && <TableCell className="px-4" onClick={(e) => e.stopPropagation()}><Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} /></TableCell>}
-             <TableCell className="w-[40%]">
+            {canManage && <TableCell className="px-4" onClick={(e) => e.stopPropagation()}><Checkbox checked={isSelected} onCheckedChange={(checked) => onSelectionChange(resource.id, !!checked)} /></TableCell>}
+            <TableCell className="w-[40%]">
                 <div className="flex items-center gap-4">
-                    {canModify && <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none"><Grip className="h-4 w-4 text-muted-foreground/50"/></div>}
+                    {canModify && <div {...listeners} {...attributes} className="p-1 cursor-grab touch-none"><Grip className="h-4 w-4 text-muted-foreground/50" /></div>}
                     <div className="w-10 h-10 flex-shrink-0 rounded-md overflow-hidden">
-                      <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
+                        <FileIcon displayMode="list" type={fileExtension} thumbnailUrl={youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : resource.url} />
                     </div>
                     <div className="min-w-0">
                         <p className="font-semibold truncate text-foreground flex items-center gap-1.5">
@@ -143,7 +145,7 @@ const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogg
                 </div>
             </TableCell>
             <TableCell className="w-[15%] hidden md:table-cell">
-                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Avatar className="h-6 w-6"><AvatarImage src={resource.uploader?.avatar || undefined} /><AvatarFallback className="text-xs"><Identicon userId={resource.uploaderId || ''} /></AvatarFallback></Avatar>
                     <span className="truncate">{resource.uploaderName}</span>
                 </div>
@@ -154,18 +156,18 @@ const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogg
             <TableCell className="w-[15%] hidden lg:table-cell text-sm text-muted-foreground">
                 {new Date(resource.uploadDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
             </TableCell>
-             <TableCell className="w-[10%] hidden md:table-cell">
+            <TableCell className="w-[10%] hidden md:table-cell">
                 <div className="flex items-center justify-start gap-2">
                     {resource.sharingMode === 'PUBLIC' ? (
-                        <TooltipProvider><Tooltip><TooltipTrigger><Globe className="h-4 w-4 text-green-500"/></TooltipTrigger><TooltipContent><p>Público</p></TooltipContent></Tooltip></TooltipProvider>
+                        <TooltipProvider><Tooltip><TooltipTrigger><Globe className="h-4 w-4 text-green-500" /></TooltipTrigger><TooltipContent><p>Público</p></TooltipContent></Tooltip></TooltipProvider>
                     ) : (
-                        <TooltipProvider><Tooltip><TooltipTrigger><Users className="h-4 w-4 text-blue-500"/></TooltipTrigger><TooltipContent><p>Compartido ({resource.sharedWith?.length || 0})</p></TooltipContent></Tooltip></TooltipProvider>
+                        <TooltipProvider><Tooltip><TooltipTrigger><Users className="h-4 w-4 text-blue-500" /></TooltipTrigger><TooltipContent><p>Compartido ({resource.sharedWith?.length || 0})</p></TooltipContent></Tooltip></TooltipProvider>
                     )}
-                     {resource.hasPin && (
-                        <TooltipProvider><Tooltip><TooltipTrigger><Lock className="h-4 w-4 text-amber-500"/></TooltipTrigger><TooltipContent><p>Protegido con PIN</p></TooltipContent></Tooltip></TooltipProvider>
+                    {resource.hasPin && (
+                        <TooltipProvider><Tooltip><TooltipTrigger><Lock className="h-4 w-4 text-amber-500" /></TooltipTrigger><TooltipContent><p>Protegido con PIN</p></TooltipContent></Tooltip></TooltipProvider>
                     )}
                 </div>
-             </TableCell>
+            </TableCell>
             <TableCell className="w-[5%] text-right">
                 <div className="flex items-center justify-end">
                     {canModify && (
@@ -176,16 +178,17 @@ const SingleRowItem = ({ resource, onSelect, onEdit, onDelete, onRestore, onTogg
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-                                 {resource.status === 'ACTIVE' ? (
+                                {resource.status === 'ACTIVE' ? (
                                     <>
-                                      <DropdownMenuItem onSelect={(e) => handleAction(e, () => onTogglePin(resource))}><Pin className="mr-2 h-4 w-4"/>{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
-                                      <DropdownMenuItem onSelect={(e) => handleAction(e, () => onEdit(resource))}><Edit className="mr-2 h-4 w-4"/>Editar</DropdownMenuItem>
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem onSelect={(e) => handleAction(e, () => onDelete(resource))} className="text-destructive"><Trash2 className="mr-2 h-4 w-4"/>Eliminar</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={(e) => handleAction(e, () => onTogglePin(resource))}><Pin className="mr-2 h-4 w-4" />{resource.isPinned ? 'Desfijar' : 'Fijar'}</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={(e) => handleAction(e, () => onDetails(resource))}><MoreHorizontal className="mr-2 h-4 w-4" />Detalles</DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={(e) => handleAction(e, () => onEdit(resource))}><Edit className="mr-2 h-4 w-4" />Editar</DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onSelect={(e) => handleAction(e, () => onDelete(resource))} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Eliminar</DropdownMenuItem>
                                     </>
-                                 ) : (
-                                    <DropdownMenuItem onSelect={(e) => handleAction(e, () => onRestore(resource))}><ArchiveRestore className="mr-2 h-4 w-4"/>Restaurar</DropdownMenuItem>
-                                 )}
+                                ) : (
+                                    <DropdownMenuItem onSelect={(e) => handleAction(e, () => onRestore(resource))}><ArchiveRestore className="mr-2 h-4 w-4" />Restaurar</DropdownMenuItem>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     )}

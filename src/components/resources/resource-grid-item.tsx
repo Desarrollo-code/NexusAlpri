@@ -60,6 +60,7 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
     onNavigate: (resource: AppResourceType) => void,
     onRestore: (resource: AppResourceType) => void,
     onTogglePin: (resource: AppResourceType) => void,
+    onDetails: (resource: AppResourceType) => void,
     isSelected: boolean,
     onSelectionChange: (id: string, checked: boolean) => void
 }) => {
@@ -162,6 +163,16 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
                                         size="icon"
                                         variant="secondary"
                                         className="h-8 w-8 bg-background/90 backdrop-blur-sm hover:bg-background shadow-md"
+                                        onClick={(e) => { e.stopPropagation(); onDetails(resource); }}
+                                        onPointerDown={e => e.stopPropagation()}
+                                        title="Ver detalles"
+                                    >
+                                        <Eye className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        size="icon"
+                                        variant="secondary"
+                                        className="h-8 w-8 bg-background/90 backdrop-blur-sm hover:bg-background shadow-md"
                                         onClick={(e) => { e.stopPropagation(); onTogglePin(resource); }}
                                         onPointerDown={e => e.stopPropagation()}
                                         title={resource.isPinned ? 'Desfijar' : 'Fijar'}
@@ -201,9 +212,12 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
                                         <>
                                             {!isFolder && !isPlaylist && (
                                                 <DropdownMenuItem onClick={() => onSelect()}>
-                                                    <Eye className="mr-2 h-4 w-4" /> Ver
+                                                    <Eye className="mr-2 h-4 w-4" /> Vista Previa
                                                 </DropdownMenuItem>
                                             )}
+                                            <DropdownMenuItem onClick={() => onDetails(resource)}>
+                                                <MoreHorizontal className="mr-2 h-4 w-4" /> Detalles
+                                            </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                         </>
                                     )}

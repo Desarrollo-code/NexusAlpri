@@ -304,28 +304,24 @@ export default function MyCoursesPage() {
           label="Total de Cursos"
           value={stats.total}
           subtitle="Cursos inscritos"
-          color="blue"
         />
         <StatsCard
           icon={TrendingUp}
           label="En Progreso"
           value={stats.inProgress}
           subtitle={`${stats.notStarted} sin comenzar`}
-          color="green"
         />
         <StatsCard
           icon={Award}
           label="Completados"
           value={stats.completed}
           subtitle="Logros obtenidos"
-          color="purple"
         />
         <StatsCard
           icon={BarChart3}
           label="Progreso Promedio"
           value={`${stats.averageProgress}%`}
           subtitle="Avance general"
-          color="orange"
         />
       </div>
 

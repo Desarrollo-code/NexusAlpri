@@ -684,28 +684,24 @@ function ManageCoursesPageComponent() {
           label="Total de Cursos"
           value={stats.totalCourses}
           subtitle={`${stats.publishedCount} publicados, ${stats.draftCount} borradores`}
-          color="blue"
         />
         <StatsCard
           icon={Users}
           label="Inscripciones"
           value={stats.totalEnrollments}
           subtitle="Total de estudiantes inscritos"
-          color="green"
         />
         <StatsCard
           icon={LayoutGrid}
           label="Módulos Creados"
           value={stats.totalModules}
           subtitle="Contenido educativo disponible"
-          color="purple"
         />
         <StatsCard
           icon={TrendingUp}
           label="Completación Promedio"
           value={`${Math.round(stats.averageCompletion)}%`}
           subtitle="Tasa de finalización de cursos"
-          color="orange"
         />
       </div>
 

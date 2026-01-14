@@ -15,7 +15,7 @@ import {
   Edit, ArrowUpDown, FolderInput, Clock, PanelLeftClose, PanelLeftOpen,
   Star, Eye, Download, MoreVertical,
   Table, X, RefreshCw,
-  BarChart3, HardDrive, Zap, ChevronLeft, Sparkles, Layers,
+  Zap, ChevronLeft, Sparkles, Layers,
   Share2, Copy, ExternalLink, Info, Tag, Calendar, User, Hash, File
 } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
@@ -47,8 +47,6 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -81,7 +79,7 @@ function useResourceManager() {
 
       const response = await fetch(`/api/resources?${queryParams.toString()}`);
       if (!response.ok) throw new Error('Error al cargar recursos');
-      
+
       const data = await response.json();
       setResources(data.resources || []);
     } catch (err) {
@@ -96,85 +94,15 @@ function useResourceManager() {
   return { resources, loading, error, fetchResources, setResources };
 }
 
-// Componente de estadísticas mejorado con gradientes
-function ResourceStats({ resources }: { resources: AppResourceType[] }) {
-  const stats = useMemo(() => {
-    const totalSize = resources.reduce((sum, r) => sum + (r.size || 0), 0);
-    const byType = resources.reduce((acc, r) => {
-      acc[r.type] = (acc[r.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return {
-      total: resources.length,
-      totalSize: formatFileSize(totalSize),
-      favorites: resources.filter(r => r.isPinned).length,
-      shared: resources.filter(r => r.shared).length
-    };
-  }, [resources]);
-
-  const StatCard = ({ label, value, color, icon: Icon }: {
-    label: string;
-    value: string | number;
-    color: string;
-    icon: React.ElementType;
-  }) => (
-    <Card className={cn(
-      "group relative overflow-hidden p-5 transition-all duration-300 hover:shadow-xl border-0",
-      `bg-gradient-to-br ${color} backdrop-blur-sm`
-    )}>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      <div className="relative flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-white/90 mb-2">{label}</p>
-          <p className="text-2xl font-bold text-white">{value}</p>
-        </div>
-        <div className="p-3 rounded-full bg-white/20 backdrop-blur-sm">
-          <Icon className="h-6 w-6 text-white" />
-        </div>
-      </div>
-    </Card>
-  );
-
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <StatCard
-        label="Total Recursos"
-        value={stats.total}
-        color="from-purple-500 to-pink-500"
-        icon={HardDrive}
-      />
-      <StatCard
-        label="Espacio Usado"
-        value={stats.totalSize}
-        color="from-blue-500 to-cyan-400"
-        icon={BarChart3}
-      />
-      <StatCard
-        label="Favoritos"
-        value={stats.favorites}
-        color="from-amber-500 to-orange-500"
-        icon={Star}
-      />
-      <StatCard
-        label="Compartidos"
-        value={stats.shared}
-        color="from-emerald-500 to-teal-400"
-        icon={Share2}
-      />
-    </div>
-  );
-}
-
 // Modal de detalles del recurso
-function ResourceDetailsModal({ 
-  resource, 
-  isOpen, 
-  onClose 
-}: { 
-  resource: AppResourceType | null; 
-  isOpen: boolean; 
-  onClose: () => void 
+function ResourceDetailsModal({
+  resource,
+  isOpen,
+  onClose
+}: {
+  resource: AppResourceType | null;
+  isOpen: boolean;
+  onClose: () => void
 }) {
   if (!resource) return null;
 
@@ -182,8 +110,8 @@ function ResourceDetailsModal({
     if (resource.type === 'FOLDER') return <FolderIcon className="h-12 w-12 text-blue-500" />;
     if (resource.type === 'VIDEO_PLAYLIST') return <ListVideo className="h-12 w-12 text-purple-500" />;
     if (resource.filetype === 'pdf') return <FileText className="h-12 w-12 text-red-500" />;
-    if (resource.filetype === 'image') return <ImageIcon className="h-12 w-12 text-green-500" />;
-    if (resource.filetype === 'video') return <VideoIcon className="h-12 w-12 text-amber-500" />;
+    if (resource.filetype?.startsWith('image/')) return <ImageIcon className="h-12 w-12 text-green-500" />;
+    if (resource.filetype?.startsWith('video/')) return <VideoIcon className="h-12 w-12 text-amber-500" />;
     return <File className="h-12 w-12 text-gray-500" />;
   };
 
@@ -209,9 +137,9 @@ function ResourceDetailsModal({
               <DialogTitle className="text-2xl font-bold">{resource.title}</DialogTitle>
               <DialogDescription className="flex items-center gap-2 mt-1">
                 <Badge variant="outline" className="capitalize">
-                  {resource.type === 'FOLDER' ? 'Carpeta' : 
-                   resource.type === 'VIDEO_PLAYLIST' ? 'Lista de reproducción' : 
-                   'Archivo'}
+                  {resource.type === 'FOLDER' ? 'Carpeta' :
+                    resource.type === 'VIDEO_PLAYLIST' ? 'Lista de reproducción' :
+                      'Archivo'}
                 </Badge>
                 {resource.isPinned && <Badge className="bg-amber-500"><Star className="h-3 w-3 mr-1" />Favorito</Badge>}
                 {resource.shared && <Badge className="bg-green-500"><Share2 className="h-3 w-3 mr-1" />Compartido</Badge>}
@@ -390,8 +318,8 @@ function EnhancedBreadcrumbs({
               onClick={() => onBreadcrumbClick(crumb.id, index)}
               className={cn(
                 "group flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200",
-                index === breadcrumbs.length - 1 
-                  ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold border border-primary/20" 
+                index === breadcrumbs.length - 1
+                  ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold border border-primary/20"
                   : "text-muted-foreground hover:text-primary hover:bg-accent/50"
               )}
               disabled={index === breadcrumbs.length - 1}
@@ -456,20 +384,6 @@ function SidebarNavigation({
                 <ChevronLeft className="h-4 w-4" />
               </Button>
             </div>
-            
-            {/* Quick Stats */}
-            <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">Espacio disponible</p>
-                  <p className="text-2xl font-bold">85%</p>
-                </div>
-                <div className="p-2 rounded-full bg-primary/20">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                </div>
-              </div>
-              <Progress value={85} className="h-2 mt-3" />
-            </Card>
           </div>
 
           {/* Tabs de Navegación */}
@@ -484,19 +398,19 @@ function SidebarNavigation({
                 Etiquetas
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="folders" className="mt-4">
-              <FolderTree 
-                currentFolderId={currentFolderId} 
-                onNavigate={onNavigate} 
-                compact 
+              <FolderTree
+                currentFolderId={currentFolderId}
+                onNavigate={onNavigate}
+                compact
               />
             </TabsContent>
-            
+
             <TabsContent value="tags" className="mt-4">
               <div className="space-y-4">
-                <Input 
-                  placeholder="Buscar etiquetas..." 
+                <Input
+                  placeholder="Buscar etiquetas..."
                   className="bg-background/50 border-border/50"
                 />
                 <div className="flex flex-wrap gap-2 pt-2">
@@ -508,7 +422,7 @@ function SidebarNavigation({
                     { label: 'Confidencial', color: 'bg-purple-500/20 text-purple-700' },
                     { label: 'Público', color: 'bg-green-500/20 text-green-700' }
                   ].map(tag => (
-                    <Badge 
+                    <Badge
                       key={tag.label}
                       className={`${tag.color} border-0 cursor-pointer hover:scale-105 transition-transform`}
                     >
@@ -601,8 +515,8 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
   );
 }
 
-function EmptyState({ canManage, searchTerm, onCreateFolder, onUpload }: { 
-  canManage: boolean; 
+function EmptyState({ canManage, searchTerm, onCreateFolder, onUpload }: {
+  canManage: boolean;
   searchTerm: string;
   onCreateFolder: () => void;
   onUpload: () => void;
@@ -624,7 +538,7 @@ function EmptyState({ canManage, searchTerm, onCreateFolder, onUpload }: {
           {searchTerm ? 'No se encontraron resultados' : 'Biblioteca vacía'}
         </h3>
         <p className="text-muted-foreground max-w-md mx-auto text-lg">
-          {searchTerm 
+          {searchTerm
             ? 'No hay recursos que coincidan con tu búsqueda. Intenta con otros términos.'
             : 'Comienza agregando recursos a tu biblioteca. ¡Es fácil y rápido!'}
         </p>
@@ -636,14 +550,14 @@ function EmptyState({ canManage, searchTerm, onCreateFolder, onUpload }: {
           transition={{ delay: 0.2 }}
           className="flex flex-col sm:flex-row gap-3 justify-center"
         >
-          <Button 
+          <Button
             onClick={onCreateFolder}
             className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
           >
             <FolderPlus className="mr-2 h-5 w-5" />
             Nueva Carpeta
           </Button>
-          <Button 
+          <Button
             onClick={onUpload}
             variant="secondary"
             className="border-2"
@@ -794,7 +708,7 @@ function ResourceSection({
               <thead>
                 <tr className="border-b bg-gradient-to-r from-muted/30 to-muted/10">
                   <th className="text-left p-4">
-                    <Checkbox 
+                    <Checkbox
                       checked={selectedIds.size === resources.length && resources.length > 0}
                       onCheckedChange={(c) => onSelectionChange('all', !!c)}
                     />
@@ -930,7 +844,7 @@ function Header({
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -944,7 +858,7 @@ function Header({
               <PanelLeftOpen className="h-5 w-5" />
             )}
           </Button>
-          
+
           {canManage && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -1078,16 +992,16 @@ function SearchAndFilters({
             </Button>
           )}
         </div>
-        
+
         <div className="flex items-center gap-3 w-full lg:w-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="h-12 px-4 rounded-xl border-border/50 hover:border-primary/50">
                 <ArrowUpDown className="mr-2 h-4 w-4" />
                 <span className="font-medium">
-                  {sortBy === 'name' ? 'Nombre' : 
-                   sortBy === 'size' ? 'Tamaño' : 
-                   sortBy === 'type' ? 'Tipo' : 'Fecha'}
+                  {sortBy === 'name' ? 'Nombre' :
+                    sortBy === 'size' ? 'Tamaño' :
+                      sortBy === 'type' ? 'Tipo' : 'Fecha'}
                 </span>
                 <Badge variant="outline" className="ml-2">
                   {sortOrder === 'asc' ? '↑' : '↓'}
@@ -1151,7 +1065,7 @@ function SearchAndFilters({
                     Refina tu búsqueda con múltiples criterios
                   </p>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label className="font-medium">Fecha de subida</Label>
@@ -1160,7 +1074,7 @@ function SearchAndFilters({
                       onDateChange={onDateChange}
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label className="font-medium">Tipo de Archivo</Label>
                     <Select value={fileType} onValueChange={onFileTypeChange}>
@@ -1202,7 +1116,7 @@ function SearchAndFilters({
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex items-center space-x-2">
                       <Checkbox
@@ -1219,7 +1133,7 @@ function SearchAndFilters({
                         Con Pin
                       </Label>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="hasExpiry"
@@ -1236,7 +1150,7 @@ function SearchAndFilters({
                       </Label>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="tags-filter" className="font-medium">
                       Etiquetas (separadas por coma)
@@ -1250,7 +1164,7 @@ function SearchAndFilters({
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex gap-2 pt-2">
                   <Button
                     variant="outline"
@@ -1322,7 +1236,7 @@ function SelectionActionBar({
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <TooltipProvider>
               <Tooltip>
@@ -1340,7 +1254,7 @@ function SelectionActionBar({
                 <TooltipContent>Mover a otra carpeta</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1357,7 +1271,7 @@ function SelectionActionBar({
                 <TooltipContent>Compartir selección</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1374,9 +1288,9 @@ function SelectionActionBar({
                 <TooltipContent>Descargar selección</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            
+
             <Separator orientation="vertical" className="h-6" />
-            
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1393,7 +1307,7 @@ function SelectionActionBar({
                 <TooltipContent>Eliminar selección</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1463,7 +1377,7 @@ function Modals({
       <ResourceEditorModal isOpen={isUploaderOpen || !!resourceToEdit} onClose={onCloseUploader} resource={resourceToEdit} parentId={parentId} onSave={onSaveSuccess} />
       <FolderEditorModal isOpen={isFolderEditorOpen} onClose={onCloseFolderEditor} onSave={onSaveFolderSuccess} parentId={parentId} folderToEdit={folderToEdit} />
       <PlaylistCreatorModal isOpen={isPlaylistCreatorOpen} onClose={onClosePlaylistCreator} onSave={onSaveSuccess} parentId={parentId} playlistToEdit={playlistToEdit} />
-      
+
       <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && onCloseDelete()}>
         <AlertDialogContent className="border-2 border-destructive/20">
           <AlertDialogHeader>
@@ -1482,7 +1396,7 @@ function Modals({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="border-border/50">Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={resourceToDelete?.id === 'bulk' ? onBulkDelete : onConfirmDelete}
               className="bg-gradient-to-r from-destructive to-destructive/80 hover:from-destructive/90 hover:to-destructive/70"
             >
@@ -1493,13 +1407,13 @@ function Modals({
         </AlertDialogContent>
       </AlertDialog>
 
-      <QuickActionsFAB 
-        canManage={canManage} 
-        onCreateFolder={onCreateFolder} 
-        onUploadFile={onUploadFile} 
-        onCreatePlaylist={onCreatePlaylist} 
+      <QuickActionsFAB
+        canManage={canManage}
+        onCreateFolder={onCreateFolder}
+        onUploadFile={onUploadFile}
+        onCreatePlaylist={onCreatePlaylist}
       />
-      
+
       <DragOverlay>
         {activeId && (
           <motion.div
@@ -1509,15 +1423,15 @@ function Modals({
           >
             <ResourceGridItem
               resource={resources.find((r: AppResourceType) => r.id === activeId)!}
-              onSelect={() => {}}
-              onEdit={() => {}}
-              onDelete={() => {}}
-              onNavigate={() => {}}
-              onTogglePin={() => {}}
-              onShare={() => {}}
-              onDetails={() => {}}
+              onSelect={() => { }}
+              onEdit={() => { }}
+              onDelete={() => { }}
+              onNavigate={() => { }}
+              onTogglePin={() => { }}
+              onShare={() => { }}
+              onDetails={() => { }}
               isSelected={selected.has(activeId)}
-              onSelectionChange={() => {}}
+              onSelectionChange={() => { }}
             />
           </motion.div>
         )}
@@ -1550,7 +1464,7 @@ export default function ResourcesPage() {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [currentFolder, setCurrentFolder] = useState<AppResourceType | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState([{ id: null, title: 'Biblioteca Principal' }]);
-  
+
   // Estados de UI
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -1662,7 +1576,7 @@ export default function ResourcesPage() {
     if (resourceView === 'shared') filtered = filtered.filter(r => r.shared);
     if (debouncedSearchTerm) {
       const searchLower = debouncedSearchTerm.toLowerCase();
-      filtered = filtered.filter(r => 
+      filtered = filtered.filter(r =>
         r.title.toLowerCase().includes(searchLower) ||
         r.description?.toLowerCase().includes(searchLower) ||
         r.tags?.some(tag => tag.toLowerCase().includes(searchLower))
@@ -1731,17 +1645,17 @@ export default function ResourcesPage() {
           body: JSON.stringify({ parentId: targetFolderId === 'root' ? null : targetFolderId })
         });
 
-        toast({ 
-          title: '✅ Recurso Movido', 
+        toast({
+          title: '✅ Recurso Movido',
           description: `"${resourceToMove.title}" se movió correctamente.`,
           className: "border-l-4 border-l-green-500"
         });
         fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
       } catch {
-        toast({ 
-          title: '❌ Error', 
-          description: 'No se pudo mover el recurso.', 
-          variant: 'destructive' 
+        toast({
+          title: '❌ Error',
+          description: 'No se pudo mover el recurso.',
+          variant: 'destructive'
         });
       }
     }
@@ -1751,10 +1665,10 @@ export default function ResourcesPage() {
     if (selectedIds.size === 0) return;
 
     try {
-      const endpoint = action === 'download' ? '/api/resources/bulk-download' : 
-                     action === 'share' ? '/api/resources/bulk-share' : 
-                     '/api/resources/bulk-delete';
-      
+      const endpoint = action === 'download' ? '/api/resources/bulk-download' :
+        action === 'share' ? '/api/resources/bulk-share' :
+          '/api/resources/bulk-delete';
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1775,19 +1689,19 @@ export default function ResourcesPage() {
         document.body.removeChild(a);
       }
 
-      toast({ 
+      toast({
         title: `✅ ${action === 'share' ? 'Recursos compartidos' : 'Acción completada'}`,
         description: `${selectedIds.size} recursos procesados`,
         className: "border-l-4 border-l-green-500"
       });
-      
+
       fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
       setSelectedIds(new Set());
     } catch {
-      toast({ 
-        title: '❌ Error', 
-        description: 'No se pudo completar la acción', 
-        variant: 'destructive' 
+      toast({
+        title: '❌ Error',
+        description: 'No se pudo completar la acción',
+        variant: 'destructive'
       });
     }
   }, [selectedIds, toast, fetchResources, currentFolderId, debouncedSearchTerm]);
@@ -1800,16 +1714,16 @@ export default function ResourcesPage() {
         body: JSON.stringify({ isPinned: !resource.isPinned }),
       });
 
-      toast({ 
+      toast({
         description: `✅ Recurso ${resource.isPinned ? 'desfijado' : 'fijado'}.`,
         className: "border-l-4 border-l-amber-500"
       });
       fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
     } catch (err) {
-      toast({ 
-        title: "❌ Error", 
-        description: (err as Error).message, 
-        variant: "destructive" 
+      toast({
+        title: "❌ Error",
+        description: (err as Error).message,
+        variant: "destructive"
       });
     }
   }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
@@ -1822,7 +1736,7 @@ export default function ResourcesPage() {
     setPlaylistToEdit(null);
     setIsUploaderOpen(false);
     fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
-    
+
     toast({
       title: "✅ Guardado exitoso",
       description: "Los cambios se han guardado correctamente",
@@ -1835,17 +1749,17 @@ export default function ResourcesPage() {
 
     try {
       await fetch(`/api/resources/${resourceToDelete.id}`, { method: 'DELETE' });
-      toast({ 
-        title: "✅ Recurso eliminado", 
+      toast({
+        title: "✅ Recurso eliminado",
         description: `"${resourceToDelete.title}" ha sido eliminado.`,
         className: "border-l-4 border-l-red-500"
       });
       fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
     } catch (err) {
-      toast({ 
-        title: "❌ Error", 
-        description: (err as Error).message, 
-        variant: "destructive" 
+      toast({
+        title: "❌ Error",
+        description: (err as Error).message,
+        variant: "destructive"
       });
     } finally {
       setResourceToDelete(null);
@@ -1873,7 +1787,7 @@ export default function ResourcesPage() {
     try {
       const shareUrl = `${window.location.origin}/share/${resource.id}`;
       await navigator.clipboard.writeText(shareUrl);
-      
+
       toast({
         title: "🔗 Enlace copiado",
         description: "El enlace de compartir ha sido copiado al portapapeles",
@@ -1901,16 +1815,16 @@ export default function ResourcesPage() {
     if (isLoadingData) return <LoadingState />;
     if (error) return <ErrorState error={error} onRetry={() => fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm })} />;
     if (currentFolder?.type === 'VIDEO_PLAYLIST') return <VideoPlaylistView resources={allApiResources} folder={currentFolder} />;
-    if (filteredResources.length === 0) return <EmptyState 
-      canManage={canManage} 
-      searchTerm={searchTerm} 
+    if (filteredResources.length === 0) return <EmptyState
+      canManage={canManage}
+      searchTerm={searchTerm}
       onCreateFolder={() => setIsFolderEditorOpen(true)}
       onUpload={() => setIsUploaderOpen(true)}
     />;
-    
+
     return (
       <div className="space-y-8">
-        <ResourceStats resources={filteredResources} />
+        {/* Aquí se eliminó el ResourceStats */}
         {Object.entries(groupedResources).map(([category, resources]) => (
           <ResourceSection
             key={category}
@@ -1961,7 +1875,7 @@ export default function ResourcesPage() {
 
         <main className="relative">
           <div className="absolute inset-0 bg-grid-pattern opacity-[0.015] pointer-events-none" />
-          
+
           <div className="space-y-6 p-6 lg:p-8 relative" ref={setRootDroppableRef}>
             {!isSidebarVisible && (
               <motion.div
@@ -2014,7 +1928,7 @@ export default function ResourcesPage() {
             )}
 
             <EnhancedBreadcrumbs breadcrumbs={breadcrumbs} onBreadcrumbClick={handleBreadcrumbClick} />
-            
+
             <motion.div
               ref={containerRef}
               initial={{ opacity: 0 }}

@@ -407,28 +407,24 @@ export default function CoursesPage() {
           label="Cursos Disponibles"
           value={stats.available}
           subtitle={`${stats.mandatory} obligatorios pendientes`}
-          color="blue"
         />
         <StatsCard
           icon={TrendingUp}
           label="En Progreso"
           value={stats.inProgress}
           subtitle="Cursos activos"
-          color="green"
         />
         <StatsCard
           icon={Award}
           label="Completados"
           value={stats.completed}
           subtitle="Logros obtenidos"
-          color="purple"
         />
         <StatsCard
           icon={Target}
           label="Categorías"
           value={stats.totalCategories}
           subtitle="Áreas de conocimiento"
-          color="orange"
         />
       </div>
 

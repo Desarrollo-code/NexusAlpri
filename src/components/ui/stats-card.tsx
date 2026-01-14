@@ -19,25 +19,22 @@ export function StatsCard({
     value,
     subtitle,
     trend,
-    color = "default",
+    color = "default", // Now defaults to a theme-aware style
     className
 }: StatsCardProps) {
-    // Map legacy color prop to theme-aware classes if needed, 
-    // or just use a standard theme-aware styling for all.
-    // The user requested: "deben adaptarse al tema".
-    // So we typically use primary/secondary variants or specific semantic colors.
-
-    // We can keep the "color" prop for subtle variations (e.g. different icons),
-    // but the background should probably be consistent or use CSS variables.
-
     const colorStyles = {
-        default: "bg-primary/10 text-primary",
-        blue: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-        green: "bg-green-500/10 text-green-600 dark:text-green-400",
-        purple: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-        orange: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
-        indigo: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+        // "default" variant now uses the primary theme color dynamically
+        default: "bg-primary/10 text-primary border-primary/20",
+        blue: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900",
+        green: "bg-green-500/10 text-green-600 dark:text-green-400 border-green-200 dark:border-green-900",
+        purple: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900",
+        orange: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900",
+        indigo: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900",
     };
+
+    // If a color is passed that isn't in the map, fallback to default or handle it? 
+    // Typescript ensures keys match, but just in case of dynamic usage:
+    const activeColorStyle = colorStyles[color] || colorStyles.default;
 
     return (
         <Card className={cn("overflow-hidden border shadow-sm hover:shadow-md transition-all duration-300", className)}>
@@ -50,7 +47,7 @@ export function StatsCard({
                             <p className="text-xs text-muted-foreground">{subtitle}</p>
                         )}
                     </div>
-                    <div className={cn("p-3 rounded-xl shrink-0", colorStyles[color])}>
+                    <div className={cn("p-3 rounded-xl shrink-0 border", activeColorStyle)}>
                         <Icon className="h-5 w-5 md:h-6 md:w-6" />
                     </div>
                 </div>
