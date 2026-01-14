@@ -454,7 +454,11 @@ export function ResourceEditorModal({ isOpen, onClose, resource, parentId, onSav
                                 </div>
                             </div>
                         )}
-                        {resourceType === 'DOCUMENTO_EDITABLE' && <RichTextEditor value={editableContent} onChange={setEditableContent} className="min-h-[250px] bg-background" />}
+                        {resourceType === 'DOCUMENTO_EDITABLE' && (
+                            <div className="min-h-[250px] bg-background">
+                                <RichTextEditor value={editableContent} onChange={setEditableContent} />
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>

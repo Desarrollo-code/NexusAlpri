@@ -344,98 +344,116 @@ function EnhancedBreadcrumbs({
 }
 
 // Componente Sidebar mejorado
+// Componente Sidebar mejorado
 function SidebarNavigation({
   isVisible,
   onToggle,
   currentFolderId,
-  onNavigate
+  onNavigate,
+  isCollapsed,
+  onToggleCollapse
 }: {
   isVisible: boolean;
   onToggle: () => void;
   currentFolderId: string | null;
   onNavigate: (resource: AppResourceType) => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }) {
   if (!isVisible) return null;
 
   return (
     <motion.aside
-      initial={{ x: -300, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: -300, opacity: 0 }}
-      transition={{ type: "spring", damping: 20 }}
-      className="hidden lg:block sticky top-0 h-screen overflow-y-auto pb-24"
+      initial={{ width: 300, opacity: 0 }}
+      animate={{
+        width: isCollapsed ? 80 : 300,
+        opacity: 1,
+        transition: { duration: 0.3, ease: 'easeInOut' }
+      }}
+      className="hidden lg:flex flex-col sticky top-0 h-screen border-r bg-background/50 backdrop-blur-md z-30"
     >
-      <ScrollArea className="h-full">
-        <div className="space-y-6 p-6">
-          {/* Header del Sidebar */}
-          <div className="pb-4 border-b border-border/40">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="font-bold text-xl bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                  Explorador
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">Navega por tu biblioteca</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onToggle}
-                className="h-8 w-8 rounded-full hover:bg-accent"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+      <div className={cn("flex items-center p-4 h-16 border-b border-border/40", isCollapsed ? "justify-center" : "justify-between")}>
+        {!isCollapsed && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="font-bold text-xl bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent truncate"
+          >
+            Explorador
+          </motion.div>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleCollapse}
+          className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
+        >
+          {isCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
+        </Button>
+      </div>
 
-          {/* Tabs de Navegación */}
+      <ScrollArea className="flex-1 overflow-hidden">
+        <div className={cn("space-y-2", isCollapsed ? "p-2" : "p-4")}>
+          {/* Tabs Navigation */}
           <Tabs defaultValue="folders" className="w-full">
-            <TabsList className="grid grid-cols-2 bg-gradient-to-r from-muted/50 to-muted/30 p-1">
-              <TabsTrigger value="folders" className="data-[state=active]:bg-background">
-                <FolderIcon className="h-4 w-4 mr-2" />
-                Carpetas
+            <TabsList className={cn("w-full mb-4", isCollapsed ? "flex flex-col h-auto gap-2 bg-transparent" : "grid grid-cols-2")}>
+              <TabsTrigger value="folders" className={cn(isCollapsed ? "w-full justify-center p-2" : "")}>
+                <FolderIcon className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+                {!isCollapsed && "Carpetas"}
               </TabsTrigger>
-              <TabsTrigger value="tags" className="data-[state=active]:bg-background">
-                <Layers className="h-4 w-4 mr-2" />
-                Etiquetas
+              <TabsTrigger value="tags" className={cn(isCollapsed ? "w-full justify-center p-2" : "")}>
+                <Layers className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
+                {!isCollapsed && "Etiquetas"}
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="folders" className="mt-4">
+            <TabsContent value="folders" className="mt-0">
               <FolderTree
                 currentFolderId={currentFolderId}
                 onNavigate={onNavigate}
-                compact
+                compact={isCollapsed}
               />
             </TabsContent>
 
-            <TabsContent value="tags" className="mt-4">
-              <div className="space-y-4">
-                <Input
-                  placeholder="Buscar etiquetas..."
-                  className="bg-background/50 border-border/50"
-                />
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {[
-                    { label: 'Urgente', color: 'bg-red-500/20 text-red-700' },
-                    { label: 'Revisión', color: 'bg-amber-500/20 text-amber-700' },
-                    { label: 'Importante', color: 'bg-blue-500/20 text-blue-700' },
-                    { label: 'Archivo', color: 'bg-gray-500/20 text-gray-700' },
-                    { label: 'Confidencial', color: 'bg-purple-500/20 text-purple-700' },
-                    { label: 'Público', color: 'bg-green-500/20 text-green-700' }
-                  ].map(tag => (
-                    <Badge
-                      key={tag.label}
-                      className={`${tag.color} border-0 cursor-pointer hover:scale-105 transition-transform`}
-                    >
-                      {tag.label}
-                    </Badge>
-                  ))}
+            <TabsContent value="tags" className="mt-0">
+              {!isCollapsed ? (
+                <div className="space-y-4 px-1">
+                  <Input placeholder="Buscar etiquetas..." className="h-9 bg-background/50" />
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: 'Urgente', color: 'bg-red-500/10 text-red-600 border-red-200' },
+                      { label: 'Revisión', color: 'bg-amber-500/10 text-amber-600 border-amber-200' },
+                      { label: 'Finalizado', color: 'bg-green-500/10 text-green-600 border-green-200' },
+                      { label: 'Público', color: 'bg-blue-500/10 text-blue-600 border-blue-200' },
+                    ].map(tag => (
+                      <Badge key={tag.label} variant="outline" className={cn("cursor-pointer hover:bg-opacity-80 transition-colors bg-background", tag.color)}>
+                        {tag.label}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex flex-col items-center gap-4 pt-4">
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild><Tag className="h-5 w-5 text-muted-foreground/50" /></TooltipTrigger>
+                      <TooltipContent side="right">Expandir para ver etiquetas</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
       </ScrollArea>
+
+      {/* Footer Actions */}
+      <div className={cn("p-4 border-t border-border/40 flex items-center", isCollapsed ? "justify-center" : "justify-between")}>
+        {!isCollapsed && <span className="text-xs text-muted-foreground">v2.4.0</span>}
+        <Button variant="ghost" size="icon" onClick={onToggle} title="Ocultar barra lateral">
+          <PanelLeftClose className="h-4 w-4 text-muted-foreground" />
+        </Button>
+      </div>
     </motion.aside>
   );
 }
@@ -1872,11 +1890,11 @@ export default function ResourcesPage() {
       )}>
         <SidebarNavigation
           isVisible={isSidebarVisible}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          onToggleVisibility={() => setIsSidebarVisible(!isSidebarVisible)}
+          onToggle={() => setIsSidebarVisible(!isSidebarVisible)}
           currentFolderId={currentFolderId}
           onNavigate={handleNavigateFolder}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
 
         <main className="relative">
@@ -1900,38 +1918,42 @@ export default function ResourcesPage() {
                 </motion.div>
               )}
 
-              <Header
-                canManage={canManage}
-                isSidebarVisible={isSidebarVisible}
-                onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
-                onCreateFolder={() => setIsFolderEditorOpen(true)}
-                onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
-                onUpload={() => setIsUploaderOpen(true)}
-                resourceView={resourceView}
-                onViewChange={setResourceView}
-                selectedCount={selectedIds.size}
-              />
+              {!currentFolderId && (
+                <>
+                  <Header
+                    canManage={canManage}
+                    isSidebarVisible={isSidebarVisible}
+                    onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
+                    onCreateFolder={() => setIsFolderEditorOpen(true)}
+                    onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
+                    onUpload={() => setIsUploaderOpen(true)}
+                    resourceView={resourceView}
+                    onViewChange={setResourceView}
+                    selectedCount={selectedIds.size}
+                  />
 
-              {currentFolder?.type !== 'VIDEO_PLAYLIST' && (
-                <SearchAndFilters
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
-                  onSortChange={(by, order) => { setSortBy(by); setSortOrder(order); }}
-                  dateRange={dateRange}
-                  onDateChange={setDateRange}
-                  fileType={fileType}
-                  onFileTypeChange={setFileType}
-                  hasPin={hasPin}
-                  onHasPinChange={setHasPin}
-                  hasExpiry={hasExpiry}
-                  onHasExpiryChange={setHasExpiry}
-                  tagsFilter={tagsFilter}
-                  onTagsFilterChange={setTagsFilter}
-                  isFilterOpen={isFilterPopoverOpen}
-                  onFilterOpenChange={setIsFilterPopoverOpen}
-                />
+                  {currentFolder?.type !== 'VIDEO_PLAYLIST' && (
+                    <SearchAndFilters
+                      searchTerm={searchTerm}
+                      onSearchChange={setSearchTerm}
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSortChange={(by, order) => { setSortBy(by); setSortOrder(order); }}
+                      dateRange={dateRange}
+                      onDateChange={setDateRange}
+                      fileType={fileType}
+                      onFileTypeChange={setFileType}
+                      hasPin={hasPin}
+                      onHasPinChange={setHasPin}
+                      hasExpiry={hasExpiry}
+                      onHasExpiryChange={setHasExpiry}
+                      tagsFilter={tagsFilter}
+                      onTagsFilterChange={setTagsFilter}
+                      isFilterOpen={isFilterPopoverOpen}
+                      onFilterOpenChange={setIsFilterPopoverOpen}
+                    />
+                  )}
+                </>
               )}
 
               <EnhancedBreadcrumbs breadcrumbs={breadcrumbs} onBreadcrumbClick={handleBreadcrumbClick} />
