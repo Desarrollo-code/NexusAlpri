@@ -234,11 +234,11 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                   </Card>
                </motion.div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-                  <motion.div variants={item} className="h-full">
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                  <motion.div variants={item} className="lg:col-span-4 h-full">
                      <HealthStatusWidget />
                   </motion.div>
-                  <motion.div variants={item} className="h-full">
+                  <motion.div variants={item} className="lg:col-span-8 h-full">
                      <Card className="border-[#E2E8F0] shadow-sm bg-white overflow-hidden h-full">
                         <CardHeader className="p-4 border-b border-[#E2E8F0] bg-slate-50/50">
                            <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -246,28 +246,28 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                               Acciones Rápidas
                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="p-3 grid grid-cols-2 gap-2">
-                           <Button asChild variant="outline" size="sm" className="flex flex-col items-center justify-center h-full min-h-[80px] text-[11px] font-bold border-slate-100 hover:bg-primary/5 hover:border-primary/20 transition-all gap-1.5 rounded-xl py-3">
-                              <Link href="/manage-courses">
-                                 <BookOpen className="h-5 w-5 text-primary" />
+                        <CardContent className="p-3 grid grid-cols-2 md:grid-cols-4 gap-2 h-[calc(100%-57px)]">
+                           <Button asChild variant="outline" size="sm" className="flex flex-col items-center justify-center h-full min-h-[80px] text-[11px] font-bold border-slate-100 hover:bg-primary/5 hover:border-primary/20 transition-all gap-1.5 rounded-xl py-4 group">
+                              <Link href="/manage-courses" className="flex flex-col items-center gap-2">
+                                 <BookOpen className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
                                  Contenidos
                               </Link>
                            </Button>
-                           <Button asChild variant="outline" size="sm" className="flex flex-col items-center justify-center h-full min-h-[80px] text-[11px] font-bold border-slate-100 hover:bg-primary/5 hover:border-primary/20 transition-all gap-1.5 rounded-xl py-3">
-                              <Link href="/users">
-                                 <Users className="h-5 w-5 text-primary" />
+                           <Button asChild variant="outline" size="sm" className="flex flex-col items-center justify-center h-full min-h-[80px] text-[11px] font-bold border-slate-100 hover:bg-primary/5 hover:border-primary/20 transition-all gap-1.5 rounded-xl py-4 group">
+                              <Link href="/users" className="flex flex-col items-center gap-2">
+                                 <Users className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
                                  Usuarios
                               </Link>
                            </Button>
-                           <Button asChild variant="outline" size="sm" className="flex flex-col items-center justify-center h-full min-h-[80px] text-[11px] font-bold border-slate-100 hover:bg-primary/5 hover:border-primary/20 transition-all gap-1.5 rounded-xl py-3">
-                              <Link href="/analytics">
-                                 <BarChart3 className="h-5 w-5 text-primary" />
+                           <Button asChild variant="outline" size="sm" className="flex flex-col items-center justify-center h-full min-h-[80px] text-[11px] font-bold border-slate-100 hover:bg-primary/5 hover:border-primary/20 transition-all gap-1.5 rounded-xl py-4 group">
+                              <Link href="/analytics" className="flex flex-col items-center gap-2">
+                                 <BarChart3 className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
                                  Analíticas
                               </Link>
                            </Button>
-                           <Button asChild variant="outline" size="sm" className="flex flex-col items-center justify-center h-full min-h-[80px] text-[11px] font-bold border-slate-100 hover:bg-primary/5 hover:border-primary/20 transition-all gap-1.5 rounded-xl py-3">
-                              <Link href="/settings">
-                                 <Settings className="h-5 w-5 text-primary" />
+                           <Button asChild variant="outline" size="sm" className="flex flex-col items-center justify-center h-full min-h-[80px] text-[11px] font-bold border-slate-100 hover:bg-primary/5 hover:border-primary/20 transition-all gap-1.5 rounded-xl py-4 group">
+                              <Link href="/settings" className="flex flex-col items-center gap-2">
+                                 <Settings className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
                                  Ajustes
                               </Link>
                            </Button>

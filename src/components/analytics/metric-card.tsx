@@ -49,6 +49,10 @@ export const MetricCard = ({
                     "group cursor-default rounded-xl",
                     onClick && "cursor-pointer"
                 )}
+                style={{
+                    backgroundColor: `color-mix(in srgb, ${chartVar}, white 92%)`,
+                    borderColor: `color-mix(in srgb, ${chartVar}, transparent 80%)`
+                } as React.CSSProperties}
             >
                 <div className="flex items-center gap-3 z-10">
                     {Icon && (

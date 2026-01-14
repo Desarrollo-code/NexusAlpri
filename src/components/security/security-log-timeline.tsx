@@ -50,9 +50,9 @@ const TimelineItem = ({ log, onLogClick, isLast, compact }: { log: SecurityLog, 
                             <AvatarImage src={log.user?.avatar || undefined} />
                             <AvatarFallback className="text-[9px]"><Identicon userId={log.user?.id || log.emailAttempt || ''} /></AvatarFallback>
                         </Avatar>
-                        <p className="font-bold text-sm truncate">{log.user?.name || log.emailAttempt}</p>
+                        <p className="text-sm truncate text-foreground/80">{log.user?.name || log.emailAttempt}</p>
                     </div>
-                    <Badge variant={eventUI.variant} className="whitespace-nowrap text-[11px] py-0 px-1.5 h-5 font-bold">
+                    <Badge variant={eventUI.variant} className="whitespace-nowrap text-[11px] py-0 px-1.5 h-5 font-medium">
                         {eventUI.label}
                     </Badge>
                 </div>
