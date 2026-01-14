@@ -4,6 +4,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import type { AppResourceType } from '@/types';
 import { useAuth } from '@/contexts/auth-context';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Edit, MoreVertical, Trash2, Lock, Download, Globe, Users, ArchiveRestore, Pin, FileQuestion, Share2, Clock, Eye, MoreHorizontal, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -119,12 +120,19 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
     }
 
     return (
-        <div ref={setNodeRef} {...attributes} {...listeners} className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}>
+        <motion.div
+            ref={setNodeRef}
+            {...attributes}
+            {...listeners}
+            className={cn("w-full touch-none", isDragging && 'opacity-50 z-10')}
+            whileHover={{ y: -4 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        >
             <Card
                 className={cn(
-                    "group w-full h-full transition-all duration-200 ease-out cursor-pointer relative border flex flex-col overflow-hidden",
-                    "hover:scale-[1.02] hover:shadow-xl",
-                    isOver && "ring-2 ring-primary ring-offset-2",
+                    "group w-full h-full transition-all duration-300 ease-out cursor-pointer relative border flex flex-col overflow-hidden",
+                    "hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)]",
+                    isOver && "ring-4 ring-primary ring-offset-4 scale-[0.98] shadow-2xl bg-primary/5",
                     resource.status === 'ARCHIVED' && 'opacity-60 cursor-default',
                     isSelected ? "border-primary shadow-lg ring-2 ring-primary/20" : "border-border/50 hover:border-primary/50"
                 )}
@@ -207,14 +215,31 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
                         </div>
                     )}
 
-                    {/* Thumbnail/Icon */}
+                    {/* Thumbnail/Icon/Folder Preview */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <FileIcon
-                            displayMode="grid"
-                            type={isFolder ? 'FOLDER' : isPlaylist ? 'VIDEO_PLAYLIST' : fileExtension}
-                            thumbnailUrl={resource.url}
-                            resourceId={resource.id}
-                        />
+                        {isFolder && (resource as any).children && (resource as any).children.length > 0 ? (
+                            <div className="grid grid-cols-2 gap-2 p-6 w-full h-full opacity-60 group-hover:opacity-100 transition-opacity duration-300">
+                                {(resource as any).children.slice(0, 4).map((child: any, i: number) => (
+                                    <div key={child.id} className="flex items-center justify-center bg-background/50 rounded-lg p-2 border border-border/30 shadow-sm">
+                                        <FileIcon
+                                            displayMode="grid"
+                                            type={child.type === 'FOLDER' ? 'FOLDER' : (child.filetype?.split('/')[1] || child.url?.split('.').pop() || 'file')}
+                                            size="sm"
+                                        />
+                                    </div>
+                                ))}
+                                {(resource as any).children.length < 4 && [...Array(4 - (resource as any).children.length)].map((_, i) => (
+                                    <div key={i} className="flex items-center justify-center bg-muted/20 rounded-lg p-2 border border-dashed border-border/50" />
+                                ))}
+                            </div>
+                        ) : (
+                            <FileIcon
+                                displayMode="grid"
+                                type={isFolder ? 'FOLDER' : isPlaylist ? 'VIDEO_PLAYLIST' : fileExtension}
+                                thumbnailUrl={resource.url}
+                                resourceId={resource.id}
+                            />
+                        )}
                     </div>
 
                     {/* Video Duration Overlay - Bottom Right */}
@@ -281,7 +306,7 @@ export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDele
                     </div>
                 </div>
             </Card>
-        </div>
+        </motion.div>
     );
 });
 ResourceGridItem.displayName = 'ResourceGridItem';

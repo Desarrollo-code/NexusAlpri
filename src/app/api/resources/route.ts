@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
         let parentId = searchParams.get('parentId');
         const status = (searchParams.get('status') as ResourceStatus) || 'ACTIVE';
         const searchTerm = searchParams.get('search');
+        const includeChildren = searchParams.get('includeChildren') === 'true';
 
         // Advanced filters
         const startDate = searchParams.get('startDate');
@@ -77,8 +78,8 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        if (startDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, gte: new Date(startDate) };
-        if (endDate) baseWhere.uploadDate = { ...baseWhere.uploadDate, lte: new Date(endDate) };
+        if (startDate) baseWhere.uploadDate = { ...((baseWhere.uploadDate as object) || {}), gte: new Date(startDate) };
+        if (endDate) baseWhere.uploadDate = { ...((baseWhere.uploadDate as object) || {}), lte: new Date(endDate) };
         if (fileType && fileType !== 'all') {
             const fileTypeFilter = getFileTypeFilter(fileType);
             if (baseWhere.AND) {
@@ -141,7 +142,12 @@ export async function GET(req: NextRequest) {
             where: whereClause,
             include: {
                 uploader: { select: { id: true, name: true, avatar: true } },
-                sharedWith: { select: { id: true, name: true, avatar: true } }
+                sharedWith: { select: { id: true, name: true, avatar: true } },
+                children: includeChildren ? {
+                    take: 5,
+                    where: { status: 'ACTIVE' },
+                    select: { id: true, type: true, title: true, filetype: true, url: true }
+                } : false
             },
             orderBy,
         });

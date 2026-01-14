@@ -7,11 +7,11 @@ import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { 
-  Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List, 
-  ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen, 
-  Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon, 
-  Video as VideoIcon, FileQuestion, Archive as ZipIcon, PlusCircle, 
+import {
+  Loader2, AlertTriangle, FolderPlus, UploadCloud, Grid, List,
+  ChevronDown, Search, Folder as FolderIcon, Move, Trash2, FolderOpen,
+  Filter, ChevronRight, Pin, ListVideo, FileText, Image as ImageIcon,
+  Video as VideoIcon, FileQuestion, Archive as ZipIcon, PlusCircle,
   Edit, ArrowUpDown, FolderInput, Clock, PanelLeftClose, PanelLeftOpen,
   Star, StarOff, Eye, EyeOff, Download, Share2, Copy, MoreVertical,
   Grid3x3, LayoutGrid, Table, Columns, X, Check, RefreshCw,
@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
-import { DndContext, type DragEndEvent, MouseSensor, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, type DragEndEvent, MouseSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragOverlay, defaultDropAnimationSideEffects } from '@dnd-kit/core';
 import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
@@ -62,25 +62,26 @@ function useResourceManager() {
     filters?: any;
   }) => {
     if (!user) return;
-    
+
     setIsLoadingData(true);
     setError(null);
 
     try {
       const queryParams = new URLSearchParams({
         status: 'ACTIVE',
+        includeChildren: 'true',
         ...(params?.parentId && { parentId: params.parentId }),
         ...(params?.search && { search: params.search }),
         ...params?.filters
       });
 
       const response = await fetch(`/api/resources?${queryParams.toString()}`);
-      
+
       if (!response.ok) throw new Error('Error al cargar recursos');
-      
+
       const data = await response.json();
       setAllApiResources(data.resources || []);
-      
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
       setError(errorMessage);
@@ -106,18 +107,18 @@ function useResourceManager() {
 // Componente de estadísticas
 function ResourceStats({ resources }: { resources: AppResourceType[] }) {
   const stats = useMemo(() => {
-    const totalSize = resources.reduce((sum, r) => sum + (r.fileSize || 0), 0);
+    const totalSize = resources.reduce((sum, r) => sum + (r.size || 0), 0);
     const byType = resources.reduce((acc, r) => {
       acc[r.type] = (acc[r.type] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-    
+
     return {
       total: resources.length,
       totalSize: formatFileSize(totalSize),
       byType,
       favorites: resources.filter(r => r.isPinned).length,
-      recent: resources.filter(r => new Date(r.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length
+      recent: resources.filter(r => new Date(r.uploadDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length
     };
   }, [resources]);
 
@@ -132,7 +133,7 @@ function ResourceStats({ resources }: { resources: AppResourceType[] }) {
           <HardDrive className="h-8 w-8 text-blue-600 dark:text-blue-400 opacity-70" />
         </div>
       </Card>
-      
+
       <Card className="p-3 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
         <div className="flex items-center justify-between">
           <div>
@@ -142,7 +143,7 @@ function ResourceStats({ resources }: { resources: AppResourceType[] }) {
           <BarChart3 className="h-8 w-8 text-green-600 dark:text-green-400 opacity-70" />
         </div>
       </Card>
-      
+
       <Card className="p-3 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20">
         <div className="flex items-center justify-between">
           <div>
@@ -152,7 +153,7 @@ function ResourceStats({ resources }: { resources: AppResourceType[] }) {
           <Star className="h-8 w-8 text-amber-600 dark:text-amber-400 opacity-70" />
         </div>
       </Card>
-      
+
       <Card className="p-3 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
         <div className="flex items-center justify-between">
           <div>
@@ -205,7 +206,7 @@ function EnhancedSearch({
           </Button>
         )}
       </div>
-      
+
       <div className="flex flex-wrap gap-2">
         {quickFilters.map((filter) => (
           <Badge
@@ -268,7 +269,7 @@ export default function ResourcesPage() {
   const { setPageTitle } = useTitle();
   const { toast } = useToast();
   const { recentIds, addRecentResource } = useRecentResources();
-  
+
   const resourceManager = useResourceManager();
   const { allApiResources, isLoadingData, error, fetchResources } = resourceManager;
 
@@ -281,6 +282,7 @@ export default function ResourcesPage() {
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([
     { id: null, title: 'Biblioteca Principal' }
   ]);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   // Estados de UI
   const [isPlaylistView, setIsPlaylistView] = useState(false);
@@ -290,17 +292,17 @@ export default function ResourcesPage() {
   const [playlistToEdit, setPlaylistToEdit] = useState<AppResourceType | null>(null);
   const [previewingResource, setPreviewingResource] = useState<AppResourceType | null>(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-  
+
   // Estados de modales
   const [isFolderEditorOpen, setIsFolderEditorOpen] = useState(false);
   const [isPlaylistCreatorOpen, setIsPlaylistCreatorOpen] = useState(false);
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
   const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
-  
+
   // Estados de selección
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSelecting, setIsSelecting] = useState(false);
-  
+
   // Estados de filtros
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [fileType, setFileType] = useState('all');
@@ -309,7 +311,7 @@ export default function ResourcesPage() {
   const [tagsFilter, setTagsFilter] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'size' | 'type'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  
+
   // Estados de personalización
   const [showThumbnails, setShowThumbnails] = useState(true);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
@@ -344,13 +346,13 @@ export default function ResourcesPage() {
           setIsSelecting(true);
         }
       }
-      
+
       // Escape para deseleccionar
       if (e.key === 'Escape') {
         setSelectedIds(new Set());
         setIsSelecting(false);
       }
-      
+
       // Ctrl/Cmd + F para buscar
       if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
         e.preventDefault();
@@ -367,9 +369,9 @@ export default function ResourcesPage() {
     setPageTitle('Biblioteca de Recursos - Gestor Inteligente');
   }, [setPageTitle]);
 
-  const canManage = useMemo(() => 
-    user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR', 
-  [user]);
+  const canManage = useMemo(() =>
+    user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR',
+    [user]);
 
   // Fetch inicial de recursos
   useEffect(() => {
@@ -409,7 +411,7 @@ export default function ResourcesPage() {
   // Filtrado y ordenación optimizados
   const filteredResources = useMemo(() => {
     let resources = allApiResources;
-    
+
     // Filtro por vista
     if (resourceView === 'favorites') {
       resources = resources.filter(r => r.isPinned);
@@ -434,7 +436,7 @@ export default function ResourcesPage() {
 
     // Filtros adicionales
     if (fileType !== 'all') {
-      resources = resources.filter(r => r.fileType === fileType);
+      resources = resources.filter(r => r.filetype === fileType);
     }
     if (hasPin) {
       resources = resources.filter(r => r.isPinned);
@@ -444,7 +446,7 @@ export default function ResourcesPage() {
     }
     if (tagsFilter) {
       const tags = tagsFilter.split(',').map(t => t.trim().toLowerCase());
-      resources = resources.filter(r => 
+      resources = resources.filter(r =>
         r.tags?.some(tag => tags.includes(tag.toLowerCase()))
       );
     }
@@ -457,14 +459,14 @@ export default function ResourcesPage() {
           comparison = a.title.localeCompare(b.title);
           break;
         case 'size':
-          comparison = (a.fileSize || 0) - (b.fileSize || 0);
+          comparison = (a.size || 0) - (b.size || 0);
           break;
         case 'type':
           comparison = a.type.localeCompare(b.type);
           break;
         case 'date':
         default:
-          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          comparison = new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime();
           break;
       }
       return sortOrder === 'desc' ? -comparison : comparison;
@@ -486,9 +488,9 @@ export default function ResourcesPage() {
         groups['Carpetas'].push(resource);
       } else if (resource.type === 'VIDEO_PLAYLIST') {
         groups['Listas de Videos'].push(resource);
-      } else if (['pdf', 'doc', 'xls', 'ppt'].includes(resource.fileType || '')) {
+      } else if (['pdf', 'doc', 'xls', 'ppt'].includes(resource.filetype || '')) {
         groups['Documentos'].push(resource);
-      } else if (['image', 'video', 'audio'].includes(resource.fileType || '')) {
+      } else if (['image', 'video', 'audio'].includes(resource.filetype || '')) {
         groups['Multimedia'].push(resource);
       } else {
         groups['Archivos'].push(resource);
@@ -544,10 +546,15 @@ export default function ResourcesPage() {
     }
   }, []);
 
+  const handleDragStart = useCallback((event: any) => {
+    setActiveId(event.active.id);
+  }, []);
+
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveId(null);
     if (!over || !active) return;
-    
+
     const resourceToMove = active.data.current?.resource as AppResourceType;
     const targetFolderId = over.id as string;
 
@@ -558,21 +565,21 @@ export default function ResourcesPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ parentId: targetFolderId === 'root' ? null : targetFolderId })
         });
-        
-        toast({ 
-          title: 'Recurso Movido', 
-          description: `"${resourceToMove.title}" se movió correctamente.` 
+
+        toast({
+          title: 'Recurso Movido',
+          description: `"${resourceToMove.title}" se movió correctamente.`
         });
-        
+
         fetchResources({
           parentId: currentFolderId,
           search: debouncedSearchTerm
         });
       } catch (e) {
-        toast({ 
-          title: 'Error', 
-          description: 'No se pudo mover el recurso.', 
-          variant: 'destructive' 
+        toast({
+          title: 'Error',
+          description: 'No se pudo mover el recurso.',
+          variant: 'destructive'
         });
       }
     }
@@ -587,10 +594,10 @@ export default function ResourcesPage() {
       setPlaylistToEdit(playlistWithChildren);
       setIsPlaylistCreatorOpen(true);
     } catch (err) {
-      toast({ 
-        title: "Error", 
-        description: (err as Error).message, 
-        variant: "destructive" 
+      toast({
+        title: "Error",
+        description: (err as Error).message,
+        variant: "destructive"
       });
     }
   }, [toast]);
@@ -601,7 +608,7 @@ export default function ResourcesPage() {
     try {
       let endpoint = '';
       let method = 'POST';
-      
+
       switch (action) {
         case 'download':
           endpoint = '/api/resources/bulk-download';
@@ -660,20 +667,20 @@ export default function ResourcesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPinned: !resource.isPinned }),
       });
-      
-      toast({ 
-        description: `Recurso ${resource.isPinned ? 'desfijado' : 'fijado'}.` 
+
+      toast({
+        description: `Recurso ${resource.isPinned ? 'desfijado' : 'fijado'}.`
       });
-      
+
       fetchResources({
         parentId: currentFolderId,
         search: debouncedSearchTerm
       });
     } catch (err) {
-      toast({ 
-        title: "Error", 
-        description: (err as Error).message, 
-        variant: "destructive" 
+      toast({
+        title: "Error",
+        description: (err as Error).message,
+        variant: "destructive"
       });
     }
   }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
@@ -685,7 +692,7 @@ export default function ResourcesPage() {
     setIsPlaylistCreatorOpen(false);
     setPlaylistToEdit(null);
     setIsUploaderOpen(false);
-    
+
     fetchResources({
       parentId: currentFolderId,
       search: debouncedSearchTerm
@@ -694,28 +701,28 @@ export default function ResourcesPage() {
 
   const confirmDelete = useCallback(async () => {
     if (!resourceToDelete) return;
-    
+
     try {
-      const res = await fetch(`/api/resources/${resourceToDelete.id}`, { 
-        method: 'DELETE' 
+      const res = await fetch(`/api/resources/${resourceToDelete.id}`, {
+        method: 'DELETE'
       });
-      
+
       if (!res.ok) throw new Error((await res.json()).message || 'No se pudo eliminar el recurso.');
-      
-      toast({ 
+
+      toast({
         title: "Recurso eliminado",
         description: `"${resourceToDelete.title}" ha sido eliminado.`
       });
-      
+
       fetchResources({
         parentId: currentFolderId,
         search: debouncedSearchTerm
       });
     } catch (err) {
-      toast({ 
-        title: "Error", 
-        description: (err as Error).message, 
-        variant: "destructive" 
+      toast({
+        title: "Error",
+        description: (err as Error).message,
+        variant: "destructive"
       });
     } finally {
       setResourceToDelete(null);
@@ -729,22 +736,22 @@ export default function ResourcesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: Array.from(selectedIds) }),
       });
-      
+
       if (!res.ok) throw new Error((await res.json()).message || "Error al eliminar.");
-      
-      toast({ 
-        description: `${selectedIds.size} elemento(s) eliminados.` 
+
+      toast({
+        description: `${selectedIds.size} elemento(s) eliminados.`
       });
-      
+
       fetchResources({
         parentId: currentFolderId,
         search: debouncedSearchTerm
       });
     } catch (err) {
-      toast({ 
-        title: "Error", 
-        description: (err as Error).message, 
-        variant: 'destructive' 
+      toast({
+        title: "Error",
+        description: (err as Error).message,
+        variant: 'destructive'
       });
     } finally {
       setResourceToDelete(null);
@@ -827,9 +834,9 @@ export default function ResourcesPage() {
 
     if (isPlaylistView && currentFolder) {
       return (
-        <VideoPlaylistView 
-          resources={allApiResources} 
-          folder={currentFolder} 
+        <VideoPlaylistView
+          resources={allApiResources}
+          folder={currentFolder}
         />
       );
     }
@@ -849,7 +856,7 @@ export default function ResourcesPage() {
               {searchTerm ? 'No se encontraron resultados' : 'Biblioteca vacía'}
             </h3>
             <p className="text-muted-foreground max-w-md mx-auto">
-              {searchTerm 
+              {searchTerm
                 ? 'No hay recursos que coincidan con tu búsqueda. Intenta con otros términos.'
                 : 'Comienza agregando recursos a tu biblioteca para organizar y compartir con tu equipo.'
               }
@@ -878,7 +885,7 @@ export default function ResourcesPage() {
     return (
       <div className="space-y-8">
         <ResourceStats resources={filteredResources} />
-        
+
         {Object.entries(groupedResources).map(([category, resources]) => (
           <motion.section
             key={category}
@@ -899,7 +906,7 @@ export default function ResourcesPage() {
                   {resources.length}
                 </Badge>
               </h3>
-              
+
               {category === 'Archivos' && resources.length > 0 && (
                 <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
                   <TooltipProvider>
@@ -917,7 +924,7 @@ export default function ResourcesPage() {
                       <TooltipContent>Vista de lista</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  
+
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -933,7 +940,7 @@ export default function ResourcesPage() {
                       <TooltipContent>Vista de cuadrícula</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  
+
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -960,19 +967,18 @@ export default function ResourcesPage() {
                     key={resource.id}
                     resource={resource}
                     onSelect={() => handlePreviewResource(resource)}
-                    onEdit={(resource.type === 'FOLDER' || resource.type === 'VIDEO_PLAYLIST') 
-                      ? resource.type === 'VIDEO_PLAYLIST' 
+                    onEdit={(resource.type === 'FOLDER' || resource.type === 'VIDEO_PLAYLIST')
+                      ? resource.type === 'VIDEO_PLAYLIST'
                         ? () => handleOpenPlaylistEditor(resource)
                         : () => { setFolderToEdit(resource); setIsFolderEditorOpen(true); }
                       : setResourceToEdit
                     }
                     onDelete={setResourceToDelete}
                     onNavigate={handleNavigateFolder}
-                    onRestore={() => {}}
+                    onRestore={() => { }}
                     onTogglePin={handleTogglePin}
                     isSelected={selectedIds.has(resource.id)}
                     onSelectionChange={handleSelectionChange}
-                    showThumbnail={showThumbnails}
                   />
                 ))}
               </div>
@@ -982,7 +988,7 @@ export default function ResourcesPage() {
                 onSelect={handlePreviewResource}
                 onEdit={setResourceToEdit}
                 onDelete={setResourceToDelete}
-                onRestore={() => {}}
+                onRestore={() => { }}
                 onTogglePin={handleTogglePin}
                 selectedIds={selectedIds}
                 onSelectionChange={handleSelectionChange}
@@ -1018,14 +1024,14 @@ export default function ResourcesPage() {
                           <td className="p-4 font-medium">{resource.title}</td>
                           <td className="p-4">
                             <Badge variant="outline">
-                              {resource.fileType || resource.type}
+                              {resource.filetype || resource.type}
                             </Badge>
                           </td>
                           <td className="p-4">
-                            {formatFileSize(resource.fileSize || 0)}
+                            {formatFileSize(resource.size || 0)}
                           </td>
                           <td className="p-4">
-                            {new Date(resource.createdAt).toLocaleDateString()}
+                            {new Date(resource.uploadDate).toLocaleDateString()}
                           </td>
                           <td className="p-4">
                             <div className="flex items-center gap-2">
@@ -1087,7 +1093,11 @@ export default function ResourcesPage() {
   }
 
   return (
-    <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
+    <DndContext
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      sensors={sensors}
+    >
       <div className={cn(
         "grid transition-all duration-300 items-start min-h-screen",
         isSidebarVisible ? "grid-cols-1 lg:grid-cols-[280px_1fr] gap-6" : "grid-cols-1 gap-0"
@@ -1118,7 +1128,7 @@ export default function ResourcesPage() {
                     <ChevronLeft className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </div>
-                
+
                 <Tabs defaultValue="folders" className="w-full">
                   <TabsList className="grid grid-cols-2">
                     <TabsTrigger value="folders">Carpetas</TabsTrigger>
@@ -1144,7 +1154,7 @@ export default function ResourcesPage() {
                     </div>
                   </TabsContent>
                 </Tabs>
-                
+
                 <Card className="p-4">
                   <div className="space-y-4">
                     <h4 className="font-semibold">Personalizar Vista</h4>
@@ -1195,7 +1205,7 @@ export default function ResourcesPage() {
                   Gestiona y comparte documentos importantes, guías y materiales de formación
                 </p>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
@@ -1209,7 +1219,7 @@ export default function ResourcesPage() {
                     <PanelLeftOpen className="h-4 w-4" />
                   )}
                 </Button>
-                
+
                 {canManage && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -1290,14 +1300,14 @@ export default function ResourcesPage() {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="relative w-full flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input 
-                      placeholder="Buscar en la carpeta actual..." 
-                      className="pl-10 h-10 text-base rounded-md" 
-                      value={searchTerm} 
-                      onChange={e => setSearchTerm(e.target.value)} 
+                    <Input
+                      placeholder="Buscar en la carpeta actual..."
+                      className="pl-10 h-10 text-base rounded-md"
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
                     />
                   </div>
-                  
+
                   <div className="flex items-center gap-2 w-full md:w-auto">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -1333,7 +1343,7 @@ export default function ResourcesPage() {
                     <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
                       <PopoverTrigger asChild>
                         <Button variant="outline" className="h-10 flex-grow md:flex-none">
-                          <Filter className="mr-2 h-4 w-4" /> 
+                          <Filter className="mr-2 h-4 w-4" />
                           Filtros {activeFilterCount > 0 && `(${activeFilterCount})`}
                         </Button>
                       </PopoverTrigger>
@@ -1343,12 +1353,12 @@ export default function ResourcesPage() {
                             <h4 className="font-medium leading-none">Filtros Avanzados</h4>
                             <p className="text-sm text-muted-foreground">Refina tu búsqueda de recursos.</p>
                           </div>
-                          
+
                           <div className="space-y-2">
                             <Label>Fecha de subida</Label>
                             <DateRangePicker date={dateRange} onDateChange={setDateRange} />
                           </div>
-                          
+
                           <div className="space-y-2">
                             <Label>Tipo de Archivo</Label>
                             <Select value={fileType} onValueChange={setFileType}>
@@ -1368,35 +1378,35 @@ export default function ResourcesPage() {
                               </SelectContent>
                             </Select>
                           </div>
-                          
+
                           <div className="flex items-center space-x-2">
-                            <Checkbox 
-                              id="hasPin" 
-                              checked={hasPin} 
-                              onCheckedChange={(c) => setHasPin(!!c)} 
+                            <Checkbox
+                              id="hasPin"
+                              checked={hasPin}
+                              onCheckedChange={(c) => setHasPin(!!c)}
                             />
                             <Label htmlFor="hasPin">Con PIN</Label>
                           </div>
-                          
+
                           <div className="flex items-center space-x-2">
-                            <Checkbox 
-                              id="hasExpiry" 
-                              checked={hasExpiry} 
-                              onCheckedChange={(c) => setHasExpiry(!!c)} 
+                            <Checkbox
+                              id="hasExpiry"
+                              checked={hasExpiry}
+                              onCheckedChange={(c) => setHasExpiry(!!c)}
                             />
                             <Label htmlFor="hasExpiry">Con Vencimiento</Label>
                           </div>
-                          
+
                           <div className="space-y-2">
                             <Label htmlFor="tags-filter">Etiquetas (separadas por coma)</Label>
-                            <Input 
-                              id="tags-filter" 
-                              placeholder="ej. urgente, revisión" 
-                              value={tagsFilter} 
-                              onChange={e => setTagsFilter(e.target.value)} 
+                            <Input
+                              id="tags-filter"
+                              placeholder="ej. urgente, revisión"
+                              value={tagsFilter}
+                              onChange={e => setTagsFilter(e.target.value)}
                             />
                           </div>
-                          
+
                           <Button onClick={() => setIsFilterPopoverOpen(false)}>
                             Aplicar Filtros
                           </Button>
@@ -1438,33 +1448,33 @@ export default function ResourcesPage() {
                   {selectedIds.size} seleccionado{selectedIds.size > 1 ? 's' : ''}
                 </p>
                 <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setIsMoveModalOpen(true)}
                   >
                     <FolderInput className="mr-2 h-4 w-4" />
                     Mover
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleBulkAction('download')}
                   >
                     <Download className="mr-2 h-4 w-4" />
                     Descargar
                   </Button>
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
+                  <Button
+                    variant="destructive"
+                    size="sm"
                     onClick={() => setResourceToDelete({ id: 'bulk' } as any)}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Eliminar
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setSelectedIds(new Set())}
                   >
                     <X className="h-4 w-4" />
@@ -1481,12 +1491,12 @@ export default function ResourcesPage() {
         isOpen={isMoveModalOpen}
         onClose={() => setIsMoveModalOpen(false)}
         resourceIds={Array.from(selectedIds)}
-        onMoveSuccess={() => { 
-          setSelectedIds(new Set()); 
+        onMoveSuccess={() => {
+          setSelectedIds(new Set());
           fetchResources({
             parentId: currentFolderId,
             search: debouncedSearchTerm
-          }); 
+          });
         }}
       />
 
@@ -1495,22 +1505,22 @@ export default function ResourcesPage() {
         onClose={() => setPreviewingResource(null)}
         onNavigate={(direction) => {
           // Implement navigation between resources
-          const fileResources = allApiResources.filter(r => 
+          const fileResources = allApiResources.filter(r =>
             r.type !== 'FOLDER' && r.type !== 'VIDEO_PLAYLIST'
           );
-          
+
           if (fileResources.length <= 1 || !previewingResource) return;
-          
+
           const currentIndex = fileResources.findIndex(r => r.id === previewingResource.id);
           if (currentIndex === -1) return;
-          
+
           let nextIndex;
           if (direction === 'next') {
             nextIndex = (currentIndex + 1) % fileResources.length;
           } else {
             nextIndex = (currentIndex - 1 + fileResources.length) % fileResources.length;
           }
-          
+
           setPreviewingResource(fileResources[nextIndex]);
           addRecentResource(fileResources[nextIndex].id);
         }}
@@ -1518,9 +1528,9 @@ export default function ResourcesPage() {
 
       <ResourceEditorModal
         isOpen={isUploaderOpen || !!resourceToEdit}
-        onClose={() => { 
-          setResourceToEdit(null); 
-          setIsUploaderOpen(false); 
+        onClose={() => {
+          setResourceToEdit(null);
+          setIsUploaderOpen(false);
         }}
         resource={resourceToEdit}
         parentId={currentFolderId}
@@ -1529,9 +1539,9 @@ export default function ResourcesPage() {
 
       <FolderEditorModal
         isOpen={isFolderEditorOpen}
-        onClose={() => { 
-          setIsFolderEditorOpen(false); 
-          setFolderToEdit(null); 
+        onClose={() => {
+          setIsFolderEditorOpen(false);
+          setFolderToEdit(null);
         }}
         onSave={handleSaveSuccess}
         parentId={currentFolderId}
@@ -1540,9 +1550,9 @@ export default function ResourcesPage() {
 
       <PlaylistCreatorModal
         isOpen={isPlaylistCreatorOpen}
-        onClose={() => { 
-          setIsPlaylistCreatorOpen(false); 
-          setPlaylistToEdit(null); 
+        onClose={() => {
+          setIsPlaylistCreatorOpen(false);
+          setPlaylistToEdit(null);
         }}
         onSave={handleSaveSuccess}
         parentId={currentFolderId}
@@ -1563,8 +1573,8 @@ export default function ResourcesPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => resourceToDelete?.id === 'bulk' ? handleBulkDelete() : confirmDelete()} 
+            <AlertDialogAction
+              onClick={() => resourceToDelete?.id === 'bulk' ? handleBulkDelete() : confirmDelete()}
               className={cn(buttonVariants({ variant: "destructive" }))}
             >
               <Trash2 className="mr-2 h-4 w-4" />
@@ -1581,6 +1591,32 @@ export default function ResourcesPage() {
         onUploadFile={() => setIsUploaderOpen(true)}
         onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
       />
+      {/* Drag Overlay */}
+      <DragOverlay dropAnimation={{
+        sideEffects: defaultDropAnimationSideEffects({
+          styles: {
+            active: {
+              opacity: '0.4',
+            },
+          },
+        }),
+      }}>
+        {activeId ? (
+          <div className="opacity-80 scale-95 pointer-events-none">
+            <ResourceGridItem
+              resource={allApiResources.find(r => r.id === activeId)!}
+              onSelect={() => { }}
+              onEdit={() => { }}
+              onDelete={() => { }}
+              onNavigate={() => { }}
+              onRestore={() => { }}
+              onTogglePin={() => { }}
+              isSelected={selectedIds.has(activeId)}
+              onSelectionChange={() => { }}
+            />
+          </div>
+        ) : null}
+      </DragOverlay>
     </DndContext>
   );
 }
