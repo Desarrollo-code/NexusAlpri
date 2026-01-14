@@ -121,7 +121,7 @@ const SidebarMenuItem = ({ item }: { item: NavItem }) => {
     return activeItem.startsWith(item.path);
   }, [activeItem, item.path]);
 
-    const linkContent = (
+  const linkContent = (
     <div className={cn(
       "flex items-center rounded-xl transition-all duration-300 font-semibold group/menu-item relative overflow-hidden",
       isCollapsed ? (forceCenteredIds.has(item.id) ? "justify-center h-12 w-12 gap-0" : "justify-center h-12 w-12 gap-0") : "pl-6 pr-3 py-3 mx-0 gap-3",
@@ -300,7 +300,7 @@ export const SidebarFooter = () => {
   return (
     <div className="p-4 flex flex-col gap-3 bg-white/5 backdrop-blur-sm border-t border-sidebar-border/20 z-10 transition-all duration-300">
       {!isCollapsed && settings?.projectVersion && (
-        <div className="px-3 py-1 text-center text-[10px] lowercase tracking-widest text-sidebar-muted-foreground/60 font-medium">
+        <div className="px-3 py-1 text-center text-[12px] lowercase tracking-widest text-sidebar-muted-foreground/60 font-medium">
           versión {settings.projectVersion}
         </div>
       )}

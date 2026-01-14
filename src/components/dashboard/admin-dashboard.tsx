@@ -160,7 +160,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                   onClick={() => router.push('/users')}
                />
                <MetricCard
-                  title="Cursos Pub."
+                  title="Cursos Publicados"
                   value={adminStats?.totalPublishedCourses || 0}
                   icon={IconBookMarked}
                   index={1}
@@ -288,18 +288,30 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                            Acciones Rápidas
                         </CardTitle>
                      </CardHeader>
-                     <CardContent className="p-3 grid grid-cols-1 gap-2">
-                        <Button asChild variant="outline" size="sm" className="justify-start h-10 text-[12px] font-bold border-slate-200 hover:bg-primary/5 hover:border-primary/20 transition-all">
-                           <Link href="/manage-courses"><BookOpen className="h-4 w-4 mr-2 text-primary" />Gestionar Proyectos Académicos</Link>
+                     <CardContent className="p-3 grid grid-cols-2 gap-2">
+                        <Button asChild variant="outline" size="sm" className="flex flex-col items-center justify-center h-20 text-[11px] font-bold border-slate-100 hover:bg-primary/5 hover:border-primary/20 transition-all gap-1.5 rounded-xl">
+                           <Link href="/manage-courses">
+                              <BookOpen className="h-5 w-5 text-primary" />
+                              Contenidos
+                           </Link>
                         </Button>
-                        <Button asChild variant="outline" size="sm" className="justify-start h-10 text-[12px] font-bold border-slate-200 hover:bg-primary/5 hover:border-primary/20 transition-all">
-                           <Link href="/users"><Users className="h-4 w-4 mr-2 text-primary" />Administrar Comunidad de Usuarios</Link>
+                        <Button asChild variant="outline" size="sm" className="flex flex-col items-center justify-center h-20 text-[11px] font-bold border-slate-100 hover:bg-primary/5 hover:border-primary/20 transition-all gap-1.5 rounded-xl">
+                           <Link href="/users">
+                              <Users className="h-5 w-5 text-primary" />
+                              Usuarios
+                           </Link>
                         </Button>
-                        <Button asChild variant="outline" size="sm" className="justify-start h-10 text-[12px] font-bold border-slate-200 hover:bg-primary/5 hover:border-primary/20 transition-all">
-                           <Link href="/analytics"><BarChart3 className="h-4 w-4 mr-2 text-primary" />Inteligencia y Analítica de Datos</Link>
+                        <Button asChild variant="outline" size="sm" className="flex flex-col items-center justify-center h-20 text-[11px] font-bold border-slate-100 hover:bg-primary/5 hover:border-primary/20 transition-all gap-1.5 rounded-xl">
+                           <Link href="/analytics">
+                              <BarChart3 className="h-5 w-5 text-primary" />
+                              Analíticas
+                           </Link>
                         </Button>
-                        <Button asChild variant="outline" size="sm" className="justify-start h-10 text-[12px] font-bold border-slate-200 hover:bg-primary/5 hover:border-primary/20 transition-all">
-                           <Link href="/settings"><Settings className="h-4 w-4 mr-2 text-primary" />Configuración Global del Sistema</Link>
+                        <Button asChild variant="outline" size="sm" className="flex flex-col items-center justify-center h-20 text-[11px] font-bold border-slate-100 hover:bg-primary/5 hover:border-primary/20 transition-all gap-1.5 rounded-xl">
+                           <Link href="/settings">
+                              <Settings className="h-5 w-5 text-primary" />
+                              Ajustes
+                           </Link>
                         </Button>
                      </CardContent>
                   </Card>

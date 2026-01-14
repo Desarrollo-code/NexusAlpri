@@ -40,9 +40,9 @@ export const SidebarHeader = () => {
       <Link href="/dashboard" className="inline-flex items-center gap-4 group">
         <motion.div
           animate={{
-            width: 52,
-            height: 52,
-            borderRadius: isCollapsed ? "16px" : "14px"
+            width: 62,
+            height: 62,
+            borderRadius: isCollapsed ? "18px" : "16px"
           }}
           className={cn(
             "bg-gradient-to-br from-primary via-primary/80 to-accent flex items-center justify-center shadow-[0_0_30px_rgba(var(--primary),0.2)] flex-shrink-0 relative overflow-hidden border border-white/20 group-hover:shadow-[0_0_40px_rgba(var(--primary),0.4)] transition-shadow duration-500",

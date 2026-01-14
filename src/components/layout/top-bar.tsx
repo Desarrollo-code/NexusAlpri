@@ -141,7 +141,7 @@ export const TopBar = () => {
                 ) : null}
 
                 {/* Breadcrumbs */}
-                <nav className="flex items-center text-[12px] font-medium text-muted-foreground overflow-hidden whitespace-nowrap">
+                <nav className="flex items-center text-sm font-medium text-muted-foreground overflow-hidden whitespace-nowrap">
                     <Link href="/dashboard" className="hover:text-primary transition-colors">
                         Inicio
                     </Link>

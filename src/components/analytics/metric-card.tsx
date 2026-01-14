@@ -42,7 +42,7 @@ export const MetricCard = ({
             <Card
                 onClick={onClick}
                 className={cn(
-                    "relative overflow-hidden h-full flex flex-col justify-center p-3 transition-all duration-300",
+                    "relative overflow-hidden h-full flex flex-col justify-center p-4 transition-all duration-300",
                     "bg-white dark:bg-slate-950",
                     "border border-slate-100 dark:border-slate-800 shadow-sm",
                     "hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700",
@@ -53,10 +53,10 @@ export const MetricCard = ({
                 <div className="flex items-center gap-3 z-10">
                     {Icon && (
                         <div
-                            className="p-2 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 transition-transform group-hover:scale-110"
+                            className="p-2.5 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 transition-transform group-hover:scale-110"
                             style={{ color: chartVar } as React.CSSProperties}
                         >
-                            <Icon className="h-4 w-4" />
+                            <Icon className="h-5 w-5" />
                         </div>
                     )}
                     <div className="min-w-0 flex-1">
@@ -65,7 +65,7 @@ export const MetricCard = ({
                         </p>
                         <div className="flex items-baseline gap-1 mt-0.5">
                             <p
-                                className="text-2xl font-bold tracking-tight transition-colors duration-500"
+                                className="text-3xl font-bold tracking-tight transition-colors duration-500"
                                 style={{ color: chartVar } as React.CSSProperties}
                             >
                                 {animatedValue}{suffix}
