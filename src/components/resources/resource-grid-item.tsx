@@ -52,7 +52,7 @@ const formatDuration = (seconds: number | null | undefined): string => {
 };
 
 // --- Sub-components for Page ---
-export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onNavigate, onRestore, onTogglePin, isSelected, onSelectionChange }: {
+export const ResourceGridItem = React.memo(({ resource, onSelect, onEdit, onDelete, onNavigate, onRestore, onTogglePin, onDetails, isSelected, onSelectionChange }: {
     resource: AppResourceType,
     onSelect: () => void,
     onEdit: (resource: AppResourceType) => void,

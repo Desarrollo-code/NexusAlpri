@@ -1469,6 +1469,7 @@ export default function ResourcesPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showThumbnails, setShowThumbnails] = useState(true);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
   const [detailsResource, setDetailsResource] = useState<AppResourceType | null>(null);
@@ -1863,12 +1864,16 @@ export default function ResourcesPage() {
   return (
     <DndContext onDragStart={(e) => setActiveId(e.active.id)} onDragEnd={handleDragEnd} sensors={sensors}>
       <div className={cn(
-        "grid transition-all duration-500 ease-in-out min-h-screen bg-gradient-to-br from-background via-background to-muted/20",
-        isSidebarVisible ? "lg:grid-cols-[300px_1fr] gap-0" : "grid-cols-1"
+        "grid transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] min-h-screen bg-gradient-to-br from-background via-background to-muted/20",
+        isSidebarVisible
+          ? (isSidebarCollapsed ? "lg:grid-cols-[80px_1fr]" : "lg:grid-cols-[300px_1fr]")
+          : "grid-cols-1"
       )}>
         <SidebarNavigation
           isVisible={isSidebarVisible}
-          onToggle={() => setIsSidebarVisible(!isSidebarVisible)}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          onToggleVisibility={() => setIsSidebarVisible(!isSidebarVisible)}
           currentFolderId={currentFolderId}
           onNavigate={handleNavigateFolder}
         />
@@ -1876,68 +1881,69 @@ export default function ResourcesPage() {
         <main className="relative">
           <div className="absolute inset-0 bg-grid-pattern opacity-[0.015] pointer-events-none" />
 
-          <div className="space-y-6 p-6 lg:p-8 relative" ref={setRootDroppableRef}>
-            {!isSidebarVisible && (
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-              >
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setIsSidebarVisible(true)}
-                  className="hidden lg:flex absolute -left-12 top-6 h-10 w-10 rounded-full shadow-lg bg-background border-primary/20 hover:bg-primary/5"
+          <ScrollArea className="h-screen">
+            <div className="space-y-6 p-4 lg:p-6 pb-24 relative" ref={setRootDroppableRef}>
+              {!isSidebarVisible && (
+                <motion.div
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
                 >
-                  <PanelLeftOpen className="h-5 w-5 text-primary" />
-                </Button>
-              </motion.div>
-            )}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsSidebarVisible(true)}
+                    className="hidden lg:flex absolute -left-12 top-6 h-10 w-10 rounded-full shadow-lg bg-background border-primary/20 hover:bg-primary/5"
+                  >
+                    <PanelLeftOpen className="h-5 w-5 text-primary" />
+                  </Button>
+                </motion.div>
+              )}
 
-            <Header
-              canManage={canManage}
-              isSidebarVisible={isSidebarVisible}
-              onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
-              onCreateFolder={() => setIsFolderEditorOpen(true)}
-              onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
-              onUpload={() => setIsUploaderOpen(true)}
-              resourceView={resourceView}
-              onViewChange={setResourceView}
-              selectedCount={selectedIds.size}
-            />
-
-            {currentFolder?.type !== 'VIDEO_PLAYLIST' && (
-              <SearchAndFilters
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSortChange={(by, order) => { setSortBy(by); setSortOrder(order); }}
-                dateRange={dateRange}
-                onDateChange={setDateRange}
-                fileType={fileType}
-                onFileTypeChange={setFileType}
-                hasPin={hasPin}
-                onHasPinChange={setHasPin}
-                hasExpiry={hasExpiry}
-                onHasExpiryChange={setHasExpiry}
-                tagsFilter={tagsFilter}
-                onTagsFilterChange={setTagsFilter}
-                isFilterOpen={isFilterPopoverOpen}
-                onFilterOpenChange={setIsFilterPopoverOpen}
+              <Header
+                canManage={canManage}
+                isSidebarVisible={isSidebarVisible}
+                onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
+                onCreateFolder={() => setIsFolderEditorOpen(true)}
+                onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
+                onUpload={() => setIsUploaderOpen(true)}
+                resourceView={resourceView}
+                onViewChange={setResourceView}
+                selectedCount={selectedIds.size}
               />
-            )}
 
-            <EnhancedBreadcrumbs breadcrumbs={breadcrumbs} onBreadcrumbClick={handleBreadcrumbClick} />
+              {currentFolder?.type !== 'VIDEO_PLAYLIST' && (
+                <SearchAndFilters
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSortChange={(by, order) => { setSortBy(by); setSortOrder(order); }}
+                  dateRange={dateRange}
+                  onDateChange={setDateRange}
+                  fileType={fileType}
+                  onFileTypeChange={setFileType}
+                  hasPin={hasPin}
+                  onHasPinChange={setHasPin}
+                  hasExpiry={hasExpiry}
+                  onHasExpiryChange={setHasExpiry}
+                  tagsFilter={tagsFilter}
+                  onTagsFilterChange={setTagsFilter}
+                  isFilterOpen={isFilterPopoverOpen}
+                  onFilterOpenChange={setIsFilterPopoverOpen}
+                />
+              )}
 
-            <motion.div
-              ref={containerRef}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-            >
-              {renderContent()}
-            </motion.div>
-          </div>
+              <EnhancedBreadcrumbs breadcrumbs={breadcrumbs} onBreadcrumbClick={handleBreadcrumbClick} />
+
+              <motion.div
+                ref={containerRef}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              >
+                {renderContent()}
+              </motion.div>
+            </div>
         </main>
       </div>
 
