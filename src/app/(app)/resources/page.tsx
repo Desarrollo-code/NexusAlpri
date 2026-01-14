@@ -15,7 +15,8 @@ import {
   Edit, ArrowUpDown, FolderInput, Clock, PanelLeftClose, PanelLeftOpen,
   Star, Eye, Download, MoreVertical,
   Table, X, RefreshCw,
-  BarChart3, HardDrive, Zap, ChevronLeft
+  BarChart3, HardDrive, Zap, ChevronLeft, Sparkles, Layers, Users, File,
+  TrendingUp, Globe, Shield, Share2, Copy, Check, ExternalLink
 } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
@@ -46,6 +47,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Custom hook simplificado para gestión de recursos
 function useResourceManager() {
@@ -91,7 +95,7 @@ function useResourceManager() {
   return { resources, loading, error, fetchResources, setResources };
 }
 
-// Componente de estadísticas optimizado
+// Componente de estadísticas mejorado con gradientes
 function ResourceStats({ resources }: { resources: AppResourceType[] }) {
   const stats = useMemo(() => {
     const totalSize = resources.reduce((sum, r) => sum + (r.size || 0), 0);
@@ -104,60 +108,74 @@ function ResourceStats({ resources }: { resources: AppResourceType[] }) {
       total: resources.length,
       totalSize: formatFileSize(totalSize),
       favorites: resources.filter(r => r.isPinned).length,
-      recent: resources.filter(r => new Date(r.uploadDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length
+      recent: resources.filter(r => new Date(r.uploadDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length,
+      shared: resources.filter(r => r.shared).length
     };
   }, [resources]);
 
+  const StatCard = ({ label, value, color, icon: Icon, trend }: {
+    label: string;
+    value: string | number;
+    color: string;
+    icon: React.ElementType;
+    trend?: number;
+  }) => (
+    <Card className={cn(
+      "group relative overflow-hidden p-5 transition-all duration-300 hover:shadow-xl border-0",
+      `bg-gradient-to-br ${color} backdrop-blur-sm`
+    )}>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="relative flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-white/90 mb-2">{label}</p>
+          <p className="text-2xl font-bold text-white">{value}</p>
+          {trend !== undefined && (
+            <div className="flex items-center gap-1 mt-2">
+              <TrendingUp className="h-3 w-3" />
+              <span className="text-xs text-white/80">{trend}%</span>
+            </div>
+          )}
+        </div>
+        <div className="p-3 rounded-full bg-white/20 backdrop-blur-sm">
+          <Icon className="h-6 w-6 text-white" />
+        </div>
+      </div>
+    </Card>
+  );
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-      <StatCard 
-        label="Total" 
-        value={stats.total} 
-        color="blue" 
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <StatCard
+        label="Total Recursos"
+        value={stats.total}
+        color="from-purple-500 to-pink-500"
         icon={HardDrive}
+        trend={12}
       />
-      <StatCard 
-        label="Tamaño" 
-        value={stats.totalSize} 
-        color="green" 
+      <StatCard
+        label="Espacio Usado"
+        value={stats.totalSize}
+        color="from-blue-500 to-cyan-400"
         icon={BarChart3}
       />
-      <StatCard 
-        label="Favoritos" 
-        value={stats.favorites} 
-        color="amber" 
+      <StatCard
+        label="Favoritos"
+        value={stats.favorites}
+        color="from-amber-500 to-orange-500"
         icon={Star}
+        trend={8}
       />
-      <StatCard 
-        label="Recientes" 
-        value={stats.recent} 
-        color="purple" 
-        icon={Zap}
+      <StatCard
+        label="Compartidos"
+        value={stats.shared}
+        color="from-emerald-500 to-teal-400"
+        icon={Share2}
       />
     </div>
   );
 }
 
-function StatCard({ label, value, color, icon: Icon }: {
-  label: string;
-  value: string | number;
-  color: string;
-  icon: React.ElementType;
-}) {
-  return (
-    <Card className={`p-3 bg-gradient-to-br from-${color}-50 to-${color}-100 dark:from-${color}-900/20 dark:to-${color}-800/20`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className={`text-sm font-medium text-${color}-700 dark:text-${color}-300`}>{label}</p>
-          <p className={`text-2xl font-bold text-${color}-900 dark:text-${color}-100`}>{value}</p>
-        </div>
-        <Icon className={`h-8 w-8 text-${color}-600 dark:text-${color}-400 opacity-70`} />
-      </div>
-    </Card>
-  );
-}
-
-// Componente de breadcrumbs optimizado
+// Componente de breadcrumbs mejorado
 function EnhancedBreadcrumbs({
   breadcrumbs,
   onBreadcrumbClick
@@ -166,30 +184,48 @@ function EnhancedBreadcrumbs({
   onBreadcrumbClick: (folderId: string | null, index: number) => void;
 }) {
   return (
-    <nav aria-label="Breadcrumb" className="mb-4">
-      <div className="flex items-center gap-2 text-sm flex-wrap">
+    <motion.nav
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-6 px-1"
+    >
+      <div className="flex items-center gap-1 text-sm">
         {breadcrumbs.map((crumb, index) => (
           <React.Fragment key={crumb.id || 'root'}>
-            {index > 0 && <ChevronRight className="h-4 w-4 text-muted-foreground/50" />}
-            <button
+            {index > 0 && (
+              <ChevronRight className="h-4 w-4 text-muted-foreground/40 mx-1" />
+            )}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => onBreadcrumbClick(crumb.id, index)}
               className={cn(
-                "hover:text-primary transition-colors text-left flex items-center gap-1 disabled:cursor-default",
-                index === breadcrumbs.length - 1 ? "text-foreground font-semibold" : "text-muted-foreground"
+                "group flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200",
+                index === breadcrumbs.length - 1 
+                  ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold border border-primary/20" 
+                  : "text-muted-foreground hover:text-primary hover:bg-accent/50"
               )}
               disabled={index === breadcrumbs.length - 1}
             >
-              {index === 0 ? <FolderOpen className="h-4 w-4 text-primary" /> : <FolderIcon className="h-4 w-4" />}
-              <span className="truncate max-w-[150px]">{crumb.title}</span>
-            </button>
+              {index === 0 ? (
+                <div className="p-1.5 rounded-md bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <FolderOpen className="h-4 w-4 text-primary" />
+                </div>
+              ) : (
+                <FolderIcon className="h-4 w-4" />
+              )}
+              <span className="truncate max-w-[120px] lg:max-w-[180px]">
+                {crumb.title}
+              </span>
+            </motion.button>
           </React.Fragment>
         ))}
       </div>
-    </nav>
+    </motion.nav>
   );
 }
 
-// Componente Sidebar optimizado
+// Componente Sidebar mejorado
 function SidebarNavigation({
   isVisible,
   onToggle,
@@ -209,54 +245,159 @@ function SidebarNavigation({
 
   return (
     <motion.aside
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="hidden lg:block sticky top-6 h-[calc(100vh-3rem)] overflow-y-auto pb-6"
+      initial={{ x: -300, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: -300, opacity: 0 }}
+      transition={{ type: "spring", damping: 20 }}
+      className="hidden lg:block sticky top-0 h-screen overflow-y-auto pb-24"
     >
-      <div className="space-y-6 p-4">
-        <div className="pb-4 border-b flex items-center justify-between">
-          <div>
-            <h2 className="font-semibold text-lg">Explorador</h2>
-            <p className="text-sm text-muted-foreground">Navega por tu biblioteca</p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onToggle} className="h-8 w-8">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <Tabs defaultValue="folders">
-          <TabsList className="grid grid-cols-2">
-            <TabsTrigger value="folders">Carpetas</TabsTrigger>
-            <TabsTrigger value="tags">Etiquetas</TabsTrigger>
-          </TabsList>
-          <TabsContent value="folders" className="mt-4">
-            <FolderTree currentFolderId={currentFolderId} onNavigate={onNavigate} compact />
-          </TabsContent>
-          <TabsContent value="tags" className="mt-4">
-            <div className="space-y-2">
-              <Input placeholder="Buscar etiquetas..." />
-              <div className="flex flex-wrap gap-2 pt-2">
-                {['urgente', 'revisión', 'importante', 'archivo'].map(tag => (
-                  <Badge key={tag} variant="secondary" className="cursor-pointer hover:bg-secondary/80">
-                    {tag}
-                  </Badge>
-                ))}
+      <ScrollArea className="h-full">
+        <div className="space-y-6 p-6">
+          {/* Header del Sidebar */}
+          <div className="pb-4 border-b border-border/40">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="font-bold text-xl bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                  Explorador
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">Navega por tu biblioteca</p>
               </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggle}
+                className="h-8 w-8 rounded-full hover:bg-accent"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
             </div>
-          </TabsContent>
-        </Tabs>
-
-        <Card className="p-4">
-          <div className="space-y-4">
-            <h4 className="font-semibold">Personalizar Vista</h4>
-            <div className="flex items-center justify-between">
-              <Label className="text-sm">Mostrar miniaturas</Label>
-              <Switch checked={showThumbnails} onCheckedChange={onToggleThumbnails} />
-            </div>
+            
+            {/* Quick Stats */}
+            <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Espacio disponible</p>
+                  <p className="text-2xl font-bold">85%</p>
+                </div>
+                <div className="p-2 rounded-full bg-primary/20">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                </div>
+              </div>
+              <Progress value={85} className="h-2 mt-3" />
+            </Card>
           </div>
-        </Card>
-      </div>
+
+          {/* Tabs de Navegación */}
+          <Tabs defaultValue="folders" className="w-full">
+            <TabsList className="grid grid-cols-2 bg-gradient-to-r from-muted/50 to-muted/30 p-1">
+              <TabsTrigger value="folders" className="data-[state=active]:bg-background">
+                <FolderIcon className="h-4 w-4 mr-2" />
+                Carpetas
+              </TabsTrigger>
+              <TabsTrigger value="tags" className="data-[state=active]:bg-background">
+                <Layers className="h-4 w-4 mr-2" />
+                Etiquetas
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="folders" className="mt-4">
+              <FolderTree 
+                currentFolderId={currentFolderId} 
+                onNavigate={onNavigate} 
+                compact 
+              />
+            </TabsContent>
+            
+            <TabsContent value="tags" className="mt-4">
+              <div className="space-y-4">
+                <Input 
+                  placeholder="Buscar etiquetas..." 
+                  className="bg-background/50 border-border/50"
+                />
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {[
+                    { label: 'Urgente', color: 'bg-red-500/20 text-red-700' },
+                    { label: 'Revisión', color: 'bg-amber-500/20 text-amber-700' },
+                    { label: 'Importante', color: 'bg-blue-500/20 text-blue-700' },
+                    { label: 'Archivo', color: 'bg-gray-500/20 text-gray-700' },
+                    { label: 'Confidencial', color: 'bg-purple-500/20 text-purple-700' },
+                    { label: 'Público', color: 'bg-green-500/20 text-green-700' }
+                  ].map(tag => (
+                    <Badge 
+                      key={tag.label}
+                      className={`${tag.color} border-0 cursor-pointer hover:scale-105 transition-transform`}
+                    >
+                      {tag.label}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {/* Configuración de Vista */}
+          <Card className="bg-gradient-to-br from-muted/30 to-muted/10 border-border/50">
+            <CardContent className="p-4 space-y-4">
+              <h4 className="font-semibold text-lg flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                Personalizar Vista
+              </h4>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium">Mostrar miniaturas</Label>
+                    <p className="text-xs text-muted-foreground">Visualiza imágenes previas</p>
+                  </div>
+                  <Switch 
+                    checked={showThumbnails} 
+                    onCheckedChange={onToggleThumbnails}
+                    className="data-[state=checked]:bg-primary"
+                  />
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Densidad de vista</Label>
+                  <div className="flex gap-2">
+                    {['Compacta', 'Normal', 'Espaciada'].map((density) => (
+                      <Button
+                        key={density}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-xs"
+                      >
+                        {density}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Acciones Rápidas */}
+          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+            <CardContent className="p-4 space-y-3">
+              <h4 className="font-semibold text-lg flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                Acciones Rápidas
+              </h4>
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="secondary" size="sm" className="text-xs">
+                  <Share2 className="h-3 w-3 mr-1" />
+                  Compartir
+                </Button>
+                <Button variant="secondary" size="sm" className="text-xs">
+                  <Download className="h-3 w-3 mr-1" />
+                  Exportar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </ScrollArea>
     </motion.aside>
   );
 }
@@ -273,7 +414,7 @@ export default function ResourcesPage() {
   // Estados consolidados
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('grid');
-  const [resourceView, setResourceView] = useState<'all' | 'favorites' | 'recent' | 'unread'>('all');
+  const [resourceView, setResourceView] = useState<'all' | 'favorites' | 'recent' | 'unread' | 'shared'>('all');
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [currentFolder, setCurrentFolder] = useState<AppResourceType | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState([{ id: null, title: 'Biblioteca Principal' }]);
@@ -316,25 +457,40 @@ export default function ResourcesPage() {
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   );
 
-  // Atajos de teclado
+  // Atajos de teclado mejorados
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
         e.preventDefault();
         setSelectedIds(new Set(allApiResources.map(r => r.id)));
+        toast({
+          title: "Todos seleccionados",
+          description: `${allApiResources.length} recursos seleccionados`
+        });
       }
-      if (e.key === 'Escape') setSelectedIds(new Set());
+      if (e.key === 'Escape') {
+        setSelectedIds(new Set());
+        toast({
+          description: "Selección limpiada"
+        });
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
         e.preventDefault();
-        document.querySelector<HTMLInputElement>('input[placeholder*="Buscar"]')?.focus();
+        const searchInput = document.querySelector<HTMLInputElement>('input[placeholder*="Buscar"]');
+        searchInput?.focus();
+        searchInput?.select();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        setIsFolderEditorOpen(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [allApiResources]);
+  }, [allApiResources, toast]);
 
   useEffect(() => {
-    setPageTitle('Biblioteca de Recursos - Gestor Inteligente');
+    setPageTitle('📚 Biblioteca de Recursos - Gestor Inteligente');
   }, [setPageTitle]);
 
   const canManage = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
@@ -370,6 +526,7 @@ export default function ResourcesPage() {
     if (resourceView === 'favorites') filtered = filtered.filter(r => r.isPinned);
     if (resourceView === 'recent') filtered = filtered.filter(r => recentIds.includes(r.id));
     if (resourceView === 'unread') filtered = filtered.filter(r => !r.isViewed);
+    if (resourceView === 'shared') filtered = filtered.filter(r => r.shared);
     if (debouncedSearchTerm) {
       const searchLower = debouncedSearchTerm.toLowerCase();
       filtered = filtered.filter(r => 
@@ -395,11 +552,11 @@ export default function ResourcesPage() {
 
     // Agrupación
     const groups: Record<string, AppResourceType[]> = {
-      'Carpetas': filtered.filter(r => r.type === 'FOLDER'),
-      'Listas de Videos': filtered.filter(r => r.type === 'VIDEO_PLAYLIST'),
-      'Documentos': filtered.filter(r => ['pdf', 'doc', 'xls', 'ppt'].includes(r.filetype || '')),
-      'Multimedia': filtered.filter(r => ['image', 'video', 'audio'].includes(r.filetype || '')),
-      'Archivos': filtered.filter(r => !['FOLDER', 'VIDEO_PLAYLIST'].includes(r.type))
+      '📁 Carpetas': filtered.filter(r => r.type === 'FOLDER'),
+      '🎬 Listas de Videos': filtered.filter(r => r.type === 'VIDEO_PLAYLIST'),
+      '📄 Documentos': filtered.filter(r => ['pdf', 'doc', 'xls', 'ppt'].includes(r.filetype || '')),
+      '🖼️ Multimedia': filtered.filter(r => ['image', 'video', 'audio'].includes(r.filetype || '')),
+      '📎 Otros Archivos': filtered.filter(r => !['FOLDER', 'VIDEO_PLAYLIST'].includes(r.type))
     };
 
     // Limpiar grupos vacíos
@@ -441,19 +598,30 @@ export default function ResourcesPage() {
           body: JSON.stringify({ parentId: targetFolderId === 'root' ? null : targetFolderId })
         });
 
-        toast({ title: 'Recurso Movido', description: `"${resourceToMove.title}" se movió correctamente.` });
+        toast({ 
+          title: '✅ Recurso Movido', 
+          description: `"${resourceToMove.title}" se movió correctamente.`,
+          className: "border-l-4 border-l-green-500"
+        });
         fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
       } catch {
-        toast({ title: 'Error', description: 'No se pudo mover el recurso.', variant: 'destructive' });
+        toast({ 
+          title: '❌ Error', 
+          description: 'No se pudo mover el recurso.', 
+          variant: 'destructive' 
+        });
       }
     }
   }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
 
-  const handleBulkAction = useCallback(async (action: 'download' | 'delete') => {
+  const handleBulkAction = useCallback(async (action: 'download' | 'delete' | 'share') => {
     if (selectedIds.size === 0) return;
 
     try {
-      const endpoint = action === 'download' ? '/api/resources/bulk-download' : '/api/resources/bulk-delete';
+      const endpoint = action === 'download' ? '/api/resources/bulk-download' : 
+                     action === 'share' ? '/api/resources/bulk-share' : 
+                     '/api/resources/bulk-delete';
+      
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -474,11 +642,20 @@ export default function ResourcesPage() {
         document.body.removeChild(a);
       }
 
-      toast({ title: 'Acción completada', description: `${selectedIds.size} recursos procesados` });
+      toast({ 
+        title: `✅ ${action === 'share' ? 'Recursos compartidos' : 'Acción completada'}`,
+        description: `${selectedIds.size} recursos procesados`,
+        className: "border-l-4 border-l-green-500"
+      });
+      
       fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
       setSelectedIds(new Set());
     } catch {
-      toast({ title: 'Error', description: 'No se pudo completar la acción', variant: 'destructive' });
+      toast({ 
+        title: '❌ Error', 
+        description: 'No se pudo completar la acción', 
+        variant: 'destructive' 
+      });
     }
   }, [selectedIds, toast, fetchResources, currentFolderId, debouncedSearchTerm]);
 
@@ -490,10 +667,17 @@ export default function ResourcesPage() {
         body: JSON.stringify({ isPinned: !resource.isPinned }),
       });
 
-      toast({ description: `Recurso ${resource.isPinned ? 'desfijado' : 'fijado'}.` });
+      toast({ 
+        description: `✅ Recurso ${resource.isPinned ? 'desfijado' : 'fijado'}.`,
+        className: "border-l-4 border-l-amber-500"
+      });
       fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
     } catch (err) {
-      toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
+      toast({ 
+        title: "❌ Error", 
+        description: (err as Error).message, 
+        variant: "destructive" 
+      });
     }
   }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
 
@@ -505,17 +689,31 @@ export default function ResourcesPage() {
     setPlaylistToEdit(null);
     setIsUploaderOpen(false);
     fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
-  }, [currentFolderId, debouncedSearchTerm, fetchResources]);
+    
+    toast({
+      title: "✅ Guardado exitoso",
+      description: "Los cambios se han guardado correctamente",
+      className: "border-l-4 border-l-green-500"
+    });
+  }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
 
   const confirmDelete = useCallback(async () => {
     if (!resourceToDelete) return;
 
     try {
       await fetch(`/api/resources/${resourceToDelete.id}`, { method: 'DELETE' });
-      toast({ title: "Recurso eliminado", description: `"${resourceToDelete.title}" ha sido eliminado.` });
+      toast({ 
+        title: "✅ Recurso eliminado", 
+        description: `"${resourceToDelete.title}" ha sido eliminado.`,
+        className: "border-l-4 border-l-red-500"
+      });
       fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
     } catch (err) {
-      toast({ title: "Error", description: (err as Error).message, variant: "destructive" });
+      toast({ 
+        title: "❌ Error", 
+        description: (err as Error).message, 
+        variant: "destructive" 
+      });
     } finally {
       setResourceToDelete(null);
     }
@@ -537,6 +735,25 @@ export default function ResourcesPage() {
     setPreviewingResource(resource);
     addRecentResource(resource.id);
   }, [addRecentResource]);
+
+  const handleShareResource = useCallback(async (resource: AppResourceType) => {
+    try {
+      const shareUrl = `${window.location.origin}/share/${resource.id}`;
+      await navigator.clipboard.writeText(shareUrl);
+      
+      toast({
+        title: "🔗 Enlace copiado",
+        description: "El enlace de compartir ha sido copiado al portapapeles",
+        className: "border-l-4 border-l-blue-500"
+      });
+    } catch (err) {
+      toast({
+        title: "❌ Error",
+        description: "No se pudo copiar el enlace",
+        variant: "destructive"
+      });
+    }
+  }, [toast]);
 
   // Renderizado condicional optimizado
   const renderContent = () => {
@@ -562,18 +779,32 @@ export default function ResourcesPage() {
             onDelete={setResourceToDelete}
             onNavigate={handleNavigateFolder}
             onTogglePin={handleTogglePin}
+            onShare={handleShareResource}
           />
         ))}
       </div>
     );
   };
 
-  if (!user) return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  if (!user) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-background to-muted">
+        <div className="text-center space-y-4">
+          <div className="animate-spin">
+            <Loader2 className="h-12 w-12 text-primary" />
+          </div>
+          <p className="text-muted-foreground">Cargando recursos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <DndContext onDragStart={(e) => setActiveId(e.active.id)} onDragEnd={handleDragEnd} sensors={sensors}>
-      <div className={cn("grid transition-all duration-300 min-h-screen", isSidebarVisible ? "lg:grid-cols-[280px_1fr] gap-6" : "grid-cols-1")}>
-        
+      <div className={cn(
+        "grid transition-all duration-500 ease-in-out min-h-screen bg-gradient-to-br from-background via-background to-muted/20",
+        isSidebarVisible ? "lg:grid-cols-[300px_1fr] gap-0" : "grid-cols-1"
+      )}>
         <SidebarNavigation
           isVisible={isSidebarVisible}
           onToggle={() => setIsSidebarVisible(!isSidebarVisible)}
@@ -583,54 +814,72 @@ export default function ResourcesPage() {
           onToggleThumbnails={setShowThumbnails}
         />
 
-        <div className="space-y-6 p-4 md:p-6">
-          {!isSidebarVisible && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setIsSidebarVisible(true)}
-              className="hidden lg:block absolute -left-8 top-4 h-8 w-8 rounded-full shadow-md bg-background"
-            >
-              <PanelLeftOpen className="h-4 w-4 text-primary" />
-            </Button>
-          )}
+        <main className="relative">
+          <div className="absolute inset-0 bg-grid-pattern opacity-[0.015] pointer-events-none" />
+          
+          <div className="space-y-6 p-6 lg:p-8 relative">
+            {!isSidebarVisible && (
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+              >
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setIsSidebarVisible(true)}
+                  className="hidden lg:flex absolute -left-12 top-6 h-10 w-10 rounded-full shadow-lg bg-background border-primary/20 hover:bg-primary/5"
+                >
+                  <PanelLeftOpen className="h-5 w-5 text-primary" />
+                </Button>
+              </motion.div>
+            )}
 
-          <Header
-            canManage={canManage}
-            isSidebarVisible={isSidebarVisible}
-            onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
-            onCreateFolder={() => setIsFolderEditorOpen(true)}
-            onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
-            onUpload={() => setIsUploaderOpen(true)}
-            resourceView={resourceView}
-            onViewChange={setResourceView}
-          />
-
-          {currentFolder?.type !== 'VIDEO_PLAYLIST' && (
-            <SearchAndFilters
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              sortBy={sortBy}
-              sortOrder={sortOrder}
-              onSortChange={(by, order) => { setSortBy(by); setSortOrder(order); }}
-              dateRange={dateRange}
-              onDateChange={setDateRange}
-              fileType={fileType}
-              onFileTypeChange={setFileType}
-              hasPin={hasPin}
-              onHasPinChange={setHasPin}
-              hasExpiry={hasExpiry}
-              onHasExpiryChange={setHasExpiry}
-              tagsFilter={tagsFilter}
-              onTagsFilterChange={setTagsFilter}
-              isFilterOpen={isFilterPopoverOpen}
-              onFilterOpenChange={setIsFilterPopoverOpen}
+            <Header
+              canManage={canManage}
+              isSidebarVisible={isSidebarVisible}
+              onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
+              onCreateFolder={() => setIsFolderEditorOpen(true)}
+              onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
+              onUpload={() => setIsUploaderOpen(true)}
+              resourceView={resourceView}
+              onViewChange={setResourceView}
+              selectedCount={selectedIds.size}
             />
-          )}
 
-          <EnhancedBreadcrumbs breadcrumbs={breadcrumbs} onBreadcrumbClick={handleBreadcrumbClick} />
-          <div ref={containerRef}>{renderContent()}</div>
-        </div>
+            {currentFolder?.type !== 'VIDEO_PLAYLIST' && (
+              <SearchAndFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={(by, order) => { setSortBy(by); setSortOrder(order); }}
+                dateRange={dateRange}
+                onDateChange={setDateRange}
+                fileType={fileType}
+                onFileTypeChange={setFileType}
+                hasPin={hasPin}
+                onHasPinChange={setHasPin}
+                hasExpiry={hasExpiry}
+                onHasExpiryChange={setHasExpiry}
+                tagsFilter={tagsFilter}
+                onTagsFilterChange={setTagsFilter}
+                isFilterOpen={isFilterPopoverOpen}
+                onFilterOpenChange={setIsFilterPopoverOpen}
+              />
+            )}
+
+            <EnhancedBreadcrumbs breadcrumbs={breadcrumbs} onBreadcrumbClick={handleBreadcrumbClick} />
+            
+            <motion.div
+              ref={containerRef}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              {renderContent()}
+            </motion.div>
+          </div>
+        </main>
       </div>
 
       <SelectionActionBar
@@ -638,6 +887,7 @@ export default function ResourcesPage() {
         onMove={() => setIsMoveModalOpen(true)}
         onDownload={() => handleBulkAction('download')}
         onDelete={() => setResourceToDelete({ id: 'bulk' } as any)}
+        onShare={() => handleBulkAction('share')}
         onClearSelection={() => setSelectedIds(new Set())}
       />
 
@@ -689,15 +939,50 @@ export default function ResourcesPage() {
   );
 }
 
-// Componentes auxiliares
+// Componentes auxiliares mejorados
 function LoadingState() {
   return (
-    <div className="space-y-6">
-      <ResourceStats resources={[]} />
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.1 }}
+          >
+            <Card className="overflow-hidden border-0 bg-gradient-to-br from-muted/30 to-muted/50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-8 w-16" />
+                  </div>
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {[...Array(12)].map((_, i) => (
-          <motion.div key={i} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
-            <Card className="overflow-hidden"><Skeleton className="aspect-square w-full" /><div className="p-3 space-y-2"><Skeleton className="h-4 w-3/4" /><Skeleton className="h-3 w-1/2" /></div></Card>
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+          >
+            <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <Skeleton className="aspect-square w-full" />
+              <div className="p-4 space-y-3">
+                <Skeleton className="h-4 w-3/4" />
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-3 w-1/3" />
+                  <Skeleton className="h-3 w-1/4" />
+                </div>
+              </div>
+            </Card>
           </motion.div>
         ))}
       </div>
@@ -707,31 +992,79 @@ function LoadingState() {
 
 function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-16 space-y-4">
-      <AlertTriangle className="mx-auto h-16 w-16 text-destructive/60" />
-      <div><h3 className="text-lg font-semibold text-destructive">{error}</h3><p className="text-muted-foreground mt-2">No se pudieron cargar los recursos</p></div>
-      <Button onClick={onRetry}><RefreshCw className="mr-2 h-4 w-4" />Reintentar</Button>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="text-center py-16 space-y-6"
+    >
+      <div className="w-24 h-24 mx-auto bg-gradient-to-br from-destructive/10 to-destructive/5 rounded-full flex items-center justify-center">
+        <AlertTriangle className="h-12 w-12 text-destructive" />
+      </div>
+      <div>
+        <h3 className="text-2xl font-bold text-destructive mb-2">{error}</h3>
+        <p className="text-muted-foreground">No se pudieron cargar los recursos. Inténtalo de nuevo.</p>
+      </div>
+      <Button
+        onClick={onRetry}
+        className="bg-gradient-to-r from-destructive to-destructive/80 hover:from-destructive/90 hover:to-destructive/70"
+      >
+        <RefreshCw className="mr-2 h-4 w-4" />
+        Reintentar
+      </Button>
     </motion.div>
   );
 }
 
 function EmptyState({ canManage, searchTerm }: { canManage: boolean; searchTerm: string }) {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-16 text-center space-y-6">
-      <div className="w-24 h-24 mx-auto bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center">
-        <FolderOpen className="h-12 w-12 text-primary" />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="py-16 text-center space-y-8"
+    >
+      <div className="w-40 h-40 mx-auto bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-full flex items-center justify-center">
+        <div className="relative">
+          <FolderOpen className="h-24 w-24 text-primary" />
+          <Sparkles className="h-8 w-8 text-amber-500 absolute -top-2 -right-2 animate-pulse" />
+        </div>
       </div>
       <div>
-        <h3 className="text-2xl font-bold mb-2">{searchTerm ? 'No se encontraron resultados' : 'Biblioteca vacía'}</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          {searchTerm ? 'No hay recursos que coincidan con tu búsqueda.' : 'Comienza agregando recursos a tu biblioteca.'}
+        <h3 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mb-3">
+          {searchTerm ? 'No se encontraron resultados' : 'Biblioteca vacía'}
+        </h3>
+        <p className="text-muted-foreground max-w-md mx-auto text-lg">
+          {searchTerm 
+            ? 'No hay recursos que coincidan con tu búsqueda. Intenta con otros términos.'
+            : 'Comienza agregando recursos a tu biblioteca. ¡Es fácil y rápido!'}
         </p>
       </div>
       {canManage && (
-        <div className="flex gap-3 justify-center">
-          <Button onClick={() => setIsFolderEditorOpen(true)}><FolderPlus className="mr-2 h-4 w-4" />Nueva Carpeta</Button>
-          <Button onClick={() => setIsUploaderOpen(true)} variant="secondary"><UploadCloud className="mr-2 h-4 w-4" />Subir Archivos</Button>
-        </div>
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="flex flex-col sm:flex-row gap-3 justify-center"
+        >
+          <Button 
+            onClick={() => setIsFolderEditorOpen(true)}
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+          >
+            <FolderPlus className="mr-2 h-5 w-5" />
+            Nueva Carpeta
+          </Button>
+          <Button 
+            onClick={() => setIsUploaderOpen(true)}
+            variant="secondary"
+            className="border-2"
+          >
+            <UploadCloud className="mr-2 h-5 w-5" />
+            Subir Archivos
+          </Button>
+          <Button variant="outline">
+            <Sparkles className="mr-2 h-5 w-5" />
+            Ver Tutorial
+          </Button>
+        </motion.div>
       )}
     </motion.div>
   );
@@ -748,7 +1081,8 @@ function ResourceSection({
   onEdit,
   onDelete,
   onNavigate,
-  onTogglePin
+  onTogglePin,
+  onShare
 }: {
   category: string;
   resources: AppResourceType[];
@@ -761,81 +1095,184 @@ function ResourceSection({
   onDelete: (resource: AppResourceType) => void;
   onNavigate: (resource: AppResourceType) => void;
   onTogglePin: (resource: AppResourceType) => void;
+  onShare: (resource: AppResourceType) => void;
 }) {
   const icons = {
-    'Carpetas': FolderIcon,
-    'Listas de Videos': ListVideo,
-    'Documentos': FileText,
-    'Multimedia': VideoIcon,
-    'Archivos': FileQuestion
+    '📁 Carpetas': FolderIcon,
+    '🎬 Listas de Videos': ListVideo,
+    '📄 Documentos': FileText,
+    '🖼️ Multimedia': VideoIcon,
+    '📎 Otros Archivos': FileQuestion
   };
   const Icon = icons[category as keyof typeof icons] || FileQuestion;
 
   return (
-    <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+    <motion.section
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold flex items-center gap-2"><Icon className="h-5 w-5" />{category}<Badge variant="outline" className="ml-2">{resources.length}</Badge></h3>
-        {category === 'Archivos' && resources.length > 0 && (
-          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
-            {(['list', 'grid', 'table'] as const).map(mode => (
-              <TooltipProvider key={mode}><Tooltip><TooltipTrigger asChild>
-                <Button variant={viewMode === mode ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8" onClick={() => onViewModeChange(mode)}>
-                  {mode === 'list' ? <List className="h-4 w-4" /> : mode === 'grid' ? <Grid className="h-4 w-4" /> : <Table className="h-4 w-4" />}
-                </Button>
-              </TooltipTrigger><TooltipContent>{`Vista de ${mode === 'list' ? 'lista' : mode === 'grid' ? 'cuadrícula' : 'tabla'}`}</TooltipContent></Tooltip></TooltipProvider>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5">
+            <Icon className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold">{category}</h3>
+            <p className="text-sm text-muted-foreground">
+              {resources.length} {resources.length === 1 ? 'elemento' : 'elementos'}
+            </p>
+          </div>
+        </div>
+        {category === '📎 Otros Archivos' && resources.length > 0 && (
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 backdrop-blur-sm">
+            {(['grid', 'list', 'table'] as const).map(mode => (
+              <TooltipProvider key={mode}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={cn(
+                        "p-2 rounded-md transition-all duration-200",
+                        viewMode === mode
+                          ? "bg-background shadow-sm"
+                          : "hover:bg-accent/50"
+                      )}
+                      onClick={() => onViewModeChange(mode)}
+                    >
+                      {mode === 'list' && <List className="h-4 w-4" />}
+                      {mode === 'grid' && <Grid className="h-4 w-4" />}
+                      {mode === 'table' && <Table className="h-4 w-4" />}
+                    </motion.button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Vista {mode === 'list' ? 'lista' : mode === 'grid' ? 'cuadrícula' : 'tabla'}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             ))}
           </div>
         )}
       </div>
 
-      {viewMode === 'grid' || category !== 'Archivos' ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {resources.map(resource => (
-            <ResourceGridItem
+      {viewMode === 'grid' || category !== '📎 Otros Archivos' ? (
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          {resources.map((resource, index) => (
+            <motion.div
               key={resource.id}
-              resource={resource}
-              onSelect={() => onPreview(resource)}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onNavigate={onNavigate}
-              onTogglePin={onTogglePin}
-              isSelected={selectedIds.has(resource.id)}
-              onSelectionChange={onSelectionChange}
-            />
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.03 }}
+            >
+              <ResourceGridItem
+                resource={resource}
+                onSelect={() => onPreview(resource)}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onNavigate={onNavigate}
+                onTogglePin={onTogglePin}
+                onShare={onShare}
+                isSelected={selectedIds.has(resource.id)}
+                onSelectionChange={onSelectionChange}
+              />
+            </motion.div>
           ))}
         </div>
       ) : viewMode === 'list' ? (
-        <ResourceListItem
-          resources={resources}
-          onSelect={onPreview}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onTogglePin={onTogglePin}
-          selectedIds={selectedIds}
-          onSelectionChange={onSelectionChange}
-        />
+        <Card className="overflow-hidden border-0 shadow-lg">
+          <ResourceListItem
+            resources={resources}
+            onSelect={onPreview}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onTogglePin={onTogglePin}
+            onShare={onShare}
+            selectedIds={selectedIds}
+            onSelectionChange={onSelectionChange}
+          />
+        </Card>
       ) : (
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden border-0 shadow-lg">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="border-b bg-muted/50">
-                <th className="text-left p-4"><Checkbox checked={selectedIds.size === resources.length && resources.length > 0} onCheckedChange={(c) => onSelectionChange('all', !!c)} /></th>
-                <th className="text-left p-4 font-semibold">Nombre</th><th className="text-left p-4 font-semibold">Tipo</th>
-                <th className="text-left p-4 font-semibold">Tamaño</th><th className="text-left p-4 font-semibold">Fecha</th><th className="text-left p-4 font-semibold">Acciones</th>
-              </tr></thead>
+              <thead>
+                <tr className="border-b bg-gradient-to-r from-muted/30 to-muted/10">
+                  <th className="text-left p-4">
+                    <Checkbox 
+                      checked={selectedIds.size === resources.length && resources.length > 0}
+                      onCheckedChange={(c) => onSelectionChange('all', !!c)}
+                    />
+                  </th>
+                  <th className="text-left p-4 font-semibold">Nombre</th>
+                  <th className="text-left p-4 font-semibold">Tipo</th>
+                  <th className="text-left p-4 font-semibold">Tamaño</th>
+                  <th className="text-left p-4 font-semibold">Fecha</th>
+                  <th className="text-left p-4 font-semibold">Acciones</th>
+                </tr>
+              </thead>
               <tbody>
                 {resources.map(resource => (
-                  <tr key={resource.id} className="border-b hover:bg-muted/50">
-                    <td className="p-4"><Checkbox checked={selectedIds.has(resource.id)} onCheckedChange={(c) => onSelectionChange(resource.id, !!c)} /></td>
+                  <tr
+                    key={resource.id}
+                    className="border-b hover:bg-gradient-to-r hover:from-accent/30 hover:to-accent/10 transition-colors"
+                  >
+                    <td className="p-4">
+                      <Checkbox
+                        checked={selectedIds.has(resource.id)}
+                        onCheckedChange={(c) => onSelectionChange(resource.id, !!c)}
+                      />
+                    </td>
                     <td className="p-4 font-medium">{resource.title}</td>
-                    <td className="p-4"><Badge variant="outline">{resource.filetype || resource.type}</Badge></td>
+                    <td className="p-4">
+                      <Badge variant="secondary" className="bg-gradient-to-r from-primary/10 to-primary/5">
+                        {resource.filetype || resource.type}
+                      </Badge>
+                    </td>
                     <td className="p-4">{formatFileSize(resource.size || 0)}</td>
-                    <td className="p-4">{new Date(resource.uploadDate).toLocaleDateString()}</td>
-                    <td className="p-4"><div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onPreview(resource)}><Eye className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(resource)}><Edit className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onDelete(resource)}><Trash2 className="h-4 w-4" /></Button>
-                    </div></td>
+                    <td className="p-4">
+                      {new Date(resource.uploadDate).toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-primary/10"
+                          onClick={() => onPreview(resource)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-blue-500/10"
+                          onClick={() => onEdit(resource)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-green-500/10"
+                          onClick={() => onShare(resource)}
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-destructive/10"
+                          onClick={() => onDelete(resource)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -855,7 +1292,8 @@ function Header({
   onCreatePlaylist,
   onUpload,
   resourceView,
-  onViewChange
+  onViewChange,
+  selectedCount
 }: {
   canManage: boolean;
   isSidebarVisible: boolean;
@@ -863,47 +1301,118 @@ function Header({
   onCreateFolder: () => void;
   onCreatePlaylist: () => void;
   onUpload: () => void;
-  resourceView: 'all' | 'favorites' | 'recent' | 'unread';
-  onViewChange: (view: 'all' | 'favorites' | 'recent' | 'unread') => void;
+  resourceView: 'all' | 'favorites' | 'recent' | 'unread' | 'shared';
+  onViewChange: (view: 'all' | 'favorites' | 'recent' | 'unread' | 'shared') => void;
+  selectedCount?: number;
 }) {
   return (
-    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Biblioteca de Recursos</h1>
-          <p className="text-muted-foreground">Gestiona y comparte documentos importantes, guías y materiales de formación</p>
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-6"
+    >
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5">
+              <FolderOpen className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary via-primary/80 to-purple-600 bg-clip-text text-transparent">
+                Biblioteca de Recursos
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Gestiona y comparte documentos importantes, guías y materiales de formación
+              </p>
+            </div>
+          </div>
         </div>
+        
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={onToggleSidebar} className="lg:hidden">
-            {isSidebarVisible ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onToggleSidebar}
+            className="lg:hidden rounded-full border-primary/20 hover:border-primary/40"
+          >
+            {isSidebarVisible ? (
+              <PanelLeftClose className="h-5 w-5" />
+            ) : (
+              <PanelLeftOpen className="h-5 w-5" />
+            )}
           </Button>
+          
           {canManage && (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild><Button><PlusCircle className="mr-2 h-4 w-4" />Nuevo</Button></DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={onCreateFolder}><FolderIcon className="mr-2 h-4 w-4" />Nueva Carpeta</DropdownMenuItem>
-                <DropdownMenuItem onClick={onCreatePlaylist}><ListVideo className="mr-2 h-4 w-4" />Nueva Lista de Videos</DropdownMenuItem>
-                <DropdownMenuItem onClick={onUpload}><UploadCloud className="mr-2 h-4 w-4" />Subir Archivo/Enlace</DropdownMenuItem>
+              <DropdownMenuTrigger asChild>
+                <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Nuevo
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="font-semibold">Crear nuevo</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={onCreateFolder} className="cursor-pointer">
+                    <FolderIcon className="mr-2 h-4 w-4" />
+                    <span>Nueva Carpeta</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={onCreatePlaylist} className="cursor-pointer">
+                    <ListVideo className="mr-2 h-4 w-4" />
+                    <span>Nueva Lista de Videos</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={onUpload} className="cursor-pointer">
+                    <UploadCloud className="mr-2 h-4 w-4" />
+                    <span>Subir Archivo/Enlace</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="font-semibold">Acciones rápidas</DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Copy className="mr-2 h-4 w-4" />
+                    <span>Importar desde...</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    <span>Integrar con...</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-2 border-b overflow-x-auto">
-        {(['all', 'favorites', 'recent', 'unread'] as const).map(view => (
-          <Button
-            key={view}
-            variant={resourceView === view ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => onViewChange(view)}
-            className="rounded-b-none"
+      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+        {([
+          { key: 'all', label: 'Todos', icon: null },
+          { key: 'favorites', label: 'Favoritos', icon: Star },
+          { key: 'recent', label: 'Recientes', icon: Clock },
+          { key: 'unread', label: 'No vistos', icon: Eye },
+          { key: 'shared', label: 'Compartidos', icon: Share2 }
+        ] as const).map(({ key, label, icon: Icon }) => (
+          <motion.button
+            key={key}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => onViewChange(key)}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2.5 rounded-lg whitespace-nowrap transition-all duration-300",
+              resourceView === key
+                ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md"
+                : "bg-gradient-to-r from-muted/30 to-muted/10 hover:from-muted/50 hover:to-muted/30 text-muted-foreground"
+            )}
           >
-            {view === 'all' && 'Todos'}
-            {view === 'favorites' && <><Star className="mr-2 h-4 w-4" />Favoritos</>}
-            {view === 'recent' && <><Clock className="mr-2 h-4 w-4" />Recientes</>}
-            {view === 'unread' && <><Eye className="mr-2 h-4 w-4" />No vistos</>}
-          </Button>
+            {Icon && <Icon className="h-4 w-4" />}
+            {label}
+            {key === 'all' && selectedCount && selectedCount > 0 && (
+              <Badge className="ml-2 bg-white/20 text-white/90">
+                {selectedCount}
+              </Badge>
+            )}
+          </motion.button>
         ))}
       </div>
     </motion.div>
@@ -956,43 +1465,223 @@ function SearchAndFilters({
   ].reduce((a, b) => a + b, 0);
 
   return (
-    <Card className="p-4 bg-card shadow-sm">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="relative w-full flex-grow">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input placeholder="Buscar en la carpeta actual..." className="pl-10 h-10 text-base rounded-md" value={searchTerm} onChange={e => onSearchChange(e.target.value)} />
+    <Card className="p-6 bg-gradient-to-br from-background via-background to-primary/5 border-primary/20 shadow-lg">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+        <div className="relative w-full flex-grow group">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent rounded-xl blur-xl opacity-0 group-focus-within:opacity-30 transition-opacity duration-300" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Input
+            placeholder="Buscar recursos por nombre, descripción o etiquetas..."
+            className="pl-12 h-12 text-base rounded-xl border-2 border-border/50 bg-background/50 backdrop-blur-sm focus-visible:border-primary focus-visible:ring-0 transition-all duration-300"
+            value={searchTerm}
+            onChange={e => onSearchChange(e.target.value)}
+          />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+              onClick={() => onSearchChange('')}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        
+        <div className="flex items-center gap-3 w-full lg:w-auto">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild><Button variant="outline" className="h-10 flex-grow md:flex-none"><ArrowUpDown className="mr-2 h-4 w-4" />{sortBy === 'name' ? 'Nombre' : sortBy === 'size' ? 'Tamaño' : 'Fecha'}</Button></DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onSortChange('name', 'asc')}>Nombre (A-Z)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onSortChange('name', 'desc')}>Nombre (Z-A)</DropdownMenuItem>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="h-12 px-4 rounded-xl border-border/50 hover:border-primary/50">
+                <ArrowUpDown className="mr-2 h-4 w-4" />
+                <span className="font-medium">
+                  {sortBy === 'name' ? 'Nombre' : 
+                   sortBy === 'size' ? 'Tamaño' : 
+                   sortBy === 'type' ? 'Tipo' : 'Fecha'}
+                </span>
+                <Badge variant="outline" className="ml-2">
+                  {sortOrder === 'asc' ? '↑' : '↓'}
+                </Badge>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Ordenar por</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onSortChange('date', 'desc')}>Más recientes</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onSortChange('date', 'asc')}>Más antiguos</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onSortChange('size', 'desc')}>Tamaño (Mayor-Menor)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onSortChange('size', 'asc')}>Tamaño (Menor-Mayor)</DropdownMenuItem>
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={() => onSortChange('name', 'asc')}>
+                  Nombre (A-Z)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onSortChange('name', 'desc')}>
+                  Nombre (Z-A)
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onSortChange('date', 'desc')}>
+                  Más recientes primero
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onSortChange('date', 'asc')}>
+                  Más antiguos primero
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onSortChange('size', 'desc')}>
+                  Tamaño (Mayor a menor)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onSortChange('size', 'asc')}>
+                  Tamaño (Menor a mayor)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onSortChange('type', 'asc')}>
+                  Tipo de archivo
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
 
           <Popover open={isFilterOpen} onOpenChange={onFilterOpenChange}>
-            <PopoverTrigger asChild><Button variant="outline" className="h-10 flex-grow md:flex-none"><Filter className="mr-2 h-4 w-4" />Filtros {activeFilterCount > 0 && `(${activeFilterCount})`}</Button></PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-              <div className="grid gap-4">
-                <div className="space-y-2"><h4 className="font-medium leading-none">Filtros Avanzados</h4><p className="text-sm text-muted-foreground">Refina tu búsqueda de recursos.</p></div>
-                <div className="space-y-2"><Label>Fecha de subida</Label><DateRangePicker date={dateRange} onDateChange={onDateChange} /></div>
-                <div className="space-y-2"><Label>Tipo de Archivo</Label>
-                  <Select value={fileType} onValueChange={onFileTypeChange}><SelectTrigger><SelectValue placeholder="Seleccionar tipo" /></SelectTrigger>
-                    <SelectContent><SelectItem value="all">Todos</SelectItem><SelectItem value="image">Imagen</SelectItem><SelectItem value="video">Video</SelectItem>
-                      <SelectItem value="pdf">PDF</SelectItem><SelectItem value="doc">Documento</SelectItem><SelectItem value="other">Otro</SelectItem></SelectContent>
-                  </Select>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="h-12 px-4 rounded-xl border-border/50 hover:border-primary/50 relative"
+              >
+                <Filter className="mr-2 h-4 w-4" />
+                <span className="font-medium">Filtros</span>
+                {activeFilterCount > 0 && (
+                  <Badge className="ml-2 bg-primary text-primary-foreground">
+                    {activeFilterCount}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-96" align="end">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <h4 className="font-bold text-lg flex items-center gap-2">
+                    <Filter className="h-4 w-4" />
+                    Filtros Avanzados
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Refina tu búsqueda con múltiples criterios
+                  </p>
                 </div>
-                <div className="flex items-center space-x-2"><Checkbox id="hasPin" checked={hasPin} onCheckedChange={(c) => onHasPinChange(!!c)} /><Label htmlFor="hasPin">Con PIN</Label></div>
-                <div className="flex items-center space-x-2"><Checkbox id="hasExpiry" checked={hasExpiry} onCheckedChange={(c) => onHasExpiryChange(!!c)} /><Label htmlFor="hasExpiry">Con Vencimiento</Label></div>
-                <div className="space-y-2"><Label htmlFor="tags-filter">Etiquetas (separadas por coma)</Label><Input id="tags-filter" placeholder="ej. urgente, revisión" value={tagsFilter} onChange={e => onTagsFilterChange(e.target.value)} /></div>
-                <Button onClick={() => onFilterOpenChange(false)}>Aplicar Filtros</Button>
+                
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="font-medium">Fecha de subida</Label>
+                    <DateRangePicker
+                      date={dateRange}
+                      onDateChange={onDateChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="font-medium">Tipo de Archivo</Label>
+                    <Select value={fileType} onValueChange={onFileTypeChange}>
+                      <SelectTrigger className="border-border/50">
+                        <SelectValue placeholder="Seleccionar tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los tipos</SelectItem>
+                        <SelectItem value="image">
+                          <div className="flex items-center gap-2">
+                            <ImageIcon className="h-4 w-4" />
+                            Imágenes
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="video">
+                          <div className="flex items-center gap-2">
+                            <VideoIcon className="h-4 w-4" />
+                            Videos
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="pdf">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Documentos PDF
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="doc">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            Documentos Word
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="other">
+                          <div className="flex items-center gap-2">
+                            <FileQuestion className="h-4 w-4" />
+                            Otros tipos
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="hasPin"
+                        checked={hasPin}
+                        onCheckedChange={(c) => onHasPinChange(!!c)}
+                        className="data-[state=checked]:bg-primary"
+                      />
+                      <Label
+                        htmlFor="hasPin"
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <Pin className="h-4 w-4" />
+                        Con Pin
+                      </Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="hasExpiry"
+                        checked={hasExpiry}
+                        onCheckedChange={(c) => onHasExpiryChange(!!c)}
+                        className="data-[state=checked]:bg-primary"
+                      />
+                      <Label
+                        htmlFor="hasExpiry"
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <Clock className="h-4 w-4" />
+                        Con Vencimiento
+                      </Label>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="tags-filter" className="font-medium">
+                      Etiquetas (separadas por coma)
+                    </Label>
+                    <Input
+                      id="tags-filter"
+                      placeholder="ej: urgente, revisión, confidencial"
+                      value={tagsFilter}
+                      onChange={e => onTagsFilterChange(e.target.value)}
+                      className="border-border/50"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setDateRange(undefined);
+                      setFileType('all');
+                      setHasPin(false);
+                      setHasExpiry(false);
+                      setTagsFilter('');
+                      onFilterOpenChange(false);
+                    }}
+                  >
+                    Limpiar
+                  </Button>
+                  <Button
+                    className="flex-1 bg-gradient-to-r from-primary to-primary/80"
+                    onClick={() => onFilterOpenChange(false)}
+                  >
+                    Aplicar Filtros
+                  </Button>
+                </div>
               </div>
             </PopoverContent>
           </Popover>
@@ -1007,26 +1696,128 @@ function SelectionActionBar({
   onMove,
   onDownload,
   onDelete,
+  onShare,
   onClearSelection
 }: {
   selectedIds: Set<string>;
   onMove: () => void;
   onDownload: () => void;
   onDelete: () => void;
+  onShare: () => void;
   onClearSelection: () => void;
 }) {
   if (selectedIds.size === 0) return null;
 
   return (
-    <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 100, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-      <Card className="px-4 py-3 shadow-xl border-2">
-        <div className="flex items-center justify-between gap-4">
-          <p className="px-2 text-sm font-semibold">{selectedIds.size} seleccionado{selectedIds.size > 1 ? 's' : ''}</p>
+    <motion.div
+      initial={{ y: 100, opacity: 0, scale: 0.8 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
+      exit={{ y: 100, opacity: 0, scale: 0.8 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50"
+    >
+      <Card className="px-6 py-4 shadow-2xl border-2 border-primary/30 bg-gradient-to-r from-background via-background to-primary/5 backdrop-blur-xl">
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-gradient-to-br from-primary/20 to-primary/10">
+              <Check className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="font-semibold">
+                {selectedIds.size} {selectedIds.size === 1 ? 'recurso' : 'recursos'} seleccionado{selectedIds.size > 1 ? 's' : ''}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Haz clic en una acción para continuar
+              </p>
+            </div>
+          </div>
+          
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={onMove}><FolderInput className="mr-2 h-4 w-4" />Mover</Button>
-            <Button variant="outline" size="sm" onClick={onDownload}><Download className="mr-2 h-4 w-4" />Descargar</Button>
-            <Button variant="destructive" size="sm" onClick={onDelete}><Trash2 className="mr-2 h-4 w-4" />Eliminar</Button>
-            <Button variant="ghost" size="sm" onClick={onClearSelection}><X className="h-4 w-4" /></Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onMove}
+                    className="gap-2 hover:border-blue-500 hover:bg-blue-500/10"
+                  >
+                    <FolderInput className="h-4 w-4" />
+                    <span className="hidden sm:inline">Mover</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Mover a otra carpeta</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onShare}
+                    className="gap-2 hover:border-green-500 hover:bg-green-500/10"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Compartir</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Compartir selección</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onDownload}
+                    className="gap-2 hover:border-purple-500 hover:bg-purple-500/10"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span className="hidden sm:inline">Descargar</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Descargar selección</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <Separator orientation="vertical" className="h-6" />
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={onDelete}
+                    className="gap-2 bg-gradient-to-r from-destructive to-destructive/80"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Eliminar</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Eliminar selección</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onClearSelection}
+                    className="hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Limpiar selección</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </Card>
@@ -1079,9 +1870,14 @@ function Modals({
       <PlaylistCreatorModal isOpen={isPlaylistCreatorOpen} onClose={onClosePlaylistCreator} onSave={onSaveSuccess} parentId={parentId} playlistToEdit={playlistToEdit} />
       
       <AlertDialog open={!!resourceToDelete} onOpenChange={(open) => !open && onCloseDelete()}>
-        <AlertDialogContent>
+        <AlertDialogContent className="border-2 border-destructive/20">
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-full bg-destructive/10">
+                <Trash2 className="h-6 w-6 text-destructive" />
+              </div>
+              <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
+            </div>
             <AlertDialogDescription>
               {resourceToDelete?.id === 'bulk'
                 ? `Se eliminarán permanentemente los ${selectedIdsCount} elementos seleccionados. Esta acción no se puede deshacer.`
@@ -1090,19 +1886,32 @@ function Modals({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={resourceToDelete?.id === 'bulk' ? onBulkDelete : onConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              <Trash2 className="mr-2 h-4 w-4" />Sí, eliminar
+            <AlertDialogCancel className="border-border/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={resourceToDelete?.id === 'bulk' ? onBulkDelete : onConfirmDelete}
+              className="bg-gradient-to-r from-destructive to-destructive/80 hover:from-destructive/90 hover:to-destructive/70"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Sí, eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      <QuickActionsFAB canManage={canManage} onCreateFolder={onCreateFolder} onUploadFile={onUploadFile} onCreatePlaylist={onCreatePlaylist} />
+      <QuickActionsFAB 
+        canManage={canManage} 
+        onCreateFolder={onCreateFolder} 
+        onUploadFile={onUploadFile} 
+        onCreatePlaylist={onCreatePlaylist} 
+      />
       
       <DragOverlay>
         {activeId && (
-          <div className="opacity-80 scale-95 pointer-events-none">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 0.8, scale: 0.95 }}
+            className="shadow-2xl rounded-xl"
+          >
             <ResourceGridItem
               resource={resources.find((r: AppResourceType) => r.id === activeId)!}
               onSelect={() => {}}
@@ -1110,10 +1919,11 @@ function Modals({
               onDelete={() => {}}
               onNavigate={() => {}}
               onTogglePin={() => {}}
+              onShare={() => {}}
               isSelected={selected.has(activeId)}
               onSelectionChange={() => {}}
             />
-          </div>
+          </motion.div>
         )}
       </DragOverlay>
     </>
