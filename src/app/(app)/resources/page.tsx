@@ -15,8 +15,8 @@ import {
   Edit, ArrowUpDown, FolderInput, Clock, PanelLeftClose, PanelLeftOpen,
   Star, Eye, Download, MoreVertical,
   Table, X, RefreshCw,
-  BarChart3, HardDrive, Zap, ChevronLeft, Sparkles, Layers, Users, File,
-  TrendingUp, Globe, Shield, Share2, Copy, Check, ExternalLink
+  BarChart3, HardDrive, Zap, ChevronLeft, Sparkles, Layers,
+  Share2, Copy, ExternalLink, Info, Tag, Calendar, User, Hash, File
 } from 'lucide-react';
 import { ResourceGridItem } from '@/components/resources/resource-grid-item';
 import { ResourceListItem } from '@/components/resources/resource-list-item';
@@ -50,6 +50,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // Custom hook simplificado para gestión de recursos
 function useResourceManager() {
@@ -165,6 +166,204 @@ function ResourceStats({ resources }: { resources: AppResourceType[] }) {
   );
 }
 
+// Modal de detalles del recurso
+function ResourceDetailsModal({ 
+  resource, 
+  isOpen, 
+  onClose 
+}: { 
+  resource: AppResourceType | null; 
+  isOpen: boolean; 
+  onClose: () => void 
+}) {
+  if (!resource) return null;
+
+  const getResourceIcon = () => {
+    if (resource.type === 'FOLDER') return <FolderIcon className="h-12 w-12 text-blue-500" />;
+    if (resource.type === 'VIDEO_PLAYLIST') return <ListVideo className="h-12 w-12 text-purple-500" />;
+    if (resource.filetype === 'pdf') return <FileText className="h-12 w-12 text-red-500" />;
+    if (resource.filetype === 'image') return <ImageIcon className="h-12 w-12 text-green-500" />;
+    if (resource.filetype === 'video') return <VideoIcon className="h-12 w-12 text-amber-500" />;
+    return <File className="h-12 w-12 text-gray-500" />;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5">
+              {getResourceIcon()}
+            </div>
+            <div>
+              <DialogTitle className="text-2xl font-bold">{resource.title}</DialogTitle>
+              <DialogDescription className="flex items-center gap-2 mt-1">
+                <Badge variant="outline" className="capitalize">
+                  {resource.type === 'FOLDER' ? 'Carpeta' : 
+                   resource.type === 'VIDEO_PLAYLIST' ? 'Lista de reproducción' : 
+                   'Archivo'}
+                </Badge>
+                {resource.isPinned && <Badge className="bg-amber-500"><Star className="h-3 w-3 mr-1" />Favorito</Badge>}
+                {resource.shared && <Badge className="bg-green-500"><Share2 className="h-3 w-3 mr-1" />Compartido</Badge>}
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
+
+        <div className="space-y-6 py-4">
+          {/* Descripción */}
+          {resource.description && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <FileText className="h-4 w-4" />
+                <span>Descripción</span>
+              </div>
+              <p className="text-sm bg-muted/30 p-3 rounded-lg">{resource.description}</p>
+            </div>
+          )}
+
+          {/* Información detallada */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>Fecha de creación</span>
+                </div>
+                <p className="text-sm">{formatDate(resource.uploadDate)}</p>
+              </div>
+
+              {resource.expiresAt && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <Clock className="h-4 w-4" />
+                    <span>Fecha de expiración</span>
+                  </div>
+                  <p className="text-sm">{formatDate(resource.expiresAt)}</p>
+                </div>
+              )}
+
+              {resource.size && resource.type !== 'FOLDER' && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <Hash className="h-4 w-4" />
+                    <span>Tamaño</span>
+                  </div>
+                  <p className="text-sm">{formatFileSize(resource.size)}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              {resource.filetype && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <File className="h-4 w-4" />
+                    <span>Tipo de archivo</span>
+                  </div>
+                  <Badge variant="outline" className="capitalize">
+                    {resource.filetype}
+                  </Badge>
+                </div>
+              )}
+
+              {resource.uploadedBy && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <User className="h-4 w-4" />
+                    <span>Subido por</span>
+                  </div>
+                  <p className="text-sm">{resource.uploadedBy}</p>
+                </div>
+              )}
+
+              {resource.downloadCount !== undefined && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <Download className="h-4 w-4" />
+                    <span>Descargas</span>
+                  </div>
+                  <p className="text-sm">{resource.downloadCount}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Etiquetas */}
+          {resource.tags && resource.tags.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Tag className="h-4 w-4" />
+                <span>Etiquetas</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {resource.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary" className="bg-primary/10">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Categoría */}
+          {resource.category && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Layers className="h-4 w-4" />
+                <span>Categoría</span>
+              </div>
+              <Badge variant="outline">{resource.category}</Badge>
+            </div>
+          )}
+
+          {/* Información adicional */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Info className="h-4 w-4" />
+              <span>Información adicional</span>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="space-y-1">
+                <p className="text-muted-foreground">Estado</p>
+                <Badge variant={resource.status === 'ACTIVE' ? 'default' : 'secondary'}>
+                  {resource.status === 'ACTIVE' ? 'Activo' : 'Inactivo'}
+                </Badge>
+              </div>
+              <div className="space-y-1">
+                <p className="text-muted-foreground">Visto</p>
+                <p>{resource.isViewed ? 'Sí' : 'No'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <div className="flex gap-2 w-full">
+            <Button variant="outline" onClick={onClose} className="flex-1">
+              Cerrar
+            </Button>
+            <Button className="flex-1 bg-gradient-to-r from-primary to-primary/80">
+              <Download className="mr-2 h-4 w-4" />
+              Descargar
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // Componente de breadcrumbs mejorado
 function EnhancedBreadcrumbs({
   breadcrumbs,
@@ -220,16 +419,12 @@ function SidebarNavigation({
   isVisible,
   onToggle,
   currentFolderId,
-  onNavigate,
-  showThumbnails,
-  onToggleThumbnails
+  onNavigate
 }: {
   isVisible: boolean;
   onToggle: () => void;
   currentFolderId: string | null;
   onNavigate: (resource: AppResourceType) => void;
-  showThumbnails: boolean;
-  onToggleThumbnails: (checked: boolean) => void;
 }) {
   if (!isVisible) return null;
 
@@ -324,68 +519,6 @@ function SidebarNavigation({
               </div>
             </TabsContent>
           </Tabs>
-
-          {/* Configuración de Vista */}
-          <Card className="bg-gradient-to-br from-muted/30 to-muted/10 border-border/50">
-            <CardContent className="p-4 space-y-4">
-              <h4 className="font-semibold text-lg flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                Personalizar Vista
-              </h4>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium">Mostrar miniaturas</Label>
-                    <p className="text-xs text-muted-foreground">Visualiza imágenes previas</p>
-                  </div>
-                  <Switch 
-                    checked={showThumbnails} 
-                    onCheckedChange={onToggleThumbnails}
-                    className="data-[state=checked]:bg-primary"
-                  />
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Densidad de vista</Label>
-                  <div className="flex gap-2">
-                    {['Compacta', 'Normal', 'Espaciada'].map((density) => (
-                      <Button
-                        key={density}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 text-xs"
-                      >
-                        {density}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Acciones Rápidas */}
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-            <CardContent className="p-4 space-y-3">
-              <h4 className="font-semibold text-lg flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                Acciones Rápidas
-              </h4>
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="secondary" size="sm" className="text-xs">
-                  <Share2 className="h-3 w-3 mr-1" />
-                  Compartir
-                </Button>
-                <Button variant="secondary" size="sm" className="text-xs">
-                  <Download className="h-3 w-3 mr-1" />
-                  Exportar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </ScrollArea>
     </motion.aside>
@@ -540,7 +673,8 @@ function ResourceSection({
   onDelete,
   onNavigate,
   onTogglePin,
-  onShare
+  onShare,
+  onDetails
 }: {
   category: string;
   resources: AppResourceType[];
@@ -554,6 +688,7 @@ function ResourceSection({
   onNavigate: (resource: AppResourceType) => void;
   onTogglePin: (resource: AppResourceType) => void;
   onShare: (resource: AppResourceType) => void;
+  onDetails: (resource: AppResourceType) => void;
 }) {
   const icons = {
     '📁 Carpetas': FolderIcon,
@@ -631,6 +766,7 @@ function ResourceSection({
                 onNavigate={onNavigate}
                 onTogglePin={onTogglePin}
                 onShare={onShare}
+                onDetails={onDetails}
                 isSelected={selectedIds.has(resource.id)}
                 onSelectionChange={onSelectionChange}
               />
@@ -646,6 +782,7 @@ function ResourceSection({
             onDelete={onDelete}
             onTogglePin={onTogglePin}
             onShare={onShare}
+            onDetails={onDetails}
             selectedIds={selectedIds}
             onSelectionChange={onSelectionChange}
           />
@@ -709,6 +846,14 @@ function ResourceSection({
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 hover:bg-blue-500/10"
+                          onClick={() => onDetails(resource)}
+                        >
+                          <Info className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-green-500/10"
                           onClick={() => onEdit(resource)}
                         >
                           <Edit className="h-4 w-4" />
@@ -716,7 +861,7 @@ function ResourceSection({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 hover:bg-green-500/10"
+                          className="h-8 w-8 hover:bg-purple-500/10"
                           onClick={() => onShare(resource)}
                         >
                           <Share2 className="h-4 w-4" />
@@ -823,18 +968,6 @@ function Header({
                   <DropdownMenuItem onClick={onUpload} className="cursor-pointer">
                     <UploadCloud className="mr-2 h-4 w-4" />
                     <span>Subir Archivo/Enlace</span>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel className="font-semibold">Acciones rápidas</DropdownMenuLabel>
-                <DropdownMenuGroup>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Copy className="mr-2 h-4 w-4" />
-                    <span>Importar desde...</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    <span>Integrar con...</span>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
@@ -1317,12 +1450,16 @@ function Modals({
   canManage,
   onCreateFolder,
   onUploadFile,
-  onCreatePlaylist
+  onCreatePlaylist,
+  detailsResource,
+  onCloseDetails,
+  onDetails
 }: any) {
   return (
     <>
       <MoveResourceModal isOpen={isMoveModalOpen} onClose={onCloseMoveModal} resourceIds={Array.from(selectedIds)} onMoveSuccess={onMoveSuccess} />
       <ResourcePreviewModal resource={previewingResource} onClose={onClosePreview} onNavigate={onNavigatePreview} />
+      <ResourceDetailsModal resource={detailsResource} isOpen={!!detailsResource} onClose={onCloseDetails} />
       <ResourceEditorModal isOpen={isUploaderOpen || !!resourceToEdit} onClose={onCloseUploader} resource={resourceToEdit} parentId={parentId} onSave={onSaveSuccess} />
       <FolderEditorModal isOpen={isFolderEditorOpen} onClose={onCloseFolderEditor} onSave={onSaveFolderSuccess} parentId={parentId} folderToEdit={folderToEdit} />
       <PlaylistCreatorModal isOpen={isPlaylistCreatorOpen} onClose={onClosePlaylistCreator} onSave={onSaveSuccess} parentId={parentId} playlistToEdit={playlistToEdit} />
@@ -1378,6 +1515,7 @@ function Modals({
               onNavigate={() => {}}
               onTogglePin={() => {}}
               onShare={() => {}}
+              onDetails={() => {}}
               isSelected={selected.has(activeId)}
               onSelectionChange={() => {}}
             />
@@ -1419,6 +1557,7 @@ export default function ResourcesPage() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [showThumbnails, setShowThumbnails] = useState(true);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
+  const [detailsResource, setDetailsResource] = useState<AppResourceType | null>(null);
 
   // Estados de modales
   const [resourceToEdit, setResourceToEdit] = useState<AppResourceType | null>(null);
@@ -1749,6 +1888,14 @@ export default function ResourcesPage() {
     }
   }, [toast]);
 
+  const handleResourceDetails = useCallback((resource: AppResourceType) => {
+    setDetailsResource(resource);
+  }, []);
+
+  const handleCloseDetails = useCallback(() => {
+    setDetailsResource(null);
+  }, []);
+
   // Renderizado condicional optimizado
   const renderContent = () => {
     if (isLoadingData) return <LoadingState />;
@@ -1779,6 +1926,7 @@ export default function ResourcesPage() {
             onNavigate={handleNavigateFolder}
             onTogglePin={handleTogglePin}
             onShare={handleShareResource}
+            onDetails={handleResourceDetails}
           />
         ))}
       </div>
@@ -1809,8 +1957,6 @@ export default function ResourcesPage() {
           onToggle={() => setIsSidebarVisible(!isSidebarVisible)}
           currentFolderId={currentFolderId}
           onNavigate={handleNavigateFolder}
-          showThumbnails={showThumbnails}
-          onToggleThumbnails={setShowThumbnails}
         />
 
         <main className="relative">
@@ -1933,6 +2079,9 @@ export default function ResourcesPage() {
         onCreateFolder={() => setIsFolderEditorOpen(true)}
         onUploadFile={() => setIsUploaderOpen(true)}
         onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
+        detailsResource={detailsResource}
+        onCloseDetails={handleCloseDetails}
+        onDetails={handleResourceDetails}
       />
     </DndContext>
   );

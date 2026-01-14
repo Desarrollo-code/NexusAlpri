@@ -25,6 +25,7 @@ import { mapApiCourseToAppCourse } from '@/lib/course-utils';
 import { EmptyState } from '@/components/empty-state';
 import { useTour } from '@/contexts/tour-context';
 import { coursesTour } from '@/lib/tour-steps';
+import { StatsCard } from '@/components/ui/stats-card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -48,53 +49,7 @@ type SortOption = 'newest' | 'popular' | 'title' | 'modules' | 'completion';
 type ViewMode = 'grid' | 'list';
 
 // Stats Card Component
-const StatsCard = ({
-  icon: Icon,
-  label,
-  value,
-  subtitle,
-  trend,
-  color = "blue"
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string | number;
-  subtitle?: string;
-  trend?: string;
-  color?: string;
-}) => {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400',
-    green: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
-    purple: 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400',
-    orange: 'bg-orange-50 text-orange-600 dark:bg-orange-950 dark:text-orange-400',
-    indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400'
-  };
-
-  return (
-    <Card className="overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-2 flex-1">
-            <p className="text-sm font-medium text-muted-foreground">{label}</p>
-            <p className="text-3xl font-bold tracking-tight">{value}</p>
-            {subtitle && (
-              <p className="text-xs text-muted-foreground">{subtitle}</p>
-            )}
-          </div>
-          <div className={cn("p-3 rounded-xl", colorClasses[color as keyof typeof colorClasses] || colorClasses.blue)}>
-            <Icon className="h-6 w-6" />
-          </div>
-        </div>
-        {trend && (
-          <div className="mt-4 pt-4 border-t">
-            <p className="text-xs text-muted-foreground">{trend}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
+// StatsCard removed - using shared component
 
 export default function CoursesPage() {
   const { user, isLoading: isAuthLoading, settings } = useAuth();
@@ -406,7 +361,7 @@ export default function CoursesPage() {
 
   return (
     <div className="space-y-8 pb-12" id="courses-content">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="courses-hero">
         <div className="space-y-1">
           <p className="text-muted-foreground">Descubre cursos diseñados para impulsar tu crecimiento profesional y adquirir nuevas habilidades.</p>
         </div>

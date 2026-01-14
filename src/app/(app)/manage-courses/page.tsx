@@ -45,6 +45,7 @@ import { CourseCard } from '@/components/course-card';
 import { useTitle } from '@/contexts/title-context';
 import { useTour } from '@/contexts/tour-context';
 import { manageCoursesTour } from '@/lib/tour-steps';
+import { StatsCard } from '@/components/ui/stats-card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
@@ -136,52 +137,7 @@ const STATUS_CONFIG = {
 };
 
 // Stats Card Component
-const StatsCard = ({
-  icon: Icon,
-  label,
-  value,
-  subtitle,
-  trend,
-  color = "blue"
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string | number;
-  subtitle?: string;
-  trend?: string;
-  color?: string;
-}) => {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400',
-    green: 'bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-400',
-    purple: 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400',
-    orange: 'bg-orange-50 text-orange-600 dark:bg-orange-950 dark:text-orange-400'
-  };
-
-  return (
-    <Card className="overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-2 flex-1">
-            <p className="text-sm font-medium text-muted-foreground">{label}</p>
-            <p className="text-3xl font-bold tracking-tight">{value}</p>
-            {subtitle && (
-              <p className="text-xs text-muted-foreground">{subtitle}</p>
-            )}
-          </div>
-          <div className={cn("p-3 rounded-xl", colorClasses[color as keyof typeof colorClasses] || colorClasses.blue)}>
-            <Icon className="h-6 w-6" />
-          </div>
-        </div>
-        {trend && (
-          <div className="mt-4 pt-4 border-t">
-            <p className="text-xs text-muted-foreground">{trend}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
+// StatsCard removed - using shared component
 
 // Enhanced Course Card for Grid View
 const EnhancedCourseCard = ({
@@ -758,7 +714,7 @@ function ManageCoursesPageComponent() {
         <CardContent className="p-4 sm:p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             {/* Status Tabs */}
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full sm:w-auto">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full sm:w-auto" id="course-status-tabs">
               <TabsList className="grid w-full grid-cols-4 sm:w-auto">
                 {Object.entries(STATUS_CONFIG).map(([key, config]) => {
                   const Icon = config.icon;
@@ -834,7 +790,7 @@ function ManageCoursesPageComponent() {
                 </Button>
               )}
 
-              <Button onClick={() => setShowCreateModal(true)} className="gap-2">
+              <Button onClick={() => setShowCreateModal(true)} className="gap-2" id="create-course-btn">
                 <PlusCircle className="h-4 w-4" />
                 <span className="hidden sm:inline">Nuevo curso</span>
                 <span className="sm:hidden">Crear</span>
@@ -997,7 +953,7 @@ function ManageCoursesPageComponent() {
 
             {/* Grid View - 5 cursos por fila en pantallas grandes */}
             {viewMode === 'grid' ? (
-              <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" id="course-list-container">
                 {paginatedCourses.map((course) => (
                   <EnhancedCourseCard
                     key={course.id}
