@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useTitle } from '@/contexts/title-context';
+import { UI_CONFIG } from '@/lib/ui-config';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,6 +51,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 
 // Custom hook simplificado para gestión de recursos
 function useResourceManager() {
@@ -364,11 +366,14 @@ function SidebarNavigation({
 
   return (
     <motion.aside
-      initial={{ width: 300, opacity: 0 }}
+      initial={{ width: isCollapsed ? 80 : 300, opacity: 0 }}
       animate={{
         width: isCollapsed ? 80 : 300,
-        opacity: 1,
-        transition: { duration: 0.3, ease: 'easeInOut' }
+        opacity: 1
+      }}
+      transition={{
+        width: { duration: 0.3, ease: [0.42, 0, 0.58, 1] }, // 300ms ease-in-out
+        opacity: { duration: 0.2 }
       }}
       className="hidden lg:flex flex-col sticky top-0 h-screen border-r bg-background/50 backdrop-blur-md z-30"
     >
@@ -540,26 +545,29 @@ function EmptyState({ canManage, searchTerm, onCreateFolder, onUpload }: {
   onCreateFolder: () => void;
   onUpload: () => void;
 }) {
+  const config = UI_CONFIG.emptyStates.resources;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="py-16 text-center space-y-8"
     >
-      <div className="w-40 h-40 mx-auto bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-full flex items-center justify-center">
+      <div className={cn(
+        "w-40 h-40 mx-auto rounded-full flex items-center justify-center",
+        `bg-gradient-to-br ${config.gradientFrom} ${config.gradientVia} ${config.gradientTo}`
+      )}>
         <div className="relative">
-          <FolderOpen className="h-24 w-24 text-primary" />
+          <FolderOpen className={cn("h-24 w-24", config.iconColor)} />
           <Sparkles className="h-8 w-8 text-amber-500 absolute -top-2 -right-2 animate-pulse" />
         </div>
       </div>
       <div>
         <h3 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mb-3">
-          {searchTerm ? 'No se encontraron resultados' : 'Biblioteca vacía'}
+          {searchTerm ? config.searchTitle : config.title}
         </h3>
         <p className="text-muted-foreground max-w-md mx-auto text-lg">
-          {searchTerm
-            ? 'No hay recursos que coincidan con tu búsqueda. Intenta con otros términos.'
-            : 'Comienza agregando recursos a tu biblioteca. ¡Es fácil y rápido!'}
+          {searchTerm ? config.searchDescription : config.description}
         </p>
       </div>
       {canManage && (

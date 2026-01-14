@@ -14,6 +14,7 @@ import { InteractiveEventsWidget } from "./interactive-events-widget";
 import { MetricCard } from "../analytics/metric-card";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { getDashboardBannerGradient } from "@/lib/dashboard-theme-utils";
 
 const container = {
   hidden: { opacity: 0 },
@@ -72,7 +73,7 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
         <motion.div variants={item} className="lg:col-span-8">
           <div className="relative h-full overflow-hidden rounded-2xl p-6 md:p-8 flex items-center"
             style={{
-              background: `linear-gradient(135deg, #3B82F6 0%, #2DD4BF 100%)`
+              background: getDashboardBannerGradient('student')
             }}>
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 w-full">
               <div className="text-white">

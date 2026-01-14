@@ -12,6 +12,7 @@ import { MetricCard } from "../analytics/metric-card";
 import { useAuth } from "@/contexts/auth-context";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { getDashboardBannerGradient } from "@/lib/dashboard-theme-utils";
 
 const container = {
   hidden: { opacity: 0 },
@@ -63,7 +64,7 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
         <motion.div variants={item} className="lg:col-span-8">
           <div className="relative h-full overflow-hidden rounded-2xl p-6 md:p-8 flex items-center"
             style={{
-              background: `linear-gradient(135deg, #6366F1 0%, #A855F7 100%)`
+              background: getDashboardBannerGradient('instructor')
             }}>
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 w-full">
               <div className="text-white">

@@ -23,6 +23,7 @@ import { MetricCard } from "../analytics/metric-card";
 import { IconUsersTotal, IconBookMarked, IconGraduationCap, IconFolderYellow } from '@/components/icons';
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
+import { getDashboardBannerGradient } from "@/lib/dashboard-theme-utils";
 
 const userRolesChartConfig: ChartConfig = {
    count: { label: "Usuarios", color: "transparent" },
@@ -103,7 +104,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
             <motion.div variants={item} className="lg:col-span-8">
                <div className="relative h-full overflow-hidden rounded-2xl p-6 md:p-8 flex items-center"
                   style={{
-                     background: `linear-gradient(135deg, #FF9D6C 0%, #FFB088 100%)`
+                     background: getDashboardBannerGradient('admin')
                   }}>
                   <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 w-full">
                      <div className="text-white">
