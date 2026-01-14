@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
-import { Loader2, FolderPlus, Save, Globe, Users, Briefcase, PlusCircle, Edit, BrainCircuit } from 'lucide-react';
+import { Loader2, FolderPlus, Save, Globe, Users, Briefcase, PlusCircle, Edit, BrainCircuit, Settings2, ChevronDown, ChevronUp } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode, Quiz as AppQuiz } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -25,6 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Identicon } from '@/components/ui/identicon';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FolderContentView } from './folder-content-view';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
 
@@ -67,6 +68,7 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
     const [allProcesses, setAllProcesses] = useState<Process[]>([]);
     const [folderContent, setFolderContent] = useState<AppResourceType[]>([]);
     const [isLoadingContent, setIsLoadingContent] = useState(false);
+    const [showOptions, setShowOptions] = useState(false);
 
     const [quiz, setQuiz] = useState<AppQuiz | null>(null);
     const [isQuizEditorOpen, setIsQuizEditorOpen] = useState(false);
@@ -234,53 +236,112 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                                                             setTitle(e.target.value);
                                                             if (titleError) setTitleError(null);
                                                         }}
-                                                        className={cn(titleError && "border-destructive focus-visible:ring-destructive")}
+                                                        className={cn("h-11", titleError && "border-destructive focus-visible:ring-destructive")}
                                                         placeholder="Ej: Documentación de Producto"
                                                         required
                                                     />
                                                     {titleError && (
                                                         <p className="text-sm text-destructive">{titleError}</p>
                                                     )}
-                                                    {!titleError && (
-                                                        <p className="text-xs text-muted-foreground">Usa un nombre descriptivo y claro</p>
-                                                    )}
                                                 </div>
-                                                <div className="space-y-1"><Label htmlFor="description">Descripción</Label><Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} /></div>
-                                                <div className="space-y-1"><Label htmlFor="category">Categoría</Label><Select value={category} onValueChange={setCategory} required><SelectTrigger><SelectValue placeholder="Selecciona..." /></SelectTrigger><SelectContent>{(settings?.resourceCategories || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                                                <div className="space-y-2">
-                                                    <Label>Etiquetas</Label>
-                                                    <div className="flex gap-2 mb-2 flex-wrap">
-                                                        {tags.map(tag => (
-                                                            <span key={tag} className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-xs flex items-center gap-1">
-                                                                {tag} <button type="button" onClick={() => setTags(tags.filter(t => t !== tag))} className="hover:text-destructive">×</button>
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <Input
-                                                            placeholder="Añadir etiqueta..."
-                                                            value={tagInput}
-                                                            onChange={e => setTagInput(e.target.value)}
-                                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (tagInput.trim() && !tags.includes(tagInput.trim())) { setTags([...tags, tagInput.trim()]); setTagInput(''); } } }}
-                                                        />
-                                                        <Button type="button" variant="secondary" onClick={() => { if (tagInput.trim() && !tags.includes(tagInput.trim())) { setTags([...tags, tagInput.trim()]); setTagInput(''); } }} size="sm">Añadir</Button>
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
 
-                                        <Card className="overflow-hidden border-primary/20 bg-primary/5">
-                                            <CardHeader className="pb-3 text-center">
-                                                <CardTitle className="text-base flex items-center justify-center gap-2">
-                                                    <BrainCircuit className="h-5 w-5 text-primary" /> Evaluación del Conocimiento
-                                                </CardTitle>
-                                                <CardDescription className="text-xs">Valida que el contenido ha sido comprendido mediante un examen rápido.</CardDescription>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <Button className="w-full bg-background hover:bg-muted border-primary/30 text-foreground" variant="outline" type="button" onClick={() => setIsQuizEditorOpen(true)}>
-                                                    {quiz ? <Edit className="mr-2 h-4 w-4" /> : <PlusCircle className="mr-2 h-4 w-4" />}
-                                                    {quiz ? 'Modificar Quiz Existente' : 'Añadir Quiz de Evaluación'}
-                                                </Button>
+                                                <Collapsible open={showOptions} onOpenChange={setShowOptions} className="border rounded-xl p-1 bg-muted/30">
+                                                    <CollapsibleTrigger asChild>
+                                                        <Button variant="ghost" className="w-full flex justify-between items-center px-3 h-10 hover:bg-muted/50 rounded-lg">
+                                                            <div className="flex items-center gap-2 text-muted-foreground font-medium">
+                                                                <Settings2 className="h-4 w-4" />
+                                                                <span className="text-sm">Ajustes Opcionales</span>
+                                                            </div>
+                                                            {showOptions ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                                                        </Button>
+                                                    </CollapsibleTrigger>
+
+                                                    <CollapsibleContent className="px-3 pb-3 pt-2 space-y-4">
+                                                        <div className="space-y-1.5 focus-within:z-10">
+                                                            <Label htmlFor="description" className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Descripción</Label>
+                                                            <Textarea
+                                                                id="description"
+                                                                value={description}
+                                                                onChange={e => setDescription(e.target.value)}
+                                                                className="bg-background border-border/50 min-h-[80px]"
+                                                                placeholder="Describe brevemente el contenido..."
+                                                            />
+                                                        </div>
+
+                                                        <div className="space-y-1.5">
+                                                            <Label htmlFor="category" className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Categoría</Label>
+                                                            <Select value={category} onValueChange={setCategory} required>
+                                                                <SelectTrigger className="bg-background border-border/50">
+                                                                    <SelectValue placeholder="Selecciona..." />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {(settings?.resourceCategories || []).map(c => (
+                                                                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+
+                                                        <div className="space-y-1.5">
+                                                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Etiquetas</Label>
+                                                            <div className="flex gap-2 mb-2 flex-wrap">
+                                                                {tags.map(tag => (
+                                                                    <span key={tag} className="bg-primary/10 text-primary px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1">
+                                                                        {tag}
+                                                                        <button type="button" onClick={() => setTags(tags.filter(t => t !== tag))} className="hover:text-destructive ml-1">×</button>
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                            <div className="flex gap-2">
+                                                                <Input
+                                                                    placeholder="Añadir..."
+                                                                    value={tagInput}
+                                                                    onChange={e => setTagInput(e.target.value)}
+                                                                    className="h-9 text-sm bg-background border-border/50"
+                                                                    onKeyDown={e => {
+                                                                        if (e.key === 'Enter') {
+                                                                            e.preventDefault();
+                                                                            if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+                                                                                setTags([...tags, tagInput.trim()]);
+                                                                                setTagInput('');
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                />
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="secondary"
+                                                                    onClick={() => {
+                                                                        if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+                                                                            setTags([...tags, tagInput.trim()]);
+                                                                            setTagInput('');
+                                                                        }
+                                                                    }}
+                                                                    size="sm"
+                                                                    className="h-9 px-3"
+                                                                >
+                                                                    Añadir
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="pt-2">
+                                                            <Card className="overflow-hidden border-primary/20 bg-primary/5 shadow-none">
+                                                                <CardHeader className="p-3 pb-1.5">
+                                                                    <CardTitle className="text-xs flex items-center gap-2">
+                                                                        <BrainCircuit className="h-3.5 w-3.5 text-primary" /> Evaluación rápida
+                                                                    </CardTitle>
+                                                                </CardHeader>
+                                                                <CardContent className="p-3 pt-0">
+                                                                    <Button className="w-full h-8 text-xs bg-background hover:bg-muted border-primary/20 text-foreground" variant="outline" type="button" onClick={() => setIsQuizEditorOpen(true)}>
+                                                                        {quiz ? <Edit className="mr-2 h-3 w-3" /> : <PlusCircle className="mr-2 h-3 w-3" />}
+                                                                        {quiz ? 'Modificar Quiz' : 'Añadir Evaluación'}
+                                                                    </Button>
+                                                                </CardContent>
+                                                            </Card>
+                                                        </div>
+                                                    </CollapsibleContent>
+                                                </Collapsible>
                                             </CardContent>
                                         </Card>
                                     </TabsContent>
