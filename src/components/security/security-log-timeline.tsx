@@ -28,11 +28,11 @@ const TimelineItem = ({ log, onLogClick, isLast, compact }: { log: SecurityLog, 
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="flex items-start gap-4 pb-4"
+            className="flex items-start gap-4 pb-3"
         >
             {/* Time and Line */}
             <div className="flex flex-col items-center pt-0.5">
-                <p className="text-[10px] font-bold text-muted-foreground whitespace-nowrap">
+                <p className="text-xs font-bold text-muted-foreground whitespace-nowrap">
                     {format(new Date(log.createdAt), 'HH:mm')}
                 </p>
             </div>
@@ -50,9 +50,9 @@ const TimelineItem = ({ log, onLogClick, isLast, compact }: { log: SecurityLog, 
                             <AvatarImage src={log.user?.avatar || undefined} />
                             <AvatarFallback className="text-[9px]"><Identicon userId={log.user?.id || log.emailAttempt || ''} /></AvatarFallback>
                         </Avatar>
-                        <p className="font-bold text-[11px] truncate">{log.user?.name || log.emailAttempt}</p>
+                        <p className="font-bold text-sm truncate">{log.user?.name || log.emailAttempt}</p>
                     </div>
-                    <Badge variant={eventUI.variant} className="whitespace-nowrap text-[9px] py-0 px-1.5 h-4 font-bold">
+                    <Badge variant={eventUI.variant} className="whitespace-nowrap text-[11px] py-0 px-1.5 h-5 font-bold">
                         {eventUI.label}
                     </Badge>
                 </div>
@@ -62,7 +62,7 @@ const TimelineItem = ({ log, onLogClick, isLast, compact }: { log: SecurityLog, 
 };
 
 export const SecurityLogTimeline = ({ logs, onLogClick, compact = false }: { logs: SecurityLog[], onLogClick: (log: SecurityLog) => void, compact?: boolean }) => {
-    const containerClasses = compact ? "h-64 pr-2" : "h-[70vh] pr-4";
+    const containerClasses = compact ? "max-h-[300px] pr-2" : "h-[70vh] pr-4";
     return (
         <ScrollArea className={containerClasses}>
             <div className="relative">

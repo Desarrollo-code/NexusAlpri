@@ -60,12 +60,12 @@ export const MetricCard = ({
                         </div>
                     )}
                     <div className="min-w-0 flex-1">
-                        <p className="text-[10px] font-bold uppercase tracking-tight text-muted-foreground group-hover:text-foreground transition-colors truncate">
+                        <p className="text-[12px] font-bold uppercase tracking-tight text-muted-foreground group-hover:text-foreground transition-colors truncate">
                             {title}
                         </p>
                         <div className="flex items-baseline gap-1 mt-0.5">
                             <p
-                                className="text-3xl font-bold tracking-tight transition-colors duration-500"
+                                className="text-4xl font-bold tracking-tighter transition-colors duration-500"
                                 style={{ color: chartVar } as React.CSSProperties}
                             >
                                 {animatedValue}{suffix}

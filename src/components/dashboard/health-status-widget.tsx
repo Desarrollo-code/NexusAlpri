@@ -52,7 +52,7 @@ export function HealthStatusWidget() {
     }, []);
 
     return (
-        <Card className="border-[#E2E8F0] shadow-sm bg-white overflow-hidden">
+        <Card className="border-[#E2E8F0] shadow-sm bg-white overflow-hidden h-full">
             <CardHeader className="p-3 border-b border-[#E2E8F0] bg-slate-50/50">
                 <CardTitle className="text-sm font-bold">Salud de la Plataforma</CardTitle>
             </CardHeader>
