@@ -1,15 +1,14 @@
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,17 +16,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import { cn } from '@/lib/utils';
-import { Loader2, FolderPlus, Save, Globe, Users, Briefcase, PlusCircle, Edit, BrainCircuit, Settings2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Save, Folder as FolderIcon, BrainCircuit, PlusCircle, Edit, Sparkles } from 'lucide-react';
 import type { AppResourceType, User as AppUser, Process, ResourceSharingMode, Quiz as AppQuiz } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Identicon } from '@/components/ui/identicon';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FolderContentView } from './folder-content-view';
 import { QuizEditorModal } from '@/components/quizz-it/quiz-editor-modal';
+import { ResourcePermissions } from './shared/resource-permissions';
+import { FolderBanner } from './folder-banner';
 
 interface FolderEditorModalProps {
     isOpen: boolean;
@@ -68,12 +64,12 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
     const [allProcesses, setAllProcesses] = useState<Process[]>([]);
     const [folderContent, setFolderContent] = useState<AppResourceType[]>([]);
     const [isLoadingContent, setIsLoadingContent] = useState(false);
-    const [showOptions, setShowOptions] = useState(false);
 
     const [quiz, setQuiz] = useState<AppQuiz | null>(null);
     const [isQuizEditorOpen, setIsQuizEditorOpen] = useState(false);
 
     const [isSaving, setIsSaving] = useState(false);
+    const [activeTab, setActiveTab] = useState('info');
 
     const flattenProcesses = (processList: any[], level = 0): FlatProcess[] => {
         let list: FlatProcess[] = [];
@@ -110,6 +106,7 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                     .catch(console.error)
                     .finally(() => setIsLoadingContent(false));
 
+                setActiveTab('info');
             } else {
                 setTitle('');
                 setDescription('');
@@ -121,6 +118,7 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                 setCollaboratorIds([]);
                 setFolderContent([]);
                 setQuiz(null);
+                setActiveTab('info');
             }
 
             if (user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR') {
@@ -138,35 +136,18 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
     // Title validation function
     const validateTitle = (value: string): string | null => {
         const trimmed = value.trim();
-
-        if (!trimmed) {
-            return "El título no puede estar vacío";
-        }
-
-        if (trimmed.length < 2) {
-            return "El título debe tener al menos 2 caracteres";
-        }
-
-        // Check if only special characters
-        if (!/[a-zA-Z0-9]/.test(trimmed)) {
-            return "El título debe contener al menos una letra o número";
-        }
-
-        return null; // Valid
+        if (!trimmed) return "El título no puede estar vacío";
+        if (trimmed.length < 2) return "El título debe tener al menos 2 caracteres";
+        if (!/[a-zA-Z0-9]/.test(trimmed)) return "El título debe contener al menos una letra o número";
+        return null;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        // Validate title
         const error = validateTitle(title);
         if (error) {
             setTitleError(error);
-            toast({
-                title: 'Validación fallida',
-                description: error,
-                variant: 'destructive'
-            });
+            toast({ title: 'Validación fallida', description: error, variant: 'destructive' });
             return;
         }
 
@@ -201,34 +182,53 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
         }
     };
 
+    // Live preview mock object
+    const previewFolder = {
+        id: folderToEdit?.id || 'preview-id',
+        title: title || 'Título de Carpeta',
+        description: description || 'Descripción de la carpeta...',
+        uploadDate: new Date().toISOString(),
+        uploaderName: user?.name,
+    } as any;
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="w-[95vw] sm:max-w-3xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col">
-                <DialogHeader className="p-6 pb-4 border-b flex-shrink-0">
-                    <DialogTitle>{isEditing ? 'Editar Carpeta' : 'Crear Nueva Carpeta'}</DialogTitle>
-                    <DialogDescription>
-                        Organiza tus recursos.
-                    </DialogDescription>
+            <DialogContent className="w-[95vw] sm:max-w-4xl p-0 gap-0 rounded-2xl h-[90vh] flex flex-col bg-background/95 backdrop-blur-xl border-border/50">
+                <DialogHeader className="p-6 pb-4 border-b flex-shrink-0 bg-background/50">
+                    <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
+                        <div className="p-2 rounded-xl bg-primary/10">
+                            <FolderIcon className="h-6 w-6 text-primary" />
+                        </div>
+                        {isEditing ? 'Editar Carpeta' : 'Nueva Carpeta'}
+                    </DialogTitle>
                 </DialogHeader>
 
                 <form id="folder-form" onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col">
-                    <Tabs defaultValue="main" className="flex-1 min-h-0 flex flex-col">
-                        <TabsList className="mx-6 mt-4 grid w-auto grid-cols-3">
-                            <TabsTrigger value="main">Información</TabsTrigger>
-                            <TabsTrigger value="content" disabled={!isEditing}>Contenido</TabsTrigger>
-                            <TabsTrigger value="access">Acceso</TabsTrigger>
-                        </TabsList>
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col">
+                        <div className="px-6 pt-4 flex-shrink-0">
+                            <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 rounded-xl">
+                                <TabsTrigger value="info" className="rounded-lg">Información</TabsTrigger>
+                                <TabsTrigger value="content" disabled={!isEditing} className="rounded-lg">Contenido</TabsTrigger>
+                                <TabsTrigger value="access" className="rounded-lg">Permisos</TabsTrigger>
+                            </TabsList>
+                        </div>
+
                         <div className="flex-1 min-h-0">
                             <ScrollArea className="h-full">
-                                <div className="px-6 py-4">
-                                    <TabsContent value="main" className="space-y-6 m-0">
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle className="text-base">Información General</CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="space-y-4">
+                                <div className="p-6 space-y-6">
+                                    <TabsContent value="info" className="space-y-6 m-0 focus-visible:ring-0">
+                                        {/* Preview Banner */}
+                                        <div className="space-y-2">
+                                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Vista Previa de Cabecera</Label>
+                                            <div className="transform scale-[0.98] origin-center opacity-90 hover:opacity-100 hover:scale-100 transition-all duration-500">
+                                                <FolderBanner folder={previewFolder} onEdit={() => { }} canManage={false} />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-4">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="title">Nombre de la Carpeta</Label>
+                                                    <Label htmlFor="title" className="text-sm font-semibold">Nombre de la Carpeta</Label>
                                                     <Input
                                                         id="title"
                                                         value={title}
@@ -236,163 +236,175 @@ export function FolderEditorModal({ isOpen, onClose, parentId, onSave, folderToE
                                                             setTitle(e.target.value);
                                                             if (titleError) setTitleError(null);
                                                         }}
-                                                        className={cn("h-11", titleError && "border-destructive focus-visible:ring-destructive")}
-                                                        placeholder="Ej: Documentación de Producto"
+                                                        className={cn("h-11 bg-muted/30 focus:bg-background transition-all", titleError && "border-destructive focus-visible:ring-destructive")}
+                                                        placeholder="Ej: Documentación Técnica 2024"
                                                         required
                                                     />
-                                                    {titleError && (
-                                                        <p className="text-sm text-destructive">{titleError}</p>
-                                                    )}
+                                                    {titleError && <p className="text-xs text-destructive font-medium animate-in slide-in-from-top-1">{titleError}</p>}
                                                 </div>
 
-                                                <Collapsible open={showOptions} onOpenChange={setShowOptions} className="border rounded-xl p-1 bg-muted/30">
-                                                    <CollapsibleTrigger asChild>
-                                                        <Button variant="ghost" className="w-full flex justify-between items-center px-3 h-10 hover:bg-muted/50 rounded-lg">
-                                                            <div className="flex items-center gap-2 text-muted-foreground font-medium">
-                                                                <Settings2 className="h-4 w-4" />
-                                                                <span className="text-sm">Ajustes Opcionales</span>
-                                                            </div>
-                                                            {showOptions ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-                                                        </Button>
-                                                    </CollapsibleTrigger>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="category" className="text-sm font-semibold">Categoría</Label>
+                                                    <Select value={category} onValueChange={setCategory} required>
+                                                        <SelectTrigger className="h-11 bg-muted/30 focus:bg-background">
+                                                            <SelectValue placeholder="Selecciona una categoría" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {(settings?.resourceCategories || []).map(c => (
+                                                                <SelectItem key={c} value={c}>{c}</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
 
-                                                    <CollapsibleContent className="px-3 pb-3 pt-2 space-y-4">
-                                                        <div className="space-y-1.5 focus-within:z-10">
-                                                            <Label htmlFor="description" className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Descripción</Label>
-                                                            <Textarea
-                                                                id="description"
-                                                                value={description}
-                                                                onChange={e => setDescription(e.target.value)}
-                                                                className="bg-background border-border/50 min-h-[80px]"
-                                                                placeholder="Describe brevemente el contenido..."
-                                                            />
+                                                <div className="space-y-2">
+                                                    <Label className="text-sm font-semibold">Etiquetas</Label>
+                                                    <div className="p-3 rounded-xl border bg-muted/30 space-y-3">
+                                                        <div className="flex flex-wrap gap-2 min-h-[28px]">
+                                                            {tags.length === 0 && <span className="text-xs text-muted-foreground italic">Sin etiquetas...</span>}
+                                                            {tags.map(tag => (
+                                                                <span key={tag} className="bg-background text-foreground shadow-sm px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 border animate-in zoom-in-50">
+                                                                    {tag}
+                                                                    <button type="button" onClick={() => setTags(tags.filter(t => t !== tag))} className="hover:text-destructive transition-colors rounded-full p-0.5"><span className="sr-only">Eliminar</span>×</button>
+                                                                </span>
+                                                            ))}
                                                         </div>
-
-                                                        <div className="space-y-1.5">
-                                                            <Label htmlFor="category" className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Categoría</Label>
-                                                            <Select value={category} onValueChange={setCategory} required>
-                                                                <SelectTrigger className="bg-background border-border/50">
-                                                                    <SelectValue placeholder="Selecciona..." />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    {(settings?.resourceCategories || []).map(c => (
-                                                                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                                                                    ))}
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </div>
-
-                                                        <div className="space-y-1.5">
-                                                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70">Etiquetas</Label>
-                                                            <div className="flex gap-2 mb-2 flex-wrap">
-                                                                {tags.map(tag => (
-                                                                    <span key={tag} className="bg-primary/10 text-primary px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-tighter flex items-center gap-1">
-                                                                        {tag}
-                                                                        <button type="button" onClick={() => setTags(tags.filter(t => t !== tag))} className="hover:text-destructive ml-1">×</button>
-                                                                    </span>
-                                                                ))}
-                                                            </div>
-                                                            <div className="flex gap-2">
-                                                                <Input
-                                                                    placeholder="Añadir..."
-                                                                    value={tagInput}
-                                                                    onChange={e => setTagInput(e.target.value)}
-                                                                    className="h-9 text-sm bg-background border-border/50"
-                                                                    onKeyDown={e => {
-                                                                        if (e.key === 'Enter') {
-                                                                            e.preventDefault();
-                                                                            if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-                                                                                setTags([...tags, tagInput.trim()]);
-                                                                                setTagInput('');
-                                                                            }
-                                                                        }
-                                                                    }}
-                                                                />
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="secondary"
-                                                                    onClick={() => {
+                                                        <div className="flex gap-2">
+                                                            <Input
+                                                                placeholder="Nueva etiqueta..."
+                                                                value={tagInput}
+                                                                onChange={e => setTagInput(e.target.value)}
+                                                                className="h-9 text-sm bg-background"
+                                                                onKeyDown={e => {
+                                                                    if (e.key === 'Enter') {
+                                                                        e.preventDefault();
                                                                         if (tagInput.trim() && !tags.includes(tagInput.trim())) {
                                                                             setTags([...tags, tagInput.trim()]);
                                                                             setTagInput('');
                                                                         }
-                                                                    }}
-                                                                    size="sm"
-                                                                    className="h-9 px-3"
-                                                                >
-                                                                    Añadir
-                                                                </Button>
-                                                            </div>
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <Button
+                                                                type="button"
+                                                                variant="secondary"
+                                                                onClick={() => {
+                                                                    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+                                                                        setTags([...tags, tagInput.trim()]);
+                                                                        setTagInput('');
+                                                                    }
+                                                                }}
+                                                                size="sm"
+                                                                className="h-9 px-3"
+                                                            >
+                                                                Añadir
+                                                            </Button>
                                                         </div>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                                        <div className="pt-2">
-                                                            <Card className="overflow-hidden border-primary/20 bg-primary/5 shadow-none">
-                                                                <CardHeader className="p-3 pb-1.5">
-                                                                    <CardTitle className="text-xs flex items-center gap-2">
-                                                                        <BrainCircuit className="h-3.5 w-3.5 text-primary" /> Evaluación rápida
-                                                                    </CardTitle>
-                                                                </CardHeader>
-                                                                <CardContent className="p-3 pt-0">
-                                                                    <Button className="w-full h-8 text-xs bg-background hover:bg-muted border-primary/20 text-foreground" variant="outline" type="button" onClick={() => setIsQuizEditorOpen(true)}>
-                                                                        {quiz ? <Edit className="mr-2 h-3 w-3" /> : <PlusCircle className="mr-2 h-3 w-3" />}
-                                                                        {quiz ? 'Modificar Quiz' : 'Añadir Evaluación'}
-                                                                    </Button>
-                                                                </CardContent>
-                                                            </Card>
+                                            <div className="space-y-4">
+                                                <div className="space-y-2 h-[150px] flex flex-col">
+                                                    <Label htmlFor="description" className="text-sm font-semibold">Descripción</Label>
+                                                    <Textarea
+                                                        id="description"
+                                                        value={description}
+                                                        onChange={e => setDescription(e.target.value)}
+                                                        className="flex-1 resize-none bg-muted/30 focus:bg-background"
+                                                        placeholder="Proporciona contexto sobre el contenido de esta carpeta..."
+                                                    />
+                                                </div>
+
+                                                <Card className="border-indigo-500/20 bg-indigo-50/50 dark:bg-indigo-950/10 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                                                    <CardHeader className="p-4 pb-2">
+                                                        <CardTitle className="text-sm font-bold flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                                                            <BrainCircuit className="h-4 w-4" /> Evaluación Rápida
+                                                        </CardTitle>
+                                                    </CardHeader>
+                                                    <CardContent className="p-4 pt-2">
+                                                        <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                                                            Añade un cuestionario opcional para validar el conocimiento adquirido en esta carpeta.
+                                                        </p>
+                                                        <Button
+                                                            className="w-full h-9 text-xs transition-transform active:scale-95"
+                                                            variant={quiz ? "default" : "outline"}
+                                                            onClick={() => setIsQuizEditorOpen(true)}
+                                                            type="button"
+                                                        >
+                                                            {quiz ? <Edit className="mr-2 h-3.5 w-3.5" /> : <PlusCircle className="mr-2 h-3.5 w-3.5" />}
+                                                            {quiz ? `Editar: ${quiz.title}` : 'Crear Cuestionario'}
+                                                        </Button>
+                                                    </CardContent>
+                                                </Card>
+                                            </div>
+                                        </div>
+                                    </TabsContent>
+
+                                    <TabsContent value="content" className="space-y-6 m-0 focus-visible:ring-0">
+                                        <div className="flex flex-col gap-4 min-h-[400px]">
+                                            <div className="bg-muted/30 rounded-xl p-4 border border-dashed text-center">
+                                                <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 mb-2">
+                                                    <FolderIcon className="h-6 w-6 text-primary" />
+                                                </div>
+                                                <h3 className="font-semibold text-foreground">Contenido Actual</h3>
+                                                <p className="text-sm text-muted-foreground">Gestiona los archivos dentro de <span className="font-medium text-foreground">"{title}"</span></p>
+                                            </div>
+
+                                            {isLoadingContent ? (
+                                                <div className="flex-1 flex items-center justify-center">
+                                                    <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+                                                </div>
+                                            ) : (
+                                                <div className="bg-card rounded-xl border shadow-sm overflow-hidden flex-1">
+                                                    {folderContent.length > 0 ? (
+                                                        <FolderContentView items={folderContent} onEdit={() => { }} onDelete={() => { }} />
+                                                    ) : (
+                                                        <div className="flex flex-col items-center justify-center h-48 text-muted-foreground p-8">
+                                                            <Sparkles className="h-10 w-10 mb-3 opacity-20" />
+                                                            <p>Esta carpeta está vacía.</p>
+                                                            <p className="text-xs">Sube archivos desde la vista principal.</p>
                                                         </div>
-                                                    </CollapsibleContent>
-                                                </Collapsible>
-                                            </CardContent>
-                                        </Card>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
                                     </TabsContent>
-                                    <TabsContent value="content" className="space-y-6 m-0">
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle className="text-base">Contenido de la Carpeta</CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                {isLoadingContent ? (
-                                                    <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
-                                                ) : (
-                                                    <FolderContentView items={folderContent} onEdit={() => { }} onDelete={() => { }} />
-                                                )}
-                                                {!isLoadingContent && folderContent.length === 0 && (
-                                                    <div className="text-center text-muted-foreground text-sm py-4">Carpeta vacía.</div>
-                                                )}
-                                            </CardContent>
-                                        </Card>
-                                    </TabsContent>
-                                    <TabsContent value="access" className="space-y-6 m-0">
-                                        <Card>
-                                            <CardHeader><CardTitle className="text-base">Visibilidad</CardTitle></CardHeader>
-                                            <CardContent>
-                                                <RadioGroup value={sharingMode} onValueChange={(v) => setSharingMode(v as ResourceSharingMode)} className="grid grid-cols-1 gap-2">
-                                                    <div className="flex items-center space-x-2"><RadioGroupItem value="PUBLIC" id="share-public" /><Label htmlFor="share-public">Público</Label></div>
-                                                    <div className="flex items-center space-x-2"><RadioGroupItem value="PROCESS" id="share-process" /><Label htmlFor="share-process">Por Proceso</Label></div>
-                                                    <div className="flex items-center space-x-2"><RadioGroupItem value="PRIVATE" id="share-private" /><Label htmlFor="share-private">Privado</Label></div>
-                                                </RadioGroup>
-                                                {sharingMode === 'PROCESS' && (<UserOrProcessList type="process" items={flattenedProcesses} selectedIds={sharedWithProcessIds} onSelectionChange={setSharedWithProcessIds} />)}
-                                                {sharingMode === 'PRIVATE' && (<UserOrProcessList type="user" items={allUsers} selectedIds={sharedWithUserIds} onSelectionChange={setSharedWithUserIds} />)}
-                                            </CardContent>
-                                        </Card>
-                                        <Card>
-                                            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Edit className="h-4 w-4 text-primary" />Colaboradores</CardTitle><CardDescription className="text-xs">Permite a otros instructores editar esta carpeta.</CardDescription></CardHeader>
-                                            <CardContent><UserOrProcessList type="user" items={allUsers.filter(u => u.role !== 'STUDENT')} selectedIds={collaboratorIds} onSelectionChange={setCollaboratorIds} /></CardContent>
-                                        </Card>
+
+                                    <TabsContent value="access" className="m-0 focus-visible:ring-0">
+                                        <ResourcePermissions
+                                            sharingMode={sharingMode}
+                                            setSharingMode={setSharingMode}
+                                            sharedWithUserIds={sharedWithUserIds}
+                                            setSharedWithUserIds={setSharedWithUserIds}
+                                            sharedWithProcessIds={sharedWithProcessIds}
+                                            setSharedWithProcessIds={setSharedWithProcessIds}
+                                            collaboratorIds={collaboratorIds}
+                                            setCollaboratorIds={setCollaboratorIds}
+                                            allUsers={allUsers}
+                                            flattenedProcesses={flattenedProcesses}
+                                        />
                                     </TabsContent>
                                 </div>
                             </ScrollArea>
                         </div>
+
+                        <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-between bg-background/50 backdrop-blur-sm">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                {isEditing && <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-green-500" /> ID: {folderToEdit?.id.slice(0, 8)}...</span>}
+                            </div>
+                            <div className="flex gap-2">
+                                <Button variant="ghost" onClick={onClose} disabled={isSaving} className="hover:bg-destructive/10 hover:text-destructive transition-colors">Cancelar</Button>
+                                <Button type="submit" form="folder-form" disabled={isSaving || !title.trim()} className="min-w-[140px] shadow-lg shadow-primary/20">
+                                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                    {isEditing ? 'Guardar Cambios' : 'Crear Carpeta'}
+                                </Button>
+                            </div>
+                        </DialogFooter>
                     </Tabs>
-                    <DialogFooter className="p-6 pt-4 border-t flex-shrink-0 flex-row justify-end gap-2 bg-background">
-                        <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
-                        <Button type="submit" form="folder-form" disabled={isSaving || !title.trim()}>
-                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                            {isEditing ? 'Guardar Cambios' : 'Crear Carpeta'}
-                        </Button>
-                    </DialogFooter>
                 </form>
             </DialogContent>
+
             {isQuizEditorOpen && (
                 <QuizEditorWrapper
                     isOpen={isQuizEditorOpen}
@@ -423,34 +435,3 @@ function QuizEditorWrapper({ isOpen, onClose, quiz, onSave }: { isOpen: boolean,
         />
     );
 }
-
-
-const UserOrProcessList = ({ type, items, selectedIds, onSelectionChange }: { type: 'user' | 'process', items: any[], selectedIds: string[], onSelectionChange: (ids: string[]) => void }) => {
-    const [search, setSearch] = useState('');
-    const filteredItems = items.filter(item => item.name.toLowerCase().includes(search.toLowerCase()));
-
-    const handleSelection = (id: string, checked: boolean) => {
-        onSelectionChange(checked ? [...selectedIds, id] : selectedIds.filter(i => i !== id));
-    };
-
-    return (
-        <Card className="mt-4">
-            <CardContent className="p-4 space-y-3">
-                <Input placeholder={`Buscar ${type === 'user' ? 'usuario' : 'proceso'}...`} value={search} onChange={e => setSearch(e.target.value)} />
-                <ScrollArea className="h-40">
-                    <div className="space-y-1 pr-3">
-                        {filteredItems.map(item => (
-                            <div key={item.id} className="flex items-center space-x-3 p-1.5 rounded-md hover:bg-muted">
-                                <Checkbox id={`${type}-${item.id}`} checked={selectedIds.includes(item.id)} onCheckedChange={(c) => handleSelection(item.id, !!c)} />
-                                <Label htmlFor={`${type}-${item.id}`} className="flex items-center gap-2 font-normal cursor-pointer text-sm">
-                                    {type === 'user' && <Avatar className="h-7 w-7"><AvatarImage src={item.avatar || undefined} /><AvatarFallback><Identicon userId={item.id} /></AvatarFallback></Avatar>}
-                                    <span style={{ paddingLeft: `${type === 'process' ? (item.level || 0) * 1.5 : 0}rem` }}>{item.name}</span>
-                                </Label>
-                            </div>
-                        ))}
-                    </div>
-                </ScrollArea>
-            </CardContent>
-        </Card>
-    );
-};

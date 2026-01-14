@@ -28,6 +28,7 @@ import { ResourceEditorModal } from '@/components/resources/resource-editor-moda
 import { FolderEditorModal } from '@/components/resources/folder-editor-modal';
 import { PlaylistCreatorModal } from '@/components/resources/playlist-creator-modal';
 import { FolderTree } from '@/components/resources/folder-tree';
+import { FolderBanner } from '@/components/resources/folder-banner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuGroup, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { VideoPlaylistView } from '@/components/resources/video-playlist-view';
@@ -1935,6 +1936,17 @@ export default function ResourcesPage() {
 
               <EnhancedBreadcrumbs breadcrumbs={breadcrumbs} onBreadcrumbClick={handleBreadcrumbClick} />
 
+              {currentFolder && currentFolder.type !== 'VIDEO_PLAYLIST' && (
+                <FolderBanner
+                  folder={currentFolder}
+                  canManage={canManage}
+                  onEdit={() => {
+                    setFolderToEdit(currentFolder);
+                    setIsFolderEditorOpen(true);
+                  }}
+                />
+              )}
+
               <motion.div
                 ref={containerRef}
                 initial={{ opacity: 0 }}
@@ -1944,6 +1956,7 @@ export default function ResourcesPage() {
                 {renderContent()}
               </motion.div>
             </div>
+          </ScrollArea>
         </main>
       </div>
 
