@@ -105,7 +105,7 @@ export function StudentDashboard({ studentStats, myDashboardCourses, assignedCou
 
               <div className="hidden md:block relative w-40 h-40 lg:w-48 lg:h-48">
                 <Image
-                  src="/images/student-illustration.png"
+                  src={settings?.dashboardImageUrlStudent || "/images/student-illustration.png"}
                   alt="Student"
                   width={256}
                   height={256}

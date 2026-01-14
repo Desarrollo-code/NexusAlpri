@@ -139,7 +139,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
 
                      <div className="hidden md:block relative w-48 h-48 lg:w-56 lg:h-56">
                         <Image
-                           src="/images/dashboard-illustration.png" // Placeholder, if settings doesn't have it
+                           src={settings?.dashboardImageUrlAdmin || "/images/dashboard-illustration.png"}
                            alt="Dashboard"
                            width={256}
                            height={256}
@@ -234,10 +234,7 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                   </Card>
                </motion.div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <motion.div variants={item}>
-                     <VerticalBarChart title="Distribución de Roles" data={userRolesChartData} />
-                  </motion.div>
+               <div className="grid grid-cols-1 gap-6">
                   <motion.div variants={item}>
                      <HealthStatusWidget />
                   </motion.div>
@@ -291,18 +288,18 @@ export function AdminDashboard({ adminStats, securityLogs, upcomingEvents, pendi
                            Acciones Rápidas
                         </CardTitle>
                      </CardHeader>
-                     <CardContent className="p-3 grid grid-cols-2 gap-2">
-                        <Button asChild variant="outline" size="sm" className="justify-start h-9 text-[11px] font-medium border-slate-200">
-                           <Link href="/manage-courses"><BookOpen className="h-3.5 w-3.5 mr-2" />Crear Curso</Link>
+                     <CardContent className="p-3 grid grid-cols-1 gap-2">
+                        <Button asChild variant="outline" size="sm" className="justify-start h-10 text-[12px] font-bold border-slate-200 hover:bg-primary/5 hover:border-primary/20 transition-all">
+                           <Link href="/manage-courses"><BookOpen className="h-4 w-4 mr-2 text-primary" />Gestionar Proyectos Académicos</Link>
                         </Button>
-                        <Button asChild variant="outline" size="sm" className="justify-start h-9 text-[11px] font-medium border-slate-200">
-                           <Link href="/users"><Users className="h-3.5 w-3.5 mr-2" />Usuarios</Link>
+                        <Button asChild variant="outline" size="sm" className="justify-start h-10 text-[12px] font-bold border-slate-200 hover:bg-primary/5 hover:border-primary/20 transition-all">
+                           <Link href="/users"><Users className="h-4 w-4 mr-2 text-primary" />Administrar Comunidad de Usuarios</Link>
                         </Button>
-                        <Button asChild variant="outline" size="sm" className="justify-start h-9 text-[11px] font-medium border-slate-200">
-                           <Link href="/analytics"><BarChart3 className="h-3.5 w-3.5 mr-2" />Analíticas</Link>
+                        <Button asChild variant="outline" size="sm" className="justify-start h-10 text-[12px] font-bold border-slate-200 hover:bg-primary/5 hover:border-primary/20 transition-all">
+                           <Link href="/analytics"><BarChart3 className="h-4 w-4 mr-2 text-primary" />Inteligencia y Analítica de Datos</Link>
                         </Button>
-                        <Button asChild variant="outline" size="sm" className="justify-start h-9 text-[11px] font-medium border-slate-200">
-                           <Link href="/settings"><Settings className="h-3.5 w-3.5 mr-2" />Ajustes</Link>
+                        <Button asChild variant="outline" size="sm" className="justify-start h-10 text-[12px] font-bold border-slate-200 hover:bg-primary/5 hover:border-primary/20 transition-all">
+                           <Link href="/settings"><Settings className="h-4 w-4 mr-2 text-primary" />Configuración Global del Sistema</Link>
                         </Button>
                      </CardContent>
                   </Card>

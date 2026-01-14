@@ -96,7 +96,7 @@ export function InstructorDashboard({ instructorStats, recentAnnouncements, taug
 
               <div className="hidden md:block relative w-40 h-40 lg:w-48 lg:h-48">
                 <Image
-                  src="/images/instructor-illustration.png"
+                  src={settings?.dashboardImageUrlInstructor || "/images/instructor-illustration.png"}
                   alt="Instructor"
                   width={256}
                   height={256}
