@@ -108,17 +108,15 @@ function ResourceStats({ resources }: { resources: AppResourceType[] }) {
       total: resources.length,
       totalSize: formatFileSize(totalSize),
       favorites: resources.filter(r => r.isPinned).length,
-      recent: resources.filter(r => new Date(r.uploadDate) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length,
       shared: resources.filter(r => r.shared).length
     };
   }, [resources]);
 
-  const StatCard = ({ label, value, color, icon: Icon, trend }: {
+  const StatCard = ({ label, value, color, icon: Icon }: {
     label: string;
     value: string | number;
     color: string;
     icon: React.ElementType;
-    trend?: number;
   }) => (
     <Card className={cn(
       "group relative overflow-hidden p-5 transition-all duration-300 hover:shadow-xl border-0",
@@ -129,12 +127,6 @@ function ResourceStats({ resources }: { resources: AppResourceType[] }) {
         <div>
           <p className="text-sm font-medium text-white/90 mb-2">{label}</p>
           <p className="text-2xl font-bold text-white">{value}</p>
-          {trend !== undefined && (
-            <div className="flex items-center gap-1 mt-2">
-              <TrendingUp className="h-3 w-3" />
-              <span className="text-xs text-white/80">{trend}%</span>
-            </div>
-          )}
         </div>
         <div className="p-3 rounded-full bg-white/20 backdrop-blur-sm">
           <Icon className="h-6 w-6 text-white" />
@@ -150,7 +142,6 @@ function ResourceStats({ resources }: { resources: AppResourceType[] }) {
         value={stats.total}
         color="from-purple-500 to-pink-500"
         icon={HardDrive}
-        trend={12}
       />
       <StatCard
         label="Espacio Usado"
@@ -163,7 +154,6 @@ function ResourceStats({ resources }: { resources: AppResourceType[] }) {
         value={stats.favorites}
         color="from-amber-500 to-orange-500"
         icon={Star}
-        trend={8}
       />
       <StatCard
         label="Compartidos"
@@ -402,543 +392,6 @@ function SidebarNavigation({
   );
 }
 
-// Componente principal optimizado
-export default function ResourcesPage() {
-  const { user } = useAuth();
-  const { setPageTitle } = useTitle();
-  const { toast } = useToast();
-  const { recentIds, addRecentResource } = useRecentResources();
-
-  const { resources: allApiResources, loading: isLoadingData, error, fetchResources } = useResourceManager();
-
-  // Estados consolidados
-  const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('grid');
-  const [resourceView, setResourceView] = useState<'all' | 'favorites' | 'recent' | 'unread' | 'shared'>('all');
-  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [currentFolder, setCurrentFolder] = useState<AppResourceType | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState([{ id: null, title: 'Biblioteca Principal' }]);
-  
-  // Estados de UI
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
-  const [showThumbnails, setShowThumbnails] = useState(true);
-  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
-
-  // Estados de modales
-  const [resourceToEdit, setResourceToEdit] = useState<AppResourceType | null>(null);
-  const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
-  const [folderToEdit, setFolderToEdit] = useState<AppResourceType | null>(null);
-  const [playlistToEdit, setPlaylistToEdit] = useState<AppResourceType | null>(null);
-  const [previewingResource, setPreviewingResource] = useState<AppResourceType | null>(null);
-  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
-
-  // Estados de modales booleanos
-  const [isFolderEditorOpen, setIsFolderEditorOpen] = useState(false);
-  const [isPlaylistCreatorOpen, setIsPlaylistCreatorOpen] = useState(false);
-  const [isUploaderOpen, setIsUploaderOpen] = useState(false);
-
-  // Filtros
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [fileType, setFileType] = useState('all');
-  const [hasPin, setHasPin] = useState(false);
-  const [hasExpiry, setHasExpiry] = useState(false);
-  const [tagsFilter, setTagsFilter] = useState('');
-  const [sortBy, setSortBy] = useState<'date' | 'name' | 'size' | 'type'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const { setNodeRef: setRootDroppableRef } = useDroppable({ id: 'root' });
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
-  );
-
-  // Atajos de teclado mejorados
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
-        e.preventDefault();
-        setSelectedIds(new Set(allApiResources.map(r => r.id)));
-        toast({
-          title: "Todos seleccionados",
-          description: `${allApiResources.length} recursos seleccionados`
-        });
-      }
-      if (e.key === 'Escape') {
-        setSelectedIds(new Set());
-        toast({
-          description: "Selección limpiada"
-        });
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-        e.preventDefault();
-        const searchInput = document.querySelector<HTMLInputElement>('input[placeholder*="Buscar"]');
-        searchInput?.focus();
-        searchInput?.select();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-        e.preventDefault();
-        setIsFolderEditorOpen(true);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [allApiResources, toast]);
-
-  useEffect(() => {
-    setPageTitle('📚 Biblioteca de Recursos - Gestor Inteligente');
-  }, [setPageTitle]);
-
-  const canManage = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
-
-  // Carga de datos optimizada
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        await fetchResources({
-          parentId: currentFolderId,
-          search: debouncedSearchTerm,
-          filters: { fileType: fileType !== 'all' ? fileType : undefined, hasPin, hasExpiry, sortBy, sortOrder }
-        });
-
-        if (currentFolderId) {
-          const folderRes = await fetch(`/api/resources/${currentFolderId}`);
-          if (folderRes.ok) setCurrentFolder(await folderRes.json());
-        } else {
-          setCurrentFolder(null);
-        }
-      } catch (err) {
-        console.error('Error loading resources:', err);
-      }
-    };
-    loadData();
-  }, [currentFolderId, debouncedSearchTerm, fileType, hasPin, hasExpiry, sortBy, sortOrder, fetchResources]);
-
-  // Filtrado y agrupación optimizados
-  const { filteredResources, groupedResources } = useMemo(() => {
-    let filtered = allApiResources;
-
-    // Filtros básicos
-    if (resourceView === 'favorites') filtered = filtered.filter(r => r.isPinned);
-    if (resourceView === 'recent') filtered = filtered.filter(r => recentIds.includes(r.id));
-    if (resourceView === 'unread') filtered = filtered.filter(r => !r.isViewed);
-    if (resourceView === 'shared') filtered = filtered.filter(r => r.shared);
-    if (debouncedSearchTerm) {
-      const searchLower = debouncedSearchTerm.toLowerCase();
-      filtered = filtered.filter(r => 
-        r.title.toLowerCase().includes(searchLower) ||
-        r.description?.toLowerCase().includes(searchLower) ||
-        r.tags?.some(tag => tag.toLowerCase().includes(searchLower))
-      );
-    }
-    if (fileType !== 'all') filtered = filtered.filter(r => r.filetype === fileType);
-    if (hasPin) filtered = filtered.filter(r => r.isPinned);
-    if (hasExpiry) filtered = filtered.filter(r => r.expiresAt);
-
-    // Ordenación
-    filtered = [...filtered].sort((a, b) => {
-      const order = sortOrder === 'desc' ? -1 : 1;
-      switch (sortBy) {
-        case 'name': return order * a.title.localeCompare(b.title);
-        case 'size': return order * ((a.size || 0) - (b.size || 0));
-        case 'type': return order * a.type.localeCompare(b.type);
-        default: return order * (new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime());
-      }
-    });
-
-    // Agrupación
-    const groups: Record<string, AppResourceType[]> = {
-      '📁 Carpetas': filtered.filter(r => r.type === 'FOLDER'),
-      '🎬 Listas de Videos': filtered.filter(r => r.type === 'VIDEO_PLAYLIST'),
-      '📄 Documentos': filtered.filter(r => ['pdf', 'doc', 'xls', 'ppt'].includes(r.filetype || '')),
-      '🖼️ Multimedia': filtered.filter(r => ['image', 'video', 'audio'].includes(r.filetype || '')),
-      '📎 Otros Archivos': filtered.filter(r => !['FOLDER', 'VIDEO_PLAYLIST'].includes(r.type))
-    };
-
-    // Limpiar grupos vacíos
-    Object.keys(groups).forEach(key => {
-      if (groups[key].length === 0) delete groups[key];
-    });
-
-    return { filteredResources: filtered, groupedResources: groups };
-  }, [allApiResources, resourceView, recentIds, debouncedSearchTerm, fileType, hasPin, hasExpiry, sortBy, sortOrder]);
-
-  // Handlers optimizados
-  const handleNavigateFolder = useCallback((resource: AppResourceType) => {
-    setCurrentFolderId(resource.id);
-    setBreadcrumbs(prev => [...prev, { id: resource.id, title: resource.title }]);
-    setSearchTerm('');
-    setSelectedIds(new Set());
-  }, []);
-
-  const handleBreadcrumbClick = useCallback((folderId: string | null, index: number) => {
-    setCurrentFolderId(folderId);
-    setBreadcrumbs(prev => prev.slice(0, index + 1));
-    setSearchTerm('');
-    setSelectedIds(new Set());
-  }, []);
-
-  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveId(null);
-    if (!over || !active) return;
-
-    const resourceToMove = active.data.current?.resource as AppResourceType;
-    const targetFolderId = over.id as string;
-
-    if (resourceToMove && targetFolderId !== resourceToMove.id && targetFolderId !== resourceToMove.parentId) {
-      try {
-        await fetch(`/api/resources/${resourceToMove.id}/move`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ parentId: targetFolderId === 'root' ? null : targetFolderId })
-        });
-
-        toast({ 
-          title: '✅ Recurso Movido', 
-          description: `"${resourceToMove.title}" se movió correctamente.`,
-          className: "border-l-4 border-l-green-500"
-        });
-        fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
-      } catch {
-        toast({ 
-          title: '❌ Error', 
-          description: 'No se pudo mover el recurso.', 
-          variant: 'destructive' 
-        });
-      }
-    }
-  }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
-
-  const handleBulkAction = useCallback(async (action: 'download' | 'delete' | 'share') => {
-    if (selectedIds.size === 0) return;
-
-    try {
-      const endpoint = action === 'download' ? '/api/resources/bulk-download' : 
-                     action === 'share' ? '/api/resources/bulk-share' : 
-                     '/api/resources/bulk-delete';
-      
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: Array.from(selectedIds) })
-      });
-
-      if (!response.ok) throw new Error();
-
-      if (action === 'download') {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `recursos-${new Date().toISOString().split('T')[0]}.zip`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }
-
-      toast({ 
-        title: `✅ ${action === 'share' ? 'Recursos compartidos' : 'Acción completada'}`,
-        description: `${selectedIds.size} recursos procesados`,
-        className: "border-l-4 border-l-green-500"
-      });
-      
-      fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
-      setSelectedIds(new Set());
-    } catch {
-      toast({ 
-        title: '❌ Error', 
-        description: 'No se pudo completar la acción', 
-        variant: 'destructive' 
-      });
-    }
-  }, [selectedIds, toast, fetchResources, currentFolderId, debouncedSearchTerm]);
-
-  const handleTogglePin = useCallback(async (resource: AppResourceType) => {
-    try {
-      await fetch(`/api/resources/${resource.id}/pin`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPinned: !resource.isPinned }),
-      });
-
-      toast({ 
-        description: `✅ Recurso ${resource.isPinned ? 'desfijado' : 'fijado'}.`,
-        className: "border-l-4 border-l-amber-500"
-      });
-      fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
-    } catch (err) {
-      toast({ 
-        title: "❌ Error", 
-        description: (err as Error).message, 
-        variant: "destructive" 
-      });
-    }
-  }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
-
-  const handleSaveSuccess = useCallback(() => {
-    setResourceToEdit(null);
-    setIsFolderEditorOpen(false);
-    setFolderToEdit(null);
-    setIsPlaylistCreatorOpen(false);
-    setPlaylistToEdit(null);
-    setIsUploaderOpen(false);
-    fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
-    
-    toast({
-      title: "✅ Guardado exitoso",
-      description: "Los cambios se han guardado correctamente",
-      className: "border-l-4 border-l-green-500"
-    });
-  }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
-
-  const confirmDelete = useCallback(async () => {
-    if (!resourceToDelete) return;
-
-    try {
-      await fetch(`/api/resources/${resourceToDelete.id}`, { method: 'DELETE' });
-      toast({ 
-        title: "✅ Recurso eliminado", 
-        description: `"${resourceToDelete.title}" ha sido eliminado.`,
-        className: "border-l-4 border-l-red-500"
-      });
-      fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
-    } catch (err) {
-      toast({ 
-        title: "❌ Error", 
-        description: (err as Error).message, 
-        variant: "destructive" 
-      });
-    } finally {
-      setResourceToDelete(null);
-    }
-  }, [resourceToDelete, currentFolderId, debouncedSearchTerm, fetchResources, toast]);
-
-  const handleSelectionChange = useCallback((id: string, checked: boolean) => {
-    setSelectedIds(prev => {
-      const newSet = new Set(prev);
-      if (id === 'all') {
-        filteredResources.forEach(r => checked ? newSet.add(r.id) : newSet.delete(r.id));
-      } else {
-        checked ? newSet.add(id) : newSet.delete(id);
-      }
-      return newSet;
-    });
-  }, [filteredResources]);
-
-  const handlePreviewResource = useCallback((resource: AppResourceType) => {
-    setPreviewingResource(resource);
-    addRecentResource(resource.id);
-  }, [addRecentResource]);
-
-  const handleShareResource = useCallback(async (resource: AppResourceType) => {
-    try {
-      const shareUrl = `${window.location.origin}/share/${resource.id}`;
-      await navigator.clipboard.writeText(shareUrl);
-      
-      toast({
-        title: "🔗 Enlace copiado",
-        description: "El enlace de compartir ha sido copiado al portapapeles",
-        className: "border-l-4 border-l-blue-500"
-      });
-    } catch (err) {
-      toast({
-        title: "❌ Error",
-        description: "No se pudo copiar el enlace",
-        variant: "destructive"
-      });
-    }
-  }, [toast]);
-
-  // Renderizado condicional optimizado
-  const renderContent = () => {
-    if (isLoadingData) return <LoadingState />;
-    if (error) return <ErrorState error={error} onRetry={() => fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm })} />;
-    if (currentFolder?.type === 'VIDEO_PLAYLIST') return <VideoPlaylistView resources={allApiResources} folder={currentFolder} />;
-    if (filteredResources.length === 0) return <EmptyState canManage={canManage} searchTerm={searchTerm} />;
-    
-    return (
-      <div className="space-y-8">
-        <ResourceStats resources={filteredResources} />
-        {Object.entries(groupedResources).map(([category, resources]) => (
-          <ResourceSection
-            key={category}
-            category={category}
-            resources={resources}
-            viewMode={viewMode}
-            selectedIds={selectedIds}
-            onViewModeChange={setViewMode}
-            onSelectionChange={handleSelectionChange}
-            onPreview={handlePreviewResource}
-            onEdit={setResourceToEdit}
-            onDelete={setResourceToDelete}
-            onNavigate={handleNavigateFolder}
-            onTogglePin={handleTogglePin}
-            onShare={handleShareResource}
-          />
-        ))}
-      </div>
-    );
-  };
-
-  if (!user) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-background to-muted">
-        <div className="text-center space-y-4">
-          <div className="animate-spin">
-            <Loader2 className="h-12 w-12 text-primary" />
-          </div>
-          <p className="text-muted-foreground">Cargando recursos...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <DndContext onDragStart={(e) => setActiveId(e.active.id)} onDragEnd={handleDragEnd} sensors={sensors}>
-      <div className={cn(
-        "grid transition-all duration-500 ease-in-out min-h-screen bg-gradient-to-br from-background via-background to-muted/20",
-        isSidebarVisible ? "lg:grid-cols-[300px_1fr] gap-0" : "grid-cols-1"
-      )}>
-        <SidebarNavigation
-          isVisible={isSidebarVisible}
-          onToggle={() => setIsSidebarVisible(!isSidebarVisible)}
-          currentFolderId={currentFolderId}
-          onNavigate={handleNavigateFolder}
-          showThumbnails={showThumbnails}
-          onToggleThumbnails={setShowThumbnails}
-        />
-
-        <main className="relative">
-          <div className="absolute inset-0 bg-grid-pattern opacity-[0.015] pointer-events-none" />
-          
-          <div className="space-y-6 p-6 lg:p-8 relative">
-            {!isSidebarVisible && (
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-              >
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setIsSidebarVisible(true)}
-                  className="hidden lg:flex absolute -left-12 top-6 h-10 w-10 rounded-full shadow-lg bg-background border-primary/20 hover:bg-primary/5"
-                >
-                  <PanelLeftOpen className="h-5 w-5 text-primary" />
-                </Button>
-              </motion.div>
-            )}
-
-            <Header
-              canManage={canManage}
-              isSidebarVisible={isSidebarVisible}
-              onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
-              onCreateFolder={() => setIsFolderEditorOpen(true)}
-              onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
-              onUpload={() => setIsUploaderOpen(true)}
-              resourceView={resourceView}
-              onViewChange={setResourceView}
-              selectedCount={selectedIds.size}
-            />
-
-            {currentFolder?.type !== 'VIDEO_PLAYLIST' && (
-              <SearchAndFilters
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSortChange={(by, order) => { setSortBy(by); setSortOrder(order); }}
-                dateRange={dateRange}
-                onDateChange={setDateRange}
-                fileType={fileType}
-                onFileTypeChange={setFileType}
-                hasPin={hasPin}
-                onHasPinChange={setHasPin}
-                hasExpiry={hasExpiry}
-                onHasExpiryChange={setHasExpiry}
-                tagsFilter={tagsFilter}
-                onTagsFilterChange={setTagsFilter}
-                isFilterOpen={isFilterPopoverOpen}
-                onFilterOpenChange={setIsFilterPopoverOpen}
-              />
-            )}
-
-            <EnhancedBreadcrumbs breadcrumbs={breadcrumbs} onBreadcrumbClick={handleBreadcrumbClick} />
-            
-            <motion.div
-              ref={containerRef}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-            >
-              {renderContent()}
-            </motion.div>
-          </div>
-        </main>
-      </div>
-
-      <SelectionActionBar
-        selectedIds={selectedIds}
-        onMove={() => setIsMoveModalOpen(true)}
-        onDownload={() => handleBulkAction('download')}
-        onDelete={() => setResourceToDelete({ id: 'bulk' } as any)}
-        onShare={() => handleBulkAction('share')}
-        onClearSelection={() => setSelectedIds(new Set())}
-      />
-
-      <Modals
-        isMoveModalOpen={isMoveModalOpen}
-        onCloseMoveModal={() => setIsMoveModalOpen(false)}
-        selectedIds={selectedIds}
-        currentFolderId={currentFolderId}
-        searchTerm={debouncedSearchTerm}
-        onMoveSuccess={fetchResources}
-        previewingResource={previewingResource}
-        onClosePreview={() => setPreviewingResource(null)}
-        allApiResources={allApiResources}
-        onNavigatePreview={(dir) => {
-          if (!previewingResource) return;
-          const files = allApiResources.filter(r => !['FOLDER', 'VIDEO_PLAYLIST'].includes(r.type));
-          const currentIndex = files.findIndex(r => r.id === previewingResource.id);
-          if (currentIndex === -1) return;
-          const nextIndex = dir === 'next' ? (currentIndex + 1) % files.length : (currentIndex - 1 + files.length) % files.length;
-          setPreviewingResource(files[nextIndex]);
-          addRecentResource(files[nextIndex].id);
-        }}
-        isUploaderOpen={isUploaderOpen}
-        resourceToEdit={resourceToEdit}
-        onCloseUploader={() => { setResourceToEdit(null); setIsUploaderOpen(false); }}
-        currentFolderId={currentFolderId}
-        onSaveSuccess={handleSaveSuccess}
-        isFolderEditorOpen={isFolderEditorOpen}
-        onCloseFolderEditor={() => { setIsFolderEditorOpen(false); setFolderToEdit(null); }}
-        folderToEdit={folderToEdit}
-        onSaveFolderSuccess={handleSaveSuccess}
-        isPlaylistCreatorOpen={isPlaylistCreatorOpen}
-        onClosePlaylistCreator={() => { setIsPlaylistCreatorOpen(false); setPlaylistToEdit(null); }}
-        playlistToEdit={playlistToEdit}
-        resourceToDelete={resourceToDelete}
-        onCloseDelete={() => setResourceToDelete(null)}
-        onConfirmDelete={confirmDelete}
-        selectedIdsCount={selectedIds.size}
-        onBulkDelete={() => handleBulkAction('delete')}
-        activeId={activeId}
-        allApiResources={allApiResources}
-        selectedIds={selectedIds}
-        canManage={canManage}
-        onCreateFolder={() => setIsFolderEditorOpen(true)}
-        onUploadFile={() => setIsUploaderOpen(true)}
-        onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
-      />
-    </DndContext>
-  );
-}
-
 // Componentes auxiliares mejorados
 function LoadingState() {
   return (
@@ -1015,7 +468,12 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
   );
 }
 
-function EmptyState({ canManage, searchTerm }: { canManage: boolean; searchTerm: string }) {
+function EmptyState({ canManage, searchTerm, onCreateFolder, onUpload }: { 
+  canManage: boolean; 
+  searchTerm: string;
+  onCreateFolder: () => void;
+  onUpload: () => void;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -1046,14 +504,14 @@ function EmptyState({ canManage, searchTerm }: { canManage: boolean; searchTerm:
           className="flex flex-col sm:flex-row gap-3 justify-center"
         >
           <Button 
-            onClick={() => setIsFolderEditorOpen(true)}
+            onClick={onCreateFolder}
             className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
           >
             <FolderPlus className="mr-2 h-5 w-5" />
             Nueva Carpeta
           </Button>
           <Button 
-            onClick={() => setIsUploaderOpen(true)}
+            onClick={onUpload}
             variant="secondary"
             className="border-2"
           >
@@ -1665,11 +1123,11 @@ function SearchAndFilters({
                     variant="outline"
                     className="flex-1"
                     onClick={() => {
-                      setDateRange(undefined);
-                      setFileType('all');
-                      setHasPin(false);
-                      setHasExpiry(false);
-                      setTagsFilter('');
+                      onDateChange(undefined);
+                      onFileTypeChange('all');
+                      onHasPinChange(false);
+                      onHasExpiryChange(false);
+                      onTagsFilterChange('');
                       onFilterOpenChange(false);
                     }}
                   >
@@ -1936,4 +1394,546 @@ function formatFileSize(bytes: number): string {
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+// Componente principal optimizado
+export default function ResourcesPage() {
+  const { user } = useAuth();
+  const { setPageTitle } = useTitle();
+  const { toast } = useToast();
+  const { recentIds, addRecentResource } = useRecentResources();
+
+  const { resources: allApiResources, loading: isLoadingData, error, fetchResources } = useResourceManager();
+
+  // Estados consolidados
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'table'>('grid');
+  const [resourceView, setResourceView] = useState<'all' | 'favorites' | 'recent' | 'unread' | 'shared'>('all');
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [currentFolder, setCurrentFolder] = useState<AppResourceType | null>(null);
+  const [breadcrumbs, setBreadcrumbs] = useState([{ id: null, title: 'Biblioteca Principal' }]);
+  
+  // Estados de UI
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [showThumbnails, setShowThumbnails] = useState(true);
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
+
+  // Estados de modales
+  const [resourceToEdit, setResourceToEdit] = useState<AppResourceType | null>(null);
+  const [resourceToDelete, setResourceToDelete] = useState<AppResourceType | null>(null);
+  const [folderToEdit, setFolderToEdit] = useState<AppResourceType | null>(null);
+  const [playlistToEdit, setPlaylistToEdit] = useState<AppResourceType | null>(null);
+  const [previewingResource, setPreviewingResource] = useState<AppResourceType | null>(null);
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
+
+  // Estados de modales booleanos
+  const [isFolderEditorOpen, setIsFolderEditorOpen] = useState(false);
+  const [isPlaylistCreatorOpen, setIsPlaylistCreatorOpen] = useState(false);
+  const [isUploaderOpen, setIsUploaderOpen] = useState(false);
+
+  // Filtros
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [fileType, setFileType] = useState('all');
+  const [hasPin, setHasPin] = useState(false);
+  const [hasExpiry, setHasExpiry] = useState(false);
+  const [tagsFilter, setTagsFilter] = useState('');
+  const [sortBy, setSortBy] = useState<'date' | 'name' | 'size' | 'type'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const { setNodeRef: setRootDroppableRef } = useDroppable({ id: 'root' });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+  );
+
+  // Atajos de teclado mejorados
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        setSelectedIds(new Set(allApiResources.map(r => r.id)));
+        toast({
+          title: "Todos seleccionados",
+          description: `${allApiResources.length} recursos seleccionados`
+        });
+      }
+      if (e.key === 'Escape') {
+        setSelectedIds(new Set());
+        toast({
+          description: "Selección limpiada"
+        });
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        const searchInput = document.querySelector<HTMLInputElement>('input[placeholder*="Buscar"]');
+        searchInput?.focus();
+        searchInput?.select();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        setIsFolderEditorOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [allApiResources, toast]);
+
+  useEffect(() => {
+    setPageTitle('📚 Biblioteca de Recursos - Gestor Inteligente');
+  }, [setPageTitle]);
+
+  const canManage = user?.role === 'ADMINISTRATOR' || user?.role === 'INSTRUCTOR';
+
+  // Carga de datos optimizada
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        await fetchResources({
+          parentId: currentFolderId,
+          search: debouncedSearchTerm,
+          filters: { fileType: fileType !== 'all' ? fileType : undefined, hasPin, hasExpiry, sortBy, sortOrder }
+        });
+
+        if (currentFolderId) {
+          const folderRes = await fetch(`/api/resources/${currentFolderId}`);
+          if (folderRes.ok) setCurrentFolder(await folderRes.json());
+        } else {
+          setCurrentFolder(null);
+        }
+      } catch (err) {
+        console.error('Error loading resources:', err);
+      }
+    };
+    loadData();
+  }, [currentFolderId, debouncedSearchTerm, fileType, hasPin, hasExpiry, sortBy, sortOrder, fetchResources]);
+
+  // Filtrado y agrupación optimizados
+  const { filteredResources, groupedResources } = useMemo(() => {
+    let filtered = allApiResources;
+
+    // Filtros básicos
+    if (resourceView === 'favorites') filtered = filtered.filter(r => r.isPinned);
+    if (resourceView === 'recent') filtered = filtered.filter(r => recentIds.includes(r.id));
+    if (resourceView === 'unread') filtered = filtered.filter(r => !r.isViewed);
+    if (resourceView === 'shared') filtered = filtered.filter(r => r.shared);
+    if (debouncedSearchTerm) {
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      filtered = filtered.filter(r => 
+        r.title.toLowerCase().includes(searchLower) ||
+        r.description?.toLowerCase().includes(searchLower) ||
+        r.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+      );
+    }
+    if (fileType !== 'all') filtered = filtered.filter(r => r.filetype === fileType);
+    if (hasPin) filtered = filtered.filter(r => r.isPinned);
+    if (hasExpiry) filtered = filtered.filter(r => r.expiresAt);
+
+    // Ordenación
+    filtered = [...filtered].sort((a, b) => {
+      const order = sortOrder === 'desc' ? -1 : 1;
+      switch (sortBy) {
+        case 'name': return order * a.title.localeCompare(b.title);
+        case 'size': return order * ((a.size || 0) - (b.size || 0));
+        case 'type': return order * a.type.localeCompare(b.type);
+        default: return order * (new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime());
+      }
+    });
+
+    // Agrupación
+    const groups: Record<string, AppResourceType[]> = {
+      '📁 Carpetas': filtered.filter(r => r.type === 'FOLDER'),
+      '🎬 Listas de Videos': filtered.filter(r => r.type === 'VIDEO_PLAYLIST'),
+      '📄 Documentos': filtered.filter(r => ['pdf', 'doc', 'xls', 'ppt'].includes(r.filetype || '')),
+      '🖼️ Multimedia': filtered.filter(r => ['image', 'video', 'audio'].includes(r.filetype || '')),
+      '📎 Otros Archivos': filtered.filter(r => !['FOLDER', 'VIDEO_PLAYLIST'].includes(r.type))
+    };
+
+    // Limpiar grupos vacíos
+    Object.keys(groups).forEach(key => {
+      if (groups[key].length === 0) delete groups[key];
+    });
+
+    return { filteredResources: filtered, groupedResources: groups };
+  }, [allApiResources, resourceView, recentIds, debouncedSearchTerm, fileType, hasPin, hasExpiry, sortBy, sortOrder]);
+
+  // Handlers optimizados
+  const handleNavigateFolder = useCallback((resource: AppResourceType) => {
+    setCurrentFolderId(resource.id);
+    setBreadcrumbs(prev => [...prev, { id: resource.id, title: resource.title }]);
+    setSearchTerm('');
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleBreadcrumbClick = useCallback((folderId: string | null, index: number) => {
+    setCurrentFolderId(folderId);
+    setBreadcrumbs(prev => prev.slice(0, index + 1));
+    setSearchTerm('');
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+    if (!over || !active) return;
+
+    const resourceToMove = active.data.current?.resource as AppResourceType;
+    const targetFolderId = over.id as string;
+
+    if (resourceToMove && targetFolderId !== resourceToMove.id && targetFolderId !== resourceToMove.parentId) {
+      try {
+        await fetch(`/api/resources/${resourceToMove.id}/move`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ parentId: targetFolderId === 'root' ? null : targetFolderId })
+        });
+
+        toast({ 
+          title: '✅ Recurso Movido', 
+          description: `"${resourceToMove.title}" se movió correctamente.`,
+          className: "border-l-4 border-l-green-500"
+        });
+        fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
+      } catch {
+        toast({ 
+          title: '❌ Error', 
+          description: 'No se pudo mover el recurso.', 
+          variant: 'destructive' 
+        });
+      }
+    }
+  }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
+
+  const handleBulkAction = useCallback(async (action: 'download' | 'delete' | 'share') => {
+    if (selectedIds.size === 0) return;
+
+    try {
+      const endpoint = action === 'download' ? '/api/resources/bulk-download' : 
+                     action === 'share' ? '/api/resources/bulk-share' : 
+                     '/api/resources/bulk-delete';
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds) })
+      });
+
+      if (!response.ok) throw new Error();
+
+      if (action === 'download') {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `recursos-${new Date().toISOString().split('T')[0]}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+
+      toast({ 
+        title: `✅ ${action === 'share' ? 'Recursos compartidos' : 'Acción completada'}`,
+        description: `${selectedIds.size} recursos procesados`,
+        className: "border-l-4 border-l-green-500"
+      });
+      
+      fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
+      setSelectedIds(new Set());
+    } catch {
+      toast({ 
+        title: '❌ Error', 
+        description: 'No se pudo completar la acción', 
+        variant: 'destructive' 
+      });
+    }
+  }, [selectedIds, toast, fetchResources, currentFolderId, debouncedSearchTerm]);
+
+  const handleTogglePin = useCallback(async (resource: AppResourceType) => {
+    try {
+      await fetch(`/api/resources/${resource.id}/pin`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPinned: !resource.isPinned }),
+      });
+
+      toast({ 
+        description: `✅ Recurso ${resource.isPinned ? 'desfijado' : 'fijado'}.`,
+        className: "border-l-4 border-l-amber-500"
+      });
+      fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
+    } catch (err) {
+      toast({ 
+        title: "❌ Error", 
+        description: (err as Error).message, 
+        variant: "destructive" 
+      });
+    }
+  }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
+
+  const handleSaveSuccess = useCallback(() => {
+    setResourceToEdit(null);
+    setIsFolderEditorOpen(false);
+    setFolderToEdit(null);
+    setIsPlaylistCreatorOpen(false);
+    setPlaylistToEdit(null);
+    setIsUploaderOpen(false);
+    fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
+    
+    toast({
+      title: "✅ Guardado exitoso",
+      description: "Los cambios se han guardado correctamente",
+      className: "border-l-4 border-l-green-500"
+    });
+  }, [currentFolderId, debouncedSearchTerm, fetchResources, toast]);
+
+  const confirmDelete = useCallback(async () => {
+    if (!resourceToDelete) return;
+
+    try {
+      await fetch(`/api/resources/${resourceToDelete.id}`, { method: 'DELETE' });
+      toast({ 
+        title: "✅ Recurso eliminado", 
+        description: `"${resourceToDelete.title}" ha sido eliminado.`,
+        className: "border-l-4 border-l-red-500"
+      });
+      fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm });
+    } catch (err) {
+      toast({ 
+        title: "❌ Error", 
+        description: (err as Error).message, 
+        variant: "destructive" 
+      });
+    } finally {
+      setResourceToDelete(null);
+    }
+  }, [resourceToDelete, currentFolderId, debouncedSearchTerm, fetchResources, toast]);
+
+  const handleSelectionChange = useCallback((id: string, checked: boolean) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (id === 'all') {
+        filteredResources.forEach(r => checked ? newSet.add(r.id) : newSet.delete(r.id));
+      } else {
+        checked ? newSet.add(id) : newSet.delete(id);
+      }
+      return newSet;
+    });
+  }, [filteredResources]);
+
+  const handlePreviewResource = useCallback((resource: AppResourceType) => {
+    setPreviewingResource(resource);
+    addRecentResource(resource.id);
+  }, [addRecentResource]);
+
+  const handleShareResource = useCallback(async (resource: AppResourceType) => {
+    try {
+      const shareUrl = `${window.location.origin}/share/${resource.id}`;
+      await navigator.clipboard.writeText(shareUrl);
+      
+      toast({
+        title: "🔗 Enlace copiado",
+        description: "El enlace de compartir ha sido copiado al portapapeles",
+        className: "border-l-4 border-l-blue-500"
+      });
+    } catch (err) {
+      toast({
+        title: "❌ Error",
+        description: "No se pudo copiar el enlace",
+        variant: "destructive"
+      });
+    }
+  }, [toast]);
+
+  // Renderizado condicional optimizado
+  const renderContent = () => {
+    if (isLoadingData) return <LoadingState />;
+    if (error) return <ErrorState error={error} onRetry={() => fetchResources({ parentId: currentFolderId, search: debouncedSearchTerm })} />;
+    if (currentFolder?.type === 'VIDEO_PLAYLIST') return <VideoPlaylistView resources={allApiResources} folder={currentFolder} />;
+    if (filteredResources.length === 0) return <EmptyState 
+      canManage={canManage} 
+      searchTerm={searchTerm} 
+      onCreateFolder={() => setIsFolderEditorOpen(true)}
+      onUpload={() => setIsUploaderOpen(true)}
+    />;
+    
+    return (
+      <div className="space-y-8">
+        <ResourceStats resources={filteredResources} />
+        {Object.entries(groupedResources).map(([category, resources]) => (
+          <ResourceSection
+            key={category}
+            category={category}
+            resources={resources}
+            viewMode={viewMode}
+            selectedIds={selectedIds}
+            onViewModeChange={setViewMode}
+            onSelectionChange={handleSelectionChange}
+            onPreview={handlePreviewResource}
+            onEdit={setResourceToEdit}
+            onDelete={setResourceToDelete}
+            onNavigate={handleNavigateFolder}
+            onTogglePin={handleTogglePin}
+            onShare={handleShareResource}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  if (!user) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-gradient-to-br from-background to-muted">
+        <div className="text-center space-y-4">
+          <div className="animate-spin">
+            <Loader2 className="h-12 w-12 text-primary" />
+          </div>
+          <p className="text-muted-foreground">Cargando recursos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <DndContext onDragStart={(e) => setActiveId(e.active.id)} onDragEnd={handleDragEnd} sensors={sensors}>
+      <div className={cn(
+        "grid transition-all duration-500 ease-in-out min-h-screen bg-gradient-to-br from-background via-background to-muted/20",
+        isSidebarVisible ? "lg:grid-cols-[300px_1fr] gap-0" : "grid-cols-1"
+      )}>
+        <SidebarNavigation
+          isVisible={isSidebarVisible}
+          onToggle={() => setIsSidebarVisible(!isSidebarVisible)}
+          currentFolderId={currentFolderId}
+          onNavigate={handleNavigateFolder}
+          showThumbnails={showThumbnails}
+          onToggleThumbnails={setShowThumbnails}
+        />
+
+        <main className="relative">
+          <div className="absolute inset-0 bg-grid-pattern opacity-[0.015] pointer-events-none" />
+          
+          <div className="space-y-6 p-6 lg:p-8 relative" ref={setRootDroppableRef}>
+            {!isSidebarVisible && (
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+              >
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setIsSidebarVisible(true)}
+                  className="hidden lg:flex absolute -left-12 top-6 h-10 w-10 rounded-full shadow-lg bg-background border-primary/20 hover:bg-primary/5"
+                >
+                  <PanelLeftOpen className="h-5 w-5 text-primary" />
+                </Button>
+              </motion.div>
+            )}
+
+            <Header
+              canManage={canManage}
+              isSidebarVisible={isSidebarVisible}
+              onToggleSidebar={() => setIsSidebarVisible(!isSidebarVisible)}
+              onCreateFolder={() => setIsFolderEditorOpen(true)}
+              onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
+              onUpload={() => setIsUploaderOpen(true)}
+              resourceView={resourceView}
+              onViewChange={setResourceView}
+              selectedCount={selectedIds.size}
+            />
+
+            {currentFolder?.type !== 'VIDEO_PLAYLIST' && (
+              <SearchAndFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={(by, order) => { setSortBy(by); setSortOrder(order); }}
+                dateRange={dateRange}
+                onDateChange={setDateRange}
+                fileType={fileType}
+                onFileTypeChange={setFileType}
+                hasPin={hasPin}
+                onHasPinChange={setHasPin}
+                hasExpiry={hasExpiry}
+                onHasExpiryChange={setHasExpiry}
+                tagsFilter={tagsFilter}
+                onTagsFilterChange={setTagsFilter}
+                isFilterOpen={isFilterPopoverOpen}
+                onFilterOpenChange={setIsFilterPopoverOpen}
+              />
+            )}
+
+            <EnhancedBreadcrumbs breadcrumbs={breadcrumbs} onBreadcrumbClick={handleBreadcrumbClick} />
+            
+            <motion.div
+              ref={containerRef}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              {renderContent()}
+            </motion.div>
+          </div>
+        </main>
+      </div>
+
+      <SelectionActionBar
+        selectedIds={selectedIds}
+        onMove={() => setIsMoveModalOpen(true)}
+        onDownload={() => handleBulkAction('download')}
+        onDelete={() => setResourceToDelete({ id: 'bulk' } as any)}
+        onShare={() => handleBulkAction('share')}
+        onClearSelection={() => setSelectedIds(new Set())}
+      />
+
+      <Modals
+        isMoveModalOpen={isMoveModalOpen}
+        onCloseMoveModal={() => setIsMoveModalOpen(false)}
+        selectedIds={selectedIds}
+        currentFolderId={currentFolderId}
+        searchTerm={debouncedSearchTerm}
+        onMoveSuccess={fetchResources}
+        previewingResource={previewingResource}
+        onClosePreview={() => setPreviewingResource(null)}
+        allApiResources={allApiResources}
+        onNavigatePreview={(dir) => {
+          if (!previewingResource) return;
+          const files = allApiResources.filter(r => !['FOLDER', 'VIDEO_PLAYLIST'].includes(r.type));
+          const currentIndex = files.findIndex(r => r.id === previewingResource.id);
+          if (currentIndex === -1) return;
+          const nextIndex = dir === 'next' ? (currentIndex + 1) % files.length : (currentIndex - 1 + files.length) % files.length;
+          setPreviewingResource(files[nextIndex]);
+          addRecentResource(files[nextIndex].id);
+        }}
+        isUploaderOpen={isUploaderOpen}
+        resourceToEdit={resourceToEdit}
+        onCloseUploader={() => { setResourceToEdit(null); setIsUploaderOpen(false); }}
+        currentFolderId={currentFolderId}
+        onSaveSuccess={handleSaveSuccess}
+        isFolderEditorOpen={isFolderEditorOpen}
+        onCloseFolderEditor={() => { setIsFolderEditorOpen(false); setFolderToEdit(null); }}
+        folderToEdit={folderToEdit}
+        onSaveFolderSuccess={handleSaveSuccess}
+        isPlaylistCreatorOpen={isPlaylistCreatorOpen}
+        onClosePlaylistCreator={() => { setIsPlaylistCreatorOpen(false); setPlaylistToEdit(null); }}
+        playlistToEdit={playlistToEdit}
+        resourceToDelete={resourceToDelete}
+        onCloseDelete={() => setResourceToDelete(null)}
+        onConfirmDelete={confirmDelete}
+        selectedIdsCount={selectedIds.size}
+        onBulkDelete={() => handleBulkAction('delete')}
+        activeId={activeId}
+        allApiResources={allApiResources}
+        selectedIds={selectedIds}
+        canManage={canManage}
+        onCreateFolder={() => setIsFolderEditorOpen(true)}
+        onUploadFile={() => setIsUploaderOpen(true)}
+        onCreatePlaylist={() => setIsPlaylistCreatorOpen(true)}
+      />
+    </DndContext>
+  );
 }
