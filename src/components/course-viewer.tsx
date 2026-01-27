@@ -314,6 +314,11 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         return new Set(courseProgress?.completedLessons?.map(l => l.lessonId) || []);
     }, [courseProgress]);
 
+    const isCreatorViewingCourse = useMemo(() => {
+        if (!user || !course) return false;
+        return user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId);
+    }, [user, course]);
+
     const isLessonLocked = useCallback((lessonId: string) => {
         if (isCreatorViewingCourse) return false;
         const currentLessonIndex = allLessons.findIndex(l => l.id === lessonId);
@@ -322,12 +327,6 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
         // Strict linear progression: all previous lessons must be completed
         return allLessons.slice(0, currentLessonIndex).some(l => !completedLessonIds.has(l.id));
     }, [allLessons, completedLessonIds, isCreatorViewingCourse]);
-
-
-    const isCreatorViewingCourse = useMemo(() => {
-        if (!user || !course) return false;
-        return user.role === 'ADMINISTRATOR' || (user.role === 'INSTRUCTOR' && user.id === course.instructorId);
-    }, [user, course]);
 
     const fetchProgress = useCallback(async (userId: string, courseId: string) => {
         try {
