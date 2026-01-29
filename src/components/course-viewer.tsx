@@ -307,7 +307,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
     const [isNotesPanelOpen, setIsNotesPanelOpen] = useState(false);
     const [imageToView, setImageToView] = useState<string | null>(null);
 
-    const allLessons = useMemo(() => course?.modules.flatMap(m => m.lessons) || [], [course]);
+    const allLessons = useMemo(() => course?.modules?.flatMap(m => m.lessons) || [], [course]);
     const totalLessonsCount = allLessons.length;
 
     const completedLessonIds = useMemo(() => {
@@ -506,10 +506,10 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
 
     const filteredModules = useMemo(() => {
         if (!course) return [];
-        if (!sidebarSearch.trim()) return course.modules;
+        if (!sidebarSearch.trim()) return course.modules || [];
 
         const searchTerm = sidebarSearch.toLowerCase();
-        return course.modules.map(module => {
+        return course.modules?.map(module => {
             const filteredLessons = module.lessons.filter(lesson =>
                 lesson.title.toLowerCase().includes(searchTerm)
             );
@@ -713,7 +713,7 @@ export function CourseViewer({ courseId }: CourseViewerProps) {
                     </div>
                 </div>
                 <ScrollArea className="flex-1">
-                    <Accordion type="multiple" defaultValue={course?.modules.map(m => m.id)} className="w-full p-2">
+                    <Accordion type="multiple" defaultValue={course?.modules?.map(m => m.id)} className="w-full p-2">
                         {filteredModules.map((moduleItem) => {
                             const lessonsInModule = allLessons.filter(l => l.moduleId === moduleItem.id);
                             return (
